@@ -1,3 +1,6 @@
+/.idea
+/.vscode
+
 # OS generated files #
 ######################
 .DS_Store
@@ -26,14 +29,17 @@ pids
 .grunt
 
 ### Vuejs ###
-node_modules
 docs/_book
 test/
 
 ### Laravel ###
+/node_modules
 /vendor/
 npm-debug.log
 yarn-error.log
+/.vagrant
+.phpunit.result.cache
+/nbproject
 
 # Laravel 4 specific
 bootstrap/compiled.php
