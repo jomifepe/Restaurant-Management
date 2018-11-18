@@ -11,7 +11,9 @@
                         </h5>
                     </div>
                     <div class="card-footer text-muted">
-                        {{ item.price }}€
+                        <p class="text-right">
+                            {{ item.price }}€
+                        </p>
                     </div>
                 </div>
             </div>

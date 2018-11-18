@@ -47365,6 +47365,8 @@ module.exports = Component.exports
 //
 //
 //
+//
+//
 
 module.exports = {
     data: function data() {
@@ -47421,11 +47423,13 @@ var render = function() {
             ]),
             _vm._v(" "),
             _c("div", { staticClass: "card-footer text-muted" }, [
-              _vm._v(
-                "\n                    " +
-                  _vm._s(item.price) +
-                  "€\n                "
-              )
+              _c("p", { staticClass: "text-right" }, [
+                _vm._v(
+                  "\n                        " +
+                    _vm._s(item.price) +
+                    "€\n                    "
+                )
+              ])
             ])
           ])
         })
