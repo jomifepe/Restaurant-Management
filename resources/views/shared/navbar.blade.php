@@ -5,14 +5,11 @@
 	</button>
 	<div class="collapse navbar-collapse" id="navbarNav">
 		<ul class="navbar-nav mr-auto">
-		{{--  <li class="nav-item">
-			<a class="nav-link" href="#">Login</a>
-		</li>  --}}
 		</ul>
 		<ul class="navbar-nav">
-		<li class="nav-item active">
-			<a class="nav-link" href="#">Login <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span></a>
-		</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="#">Login</a>
+			</li>
 		</ul>
 	</div>
 </nav>

@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Resources\Json\Resource;
+use Illuminate\Support\Facades\Storage;
 
-class Item extends JsonResource
+class Item extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -14,6 +15,16 @@ class Item extends JsonResource
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'type' => $this->type,
+            'description' => $this->description,
+            'photo_url' => Storage::url("items/$this->photo_url"),
+            'price' => $this->price,
+            'deleted_at' => $this->deleted_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
     }
 }

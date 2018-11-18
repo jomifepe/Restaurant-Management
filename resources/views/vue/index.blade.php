@@ -1,14 +1,13 @@
 @extends('master')
 
 @section('title', 'Restaurant Management')
-
 @section('content')
 
-<h1>Hello World</h1>
-
+<div class="mt-5 mb-5">
+	<menu-list></menu-list>
+</div>
 
 @endsection
-
-@section('pagescript')
-<script src="js/vue.js"></script>
+@section('pagescript') 
+<script src="js/general.js"></script>
 @stop  

@@ -1,12 +1,17 @@
 <template>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card card-default">
-                    <div class="card-header">Example Component</div>
-
+            <div class="card-columns">
+                <div class="card" v-for="item in items" :key="item.id">  
+                    <img class="card-img-top img-fluid" :src="item.photo_url" :alt="item.name" />
                     <div class="card-body">
-                        I'm an example component.
+                        <h5 class="card-title">
+                            {{ item.name }}
+                            <small class="text-muted">{{ item.type }}</small>
+                        </h5>
+                    </div>
+                    <div class="card-footer text-muted">
+                        {{ item.price }}€
                     </div>
                 </div>
             </div>
@@ -15,9 +20,22 @@
 </template>
 
 <script>
-    export default {
+    module.exports = {
+		data() {
+            return {
+			    items: []
+            }
+		},
+        methods: {
+            getItems() {
+                axios.get("api/items")
+                .then(response => {
+					this.items = response.data.data;
+                });
+            },
+		},
         mounted() {
-            console.log('Component mounted.')
+            this.getItems();
         }
     }
 </script>
