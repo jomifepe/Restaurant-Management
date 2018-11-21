@@ -12,7 +12,6 @@
     </head> 
     <body>
         <div class="container" id="app">
-            @include('shared.navbar')
             @yield('content')
         </div>
 
