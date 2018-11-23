@@ -24,3 +24,8 @@ Route::middleware('auth:api')->post('logout', 'LoginControllerAPI@logout');
 Route::middleware('auth:api')->get('users/me', 'UserControllerAPI@myProfile');
 
 Route::get('items', 'ItemControllerAPI@index');
+
+Route::apiResources(['meals'    => 'MealControllerAPI',
+                     'invoices' => 'InvoiceControllerAPI',
+                     'orders'   => 'OrderControllerAPI',
+                     'items'    => 'ItemControllerAPI']);
