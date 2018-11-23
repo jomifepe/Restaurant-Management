@@ -4,7 +4,7 @@
 @section('content')
 
 <div class="mt-5 mb-5">
-	<login-user></login-user>
+	<login></login>
 </div>
 
 <div class="mt-5 mb-5">

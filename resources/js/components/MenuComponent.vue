@@ -30,7 +30,7 @@
 		},
         methods: {
             getItems() {
-                axios.get("api/items")
+                axios.get("items")
                 .then(response => {
 					this.items = response.data.data;
                 });
