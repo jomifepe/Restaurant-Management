@@ -6,9 +6,10 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
-import MenuList from './components/MenuComponent.vue'
-import Login from './components/login.vue'
-import Logout from './components/logout'
+import MenuList from './components/MenuComponent.vue';
+import sideBar from './components/sideBarMenu.vue';
+import Login from './components/login.vue';
+import Logout from './components/logout';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import store from './stores/global-store';
@@ -16,12 +17,14 @@ import VueRouter from 'vue-router';
 
 
 Vue.use(VueRouter);
-Vue.use(Vuex)
+Vue.use(Vuex);
 Vue.use(store);
 
+Vue.component('sidebar-menu', sideBar);
 Vue.component('menu-list', MenuList);
 Vue.component('login', Login);
 Vue.component('logout', Logout);
+
 
 axios.defaults.baseURL = 'http://project.dad/api';
 
@@ -36,18 +39,11 @@ const routes = [
     { path: '/logout', component: logout, name: 'logout'},
     { path: '/profile', component: profile, name: 'profile'},
 ];
-
-const router = new VueRouter({
-    routes:routes
-});
 */
 
 
-
-
-
 const app = new Vue({
-    //router,
+  //  router,
     store,
     created() {
         console.log('-----');
