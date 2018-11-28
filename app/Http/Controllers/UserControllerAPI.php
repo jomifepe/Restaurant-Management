@@ -50,6 +50,43 @@ class UserControllerAPI extends Controller
         return response()->json(new UserResource($user), 201);
     }
 
+    function create(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|max:30',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6'
+        ]);
+
+//        $data = request()->only('username','email','name','password');
+//
+//        $user = User::create([
+//            'username' => $data['username'],
+//            'name' => $data['name'],
+//            'email' => $data['email'],
+//            'password' => bcrypt($data['password']),
+//        ]);
+//
+//        $client = Client::where('password_client', 1)->first();
+//
+//        $request->request->add([
+//            'grant_type'    => 'password',
+//            'client_id'     => $client->id,
+//            'client_secret' => $client->secret,
+//            'username'      => $data['email'],
+//            'password'      => $data['password'],
+//            'scope'         => null,
+//        ]);
+//
+//        // Fire off the internal request.
+//        $token = Request::create(
+//            'oauth/token',
+//            'POST'
+//        );
+//        return \Route::dispatch($token);
+    }
+
     public function update(Request $request, $id)
     {
         $request->validate([
