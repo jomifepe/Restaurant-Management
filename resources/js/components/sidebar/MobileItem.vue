@@ -19,7 +19,7 @@
 
     <script>
 import SubItem from './SubItem.vue'
-import { itemMixin } from '../mixin'
+import { itemMixin } from '../../mixin'
 
 export default {
     props: {

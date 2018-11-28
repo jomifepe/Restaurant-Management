@@ -10,10 +10,12 @@
 	<strong>@{{ alertMessage }}</strong>
 </div>
 
+<navigation></navigation>
+
 <div class="mt-4 mb-4">
 	<login v-if="showLoginForm"
-		   v-on:login-successful="onLoginSuccessful"
-           v-on:login-failed="onLoginFailed"></login>
+		   @login-successful="onLoginSuccessful"
+           @login-failed="onLoginFailed"></login>
 </div>
 
 <div class="mt-4 mb-4">

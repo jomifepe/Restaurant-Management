@@ -1,8 +1,5 @@
 <template>
     <div class="container">
-        <div class="mt-5 mb-5">
-            <sidebar-menu :menu="menu"></sidebar-menu>
-        </div>
         <div class="row justify-content-center">
             <div class="card-columns">
                 <div class="card" v-for="item in items" :key="item.id">
@@ -28,18 +25,6 @@
     module.exports = {
         data() {
             return {
-                menu: [
-                    {
-                        href: '/',
-                        title: 'Dashboard',
-                        icon: 'fa fa-user'
-                    },
-                    {
-                        href: '#',
-                        title: 'Charts',
-                        icon: 'fa fa-chart-area'
-                    },
-                ],
                 items: []
             }
 		},

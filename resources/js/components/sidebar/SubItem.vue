@@ -33,7 +33,7 @@
 
 <script>
     import Item from './Item.vue'
-    import { itemMixin } from '../mixin'
+    import { itemMixin } from '../../mixin'
 
     export default {
         data() {

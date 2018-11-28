@@ -85,5 +85,5 @@
 </script>
 
 <style lang="scss">
-    @import '../../sass/main.scss';
+    @import '../../../sass/main';
 </style>

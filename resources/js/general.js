@@ -7,13 +7,14 @@ require('./bootstrap');
 window.Vue = require('vue');
 
 import MenuList from './components/MenuComponent.vue';
-import sideBar from './components/sideBarMenu.vue';
+import sideBar from './components/sidebar/sideBarMenu.vue';
 import Login from './components/login.vue';
 import Logout from './components/logout';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import store from './stores/global-store';
 import VueRouter from 'vue-router';
+import Navigation from './components/sidebar/Navigation.vue';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
@@ -23,6 +24,7 @@ Vue.component('sidebar-menu', sideBar);
 Vue.component('menu-list', MenuList);
 Vue.component('login', Login);
 Vue.component('logout', Logout);
+Vue.component('navigation', Navigation);
 
 axios.defaults.baseURL = 'http://project.dad/api';
 
