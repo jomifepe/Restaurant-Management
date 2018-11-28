@@ -7,9 +7,10 @@
 		<ul class="navbar-nav mr-auto">
 		</ul>
 		<ul class="navbar-nav">
-			<li class="nav-item active">
-				<a class="nav-link" href="#">Login</a>
+			<li class="nav-item">
+				<a class="nav-link" v-if="!isUserLoggedIn" href="#" @click.prevent="showLogin">Login</a>
 			</li>
+            <logout v-if="isUserLoggedIn" @logout-successul="onLogoutSuccessful"></logout>
 		</ul>
 	</div>
 </nav>

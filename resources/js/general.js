@@ -14,9 +14,8 @@ import Vuex from 'vuex';
 import store from './stores/global-store';
 import VueRouter from 'vue-router';
 
-
 Vue.use(VueRouter);
-Vue.use(Vuex)
+Vue.use(Vuex);
 Vue.use(store);
 
 Vue.component('menu-list', MenuList);
@@ -29,6 +28,7 @@ const user = Vue.component('user', require('./components/user.vue'));
 const login = Vue.component('login', require('./components/login.vue'));
 const logout = Vue.component('logout', require('./components/logout.vue'));
 const profile = Vue.component('profile', require('./components/profile.vue'));
+
 /*
 const routes = [
     { path: '/users', component: user, name: 'users'},
@@ -42,17 +42,47 @@ const router = new VueRouter({
 });
 */
 
-
-
-
-
 const app = new Vue({
+    data: {
+        isUserLoggedIn: false,
+        showMessage: false,
+        showLoginForm: false,
+        alertClass: "alert-success",
+        alertMessage: ""
+    },
     //router,
     store,
+    methods: {
+        showLogin() {
+            this.showLoginForm = true;
+        },
+        onLoginSuccessful(message) {
+            this.isUserLoggedIn = true;
+            this.showMessage = true;
+            this.showLoginForm = false;
+            this.alertClass = "alert-success";
+            this.alertMessage = message;
+        },
+        onLoginFailed(message) {
+            this.showMessage = true;
+            this.alertClass = "alert-danger";
+            this.alertMessage = message;
+        },
+        onLogoutSuccessful() {
+            this.isUserLoggedIn = false;
+            this.showMessage = true;
+            this.alertClass = "alert-success";
+            this.alertMessage = "User was logged out successfully";
+        },
+        closeAlertMessage() {
+            this.showMessage = false
+        },
+
+    },
     created() {
-        console.log('-----');
-        console.log(this.$store.state.user);
+        // console.log('-----');
+        // console.log(this.$store.state.user);
         this.$store.commit('loadTokenAndUserFromSession');
-        console.log(this.$store.state.user);
+        // console.log(this.$store.state.user);
     }
 }).$mount('#app');

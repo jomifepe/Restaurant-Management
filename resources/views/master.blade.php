@@ -11,7 +11,9 @@
         <link rel="stylesheet" href="{{ URL::asset('css/app.css') }}">
     </head> 
     <body>
+        @yield('navbar')
         <div class="container" id="app">
+            @include('shared.navbar')
             @yield('content')
         </div>
 

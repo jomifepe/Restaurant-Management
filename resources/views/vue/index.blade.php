@@ -3,11 +3,20 @@
 @section('title', 'Restaurant Management')
 @section('content')
 
-<div class="mt-5 mb-5">
-	<login></login>
+<div class="alert mt-4" :class="alertClass" v-if="showMessage">
+	<button type="button" class="close" aria-label="Close" @click="closeAlertMessage">
+        <span aria-hidden="true">&times;</span>
+    </button>
+	<strong>@{{ alertMessage }}</strong>
 </div>
 
-<div class="mt-5 mb-5">
+<div class="mt-4 mb-4">
+	<login v-if="showLoginForm"
+		   v-on:login-successful="onLoginSuccessful"
+           v-on:login-failed="onLoginFailed"></login>
+</div>
+
+<div class="mt-4 mb-4">
 	<menu-list></menu-list>
 </div>
 
