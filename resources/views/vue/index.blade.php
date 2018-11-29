@@ -19,7 +19,7 @@
 </div>
 
 <div class="mt-4 mb-4">
-	<register v-if="isUserLoggedIn"></register>
+	<register v-if="showRegisterForm"></register>
 	<menu-list></menu-list>
 </div>
 

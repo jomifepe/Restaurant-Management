@@ -27,6 +27,7 @@
                     .catch(error => {
                         this.$store.commit('clearUserAndToken');
                         console.log(`Failed to logout, But local credentials were discarded: \n${error}`);
+                        this.$emit('logout-failed');
                     })
             },
             getCurrentUserFirstName() {

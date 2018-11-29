@@ -48921,7 +48921,9 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
         showMessage: false,
         showLoginForm: false,
         alertClass: "alert-success",
-        alertMessage: ""
+        alertMessage: "",
+        showLogoutButton: false,
+        showRegisterForm: false
     },
     //router,
     store: __WEBPACK_IMPORTED_MODULE_6__stores_global_store__["a" /* default */],
@@ -48947,15 +48949,30 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
             this.alertClass = "alert-success";
             this.alertMessage = "User was logged out successfully";
         },
+        onLogoutFailed: function onLogoutFailed() {
+            this.showMessage = true;
+            this.alertClass = "alert-danger";
+            this.alertMessage = "User logout out failed";
+        },
+        hasUserLoggedIn: function hasUserLoggedIn() {
+            return this.$store.state.user != null;
+        },
+        onShowRegisterForm: function onShowRegisterForm() {
+            this.showRegisterForm = true;
+        },
         closeAlertMessage: function closeAlertMessage() {
             this.showMessage = false;
         }
     },
     created: function created() {
         console.log('-----');
-        console.log(this.$store.state.user);
         this.$store.commit('loadTokenAndUserFromSession');
         console.log(this.$store.state.user);
+        console.log('-----');
+        if (this.hasUserLoggedIn()) {
+            this.isUserLoggedIn = true;
+            this.showLogoutButton = true;
+        }
     }
 }).$mount('#app');
 
@@ -50098,9 +50115,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         login: function login() {
             var _this = this;
 
-            console.log(this.user);
             axios.post('login', this.user).then(function (response) {
-                console.log(response.data);
                 _this.$store.commit('setToken', response.data.access_token);
                 return axios.get('users/me');
             }).then(function (response) {
@@ -50249,6 +50264,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             }).catch(function (error) {
                 _this.$store.commit('clearUserAndToken');
                 console.log('Failed to logout, But local credentials were discarded: \n' + error);
+                _this.$emit('logout-failed');
             });
         },
         getCurrentUserFirstName: function getCurrentUserFirstName() {

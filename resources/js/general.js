@@ -54,7 +54,9 @@ const app = new Vue({
         showMessage: false,
         showLoginForm: false,
         alertClass: "alert-success",
-        alertMessage: ""
+        alertMessage: "",
+        showLogoutButton: false,
+        showRegisterForm: false,
     },
     //router,
     store,
@@ -80,6 +82,17 @@ const app = new Vue({
             this.alertClass = "alert-success";
             this.alertMessage = "User was logged out successfully";
         },
+        onLogoutFailed(){
+            this.showMessage = true;
+            this.alertClass = "alert-danger";
+            this.alertMessage = "User logout out failed";
+        },
+        hasUserLoggedIn(){
+          return this.$store.state.user != null;
+        },
+        onShowRegisterForm(){
+            this.showRegisterForm=true;
+        },
         closeAlertMessage() {
             this.showMessage = false
         },
@@ -87,8 +100,12 @@ const app = new Vue({
     },
     created() {
         console.log('-----');
-        console.log(this.$store.state.user);
         this.$store.commit('loadTokenAndUserFromSession');
         console.log(this.$store.state.user);
+        console.log('-----');
+        if(this.hasUserLoggedIn()){
+            this.isUserLoggedIn=true;
+            this.showLogoutButton = true;
+        }
     }
 }).$mount('#app');
