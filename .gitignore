@@ -46,14 +46,26 @@ bootstrap/compiled.php
 app/storage/
 
 # Laravel 5 & Lumen specific
-public/storage
-public/hot
-storage/*.key
 .env.*.php
 .env.php
 .env
 Homestead.yaml
 Homestead.json
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+/.idea
+/.vagrant
+npm-debug.log
+yarn-error.log
+.env
+/public/js
+/public/css
+/public/mix-manifest.json
+phpunit.dusk.xml
+
 
 # Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer
 .rocketeer/
