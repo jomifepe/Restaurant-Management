@@ -19,7 +19,7 @@
 </div>
 
 <div class="mt-4 mb-4">
-	<register v-if="showRegisterForm"></register>
+	<register v-if="showRegisterForm" @register-cancel="onHideRegisterForm"></register>
 	<menu-list></menu-list>
 </div>
 

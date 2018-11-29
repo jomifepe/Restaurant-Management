@@ -71,6 +71,7 @@ const app = new Vue({
             this.showLoginForm = false;
             this.alertClass = "alert-success";
             this.alertMessage = message;
+            this.closeAlertMessage();
         },
         onLoginFailed(message) {
             this.showMessage = true;
@@ -82,6 +83,7 @@ const app = new Vue({
             this.showMessage = true;
             this.alertClass = "alert-success";
             this.alertMessage = "User was logged out successfully";
+            this.closeAlertMessage();
         },
         onLogoutFailed(){
             this.showMessage = true;
@@ -95,10 +97,14 @@ const app = new Vue({
             this.showLoginForm = false;
             this.showRegisterForm = true;
         },
-        closeAlertMessage() {
-            this.showMessage = false
+        onHideRegisterForm(){
+            this.showRegisterForm = false;
         },
-
+        closeAlertMessage() {
+            setTimeout(() => {
+                    this.showMessage = false
+            }, 4000);
+        },
     },
     created() {
         console.log('-----');

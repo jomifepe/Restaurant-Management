@@ -35,6 +35,7 @@
 				</select>
 			</div>
 			<button type="submit" class="btn btn-primary">Register</button>
+			<button type="submit" class="btn btn-secondary" @click.prevent="registerCancel">Cancel</button>
 		</form>
 	</div>
 </template>
@@ -67,6 +68,9 @@
                     .catch(error => {
                         console.log(error);
                     })
+			},
+            registerCancel(){
+                this.$emit("register-cancel");
 			}
 		},
         mounted() {

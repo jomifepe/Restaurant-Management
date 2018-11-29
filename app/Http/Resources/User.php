@@ -17,7 +17,11 @@ class User extends Resource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'username' => $this->username,
             'email' => $this->email,
+            'type' => $this->type,
+            'photo_url' => storage_path('public/' . $this->photo_url),
+
         ];
     }
 }

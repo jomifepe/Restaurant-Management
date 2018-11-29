@@ -48938,6 +48938,7 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
             this.showLoginForm = false;
             this.alertClass = "alert-success";
             this.alertMessage = message;
+            this.closeAlertMessage();
         },
         onLoginFailed: function onLoginFailed(message) {
             this.showMessage = true;
@@ -48949,6 +48950,7 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
             this.showMessage = true;
             this.alertClass = "alert-success";
             this.alertMessage = "User was logged out successfully";
+            this.closeAlertMessage();
         },
         onLogoutFailed: function onLogoutFailed() {
             this.showMessage = true;
@@ -48962,8 +48964,15 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
             this.showLoginForm = false;
             this.showRegisterForm = true;
         },
+        onHideRegisterForm: function onHideRegisterForm() {
+            this.showRegisterForm = false;
+        },
         closeAlertMessage: function closeAlertMessage() {
-            this.showMessage = false;
+            var _this = this;
+
+            setTimeout(function () {
+                _this.showMessage = false;
+            }, 4000);
         }
     },
     created: function created() {
@@ -53216,6 +53225,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
@@ -53243,6 +53253,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             }).catch(function (error) {
                 console.log(error);
             });
+        },
+        registerCancel: function registerCancel() {
+            this.$emit("register-cancel");
         }
     },
     mounted: function mounted() {}
@@ -53489,6 +53502,21 @@ var render = function() {
           "button",
           { staticClass: "btn btn-primary", attrs: { type: "submit" } },
           [_vm._v("Register")]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-secondary",
+            attrs: { type: "submit" },
+            on: {
+              click: function($event) {
+                $event.preventDefault()
+                return _vm.registerCancel($event)
+              }
+            }
+          },
+          [_vm._v("Cancel")]
         )
       ]
     )
