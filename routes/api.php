@@ -17,16 +17,17 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
 Route::post('login', 'LoginControllerAPI@login')->name('login');
-Route::post('register', 'UserControllerAPI@create')->name('login');
 Route::middleware('auth:api')->post('logout', 'LoginControllerAPI@logout');
-
-
 Route::middleware('auth:api')->get('users/me', 'UserControllerAPI@myProfile');
+
+Route::post('register', 'UserControllerAPI@store')->name('register');
 
 Route::get('items', 'ItemControllerAPI@index');
 
 Route::apiResources(['meals'    => 'MealControllerAPI',
                      'invoices' => 'InvoiceControllerAPI',
                      'orders'   => 'OrderControllerAPI',
-                     'items'    => 'ItemControllerAPI']);
+                     'items'    => 'ItemControllerAPI',
+                     'users'    => 'UserControllerAPI']);

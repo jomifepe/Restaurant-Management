@@ -15,6 +15,7 @@ import Vuex from 'vuex';
 import store from './stores/global-store';
 import VueRouter from 'vue-router';
 import Navigation from './components/sidebar/Navigation.vue';
+import Register from './components/RegisterUserComponent.vue';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
@@ -25,6 +26,7 @@ Vue.component('menu-list', MenuList);
 Vue.component('login', Login);
 Vue.component('logout', Logout);
 Vue.component('navigation', Navigation);
+Vue.component('register', Register);
 
 axios.defaults.baseURL = 'http://project.dad/api';
 
@@ -84,9 +86,9 @@ const app = new Vue({
 
     },
     created() {
-        // console.log('-----');
-        // console.log(this.$store.state.user);
+        console.log('-----');
+        console.log(this.$store.state.user);
         this.$store.commit('loadTokenAndUserFromSession');
-        // console.log(this.$store.state.user);
+        console.log(this.$store.state.user);
     }
 }).$mount('#app');

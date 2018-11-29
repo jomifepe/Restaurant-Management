@@ -32,8 +32,10 @@
         },
         methods: {
             login() {
+                console.log(this.user);
                 axios.post('login', this.user)
                     .then(response => {
+                        console.log(response.data);
                         this.$store.commit('setToken', response.data.access_token);
                         return axios.get('users/me');
                     })

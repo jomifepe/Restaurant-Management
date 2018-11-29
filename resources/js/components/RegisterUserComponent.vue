@@ -1,7 +1,7 @@
 <template>
 	<div class="jumbotron">
 		<h2>Login</h2>
-		<form>
+		<form @submit.prevent="handleSignUp">
 			<div class="form-group">
 				<label for="inputName">Name</label>
 				<input v-model.trim="user.name" type="text" class="form-control" id="inputName"
@@ -18,8 +18,8 @@
 					   aria-describedby="emailHelp" placeholder="Enter email">
 			</div>
 			<div class="form-group">
-				<label v-model="user.password" for="inputPassword">Password</label>
-				<input type="password" class="form-control" id="inputPassword" placeholder="Password">
+				<label for="inputPassword">Password</label>
+				<input v-model="user.password" type="password" class="form-control" id="inputPassword" placeholder="Password">
 			</div>
 			<div class="form-group">
 				<label v-model="confirmPassword" for="inputRetypePassword">Retype Password</label>
@@ -55,7 +55,7 @@
             }
 		},
         methods: {
-			signUp() {
+            handleSignUp() {
 			    if (this.user.password !== this.confirmPassword) {
 			        console.log("Password don't match");
 				}
