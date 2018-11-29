@@ -48928,8 +48928,9 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
     //router,
     store: __WEBPACK_IMPORTED_MODULE_6__stores_global_store__["a" /* default */],
     methods: {
-        showLogin: function showLogin() {
+        onShowLogin: function onShowLogin() {
             this.showLoginForm = true;
+            this.showRegisterForm = false;
         },
         onLoginSuccessful: function onLoginSuccessful(message) {
             this.isUserLoggedIn = true;
@@ -48958,6 +48959,7 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
             return this.$store.state.user != null;
         },
         onShowRegisterForm: function onShowRegisterForm() {
+            this.showLoginForm = false;
             this.showRegisterForm = true;
         },
         closeAlertMessage: function closeAlertMessage() {

@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-define('YOUR_SERVER_URL', 'http://project.dad/');
+define('YOUR_SERVER_URL', 'http://project.dad');
+
 // Check "oauth_clients" table for next 2 values:
 define('CLIENT_ID', '2');
-define('CLIENT_SECRET','bhRpjqzUBaoLMFjQB0E336NAOo5mAiJfUrxjKV25');
+define('CLIENT_SECRET','1J303xFioBc7E1aCATCg9C3w9UrcYdlzo7PHerxL');
 
 class LoginControllerAPI extends Controller
 {
@@ -25,6 +26,21 @@ class LoginControllerAPI extends Controller
             ],
             'exceptions' => false,
         ]);
+
+        dump([
+            'form_params' => [
+                'grant_type' => 'password',
+                'client_id' => CLIENT_ID,
+                'client_secret' => CLIENT_SECRET,
+                'username' => $request->email,
+                'password' => $request->password,
+                'scope' => ''
+            ],
+            'exceptions' => false,
+        ]);
+        dump($response);
+        dump($response->getStatusCode());
+
         $errorCode = $response->getStatusCode();
         if ($errorCode == '200') {
             return json_decode((string)$response->getBody(), true);

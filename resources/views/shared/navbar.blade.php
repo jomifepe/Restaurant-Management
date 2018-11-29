@@ -11,7 +11,7 @@
 		</ul>
 		<ul class="navbar-nav">
 			<li class="nav-item">
-				<a class="nav-link" v-if="!isUserLoggedIn" href="#" @click.prevent="showLogin">Login</a>
+				<a class="nav-link" v-if="!isUserLoggedIn" href="#" @click.prevent="onShowLogin">Login</a>
 			</li>
             <logout v-if="isUserLoggedIn" @logout-successul="onLogoutSuccessful"></logout>
 		</ul>

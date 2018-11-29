@@ -61,8 +61,9 @@ const app = new Vue({
     //router,
     store,
     methods: {
-        showLogin() {
+        onShowLogin() {
             this.showLoginForm = true;
+            this.showRegisterForm = false;
         },
         onLoginSuccessful(message) {
             this.isUserLoggedIn = true;
@@ -91,7 +92,8 @@ const app = new Vue({
           return this.$store.state.user != null;
         },
         onShowRegisterForm(){
-            this.showRegisterForm=true;
+            this.showLoginForm = false;
+            this.showRegisterForm = true;
         },
         closeAlertMessage() {
             this.showMessage = false
