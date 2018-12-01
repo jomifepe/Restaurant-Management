@@ -15,11 +15,7 @@ class ItemControllerAPI extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->has('page')) {
-            return ItemResource::collection(Item::paginate(10));
-        } else {
-            return ItemResource::collection(Item::all());
-        }
+        return ItemResource::collection(Item::paginate(12));
     }
 
     /**
