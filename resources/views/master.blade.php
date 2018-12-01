@@ -8,7 +8,9 @@
         <title>@yield('title')</title>
         @yield('extrastyles') 
         <!-- Latest compiled and minified CSS & JS -->
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
         <link rel="stylesheet" href="{{ URL::asset('css/app.css') }}">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     </head> 
     <body>
         @yield('navbar')

@@ -48935,6 +48935,7 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
         onLoginSuccessful: function onLoginSuccessful(message) {
             this.isUserLoggedIn = true;
             this.showMessage = true;
+            this.showRegisterForm = false;
             this.showLoginForm = false;
             this.alertClass = "alert-success";
             this.alertMessage = message;
@@ -48992,6 +48993,10 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(103)
+}
 var normalizeComponent = __webpack_require__(1)
 /* script */
 var __vue_script__ = __webpack_require__(56)
@@ -49000,7 +49005,7 @@ var __vue_template__ = __webpack_require__(57)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
-var __vue_styles__ = null
+var __vue_styles__ = injectStyle
 /* scopeId */
 var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
@@ -49061,11 +49066,38 @@ module.exports = Component.exports
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 module.exports = {
     data: function data() {
         return {
-            items: []
+            items: [],
+            showDescription: false
         };
     },
 
@@ -49075,7 +49107,11 @@ module.exports = {
 
             axios.get("items").then(function (response) {
                 _this.items = response.data.data;
+                console.log(_this.items);
             });
+        },
+        toggleDescription: function toggleDescription() {
+            this.showDescription == true ? this.showDescription = false : this.showDescription = true;
         }
     },
     mounted: function mounted() {
@@ -49092,43 +49128,79 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
-    _c("div", { staticClass: "row justify-content-center" }, [
-      _c(
-        "div",
-        { staticClass: "card-columns" },
-        _vm._l(_vm.items, function(item) {
-          return _c("div", { key: item.id, staticClass: "card" }, [
-            _c("img", {
-              staticClass: "card-img-top img-fluid",
-              attrs: { src: item.photo_url, alt: item.name }
-            }),
-            _vm._v(" "),
-            _c("div", { staticClass: "card-body" }, [
-              _c("h5", { staticClass: "card-title" }, [
-                _vm._v(
-                  "\n                        " +
-                    _vm._s(item.name) +
-                    "\n                        "
+    _c(
+      "div",
+      { staticClass: "row view-group", attrs: { id: "products" } },
+      _vm._l(_vm.items, function(item) {
+        return _c(
+          "div",
+          { key: item.id, staticClass: "item col-xs-4 col-lg-4" },
+          [
+            _c("div", { staticClass: "thumbnail card" }, [
+              _c("div", { staticClass: "img-event img-wrapper" }, [
+                _c("img", {
+                  staticClass: "card-img-top img-fluid",
+                  attrs: { src: item.photo_url, alt: item.name }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "caption card-body" }, [
+                _c(
+                  "h4",
+                  {
+                    staticClass:
+                      "group card-title inner list-group-item-heading"
+                  },
+                  [_vm._v(_vm._s(item.name))]
                 ),
-                _c("small", { staticClass: "text-muted" }, [
-                  _vm._v(_vm._s(item.type))
+                _vm._v(" "),
+                _c(
+                  "h6",
+                  {
+                    staticClass:
+                      "group card-title inner list-group-item-heading"
+                  },
+                  [_vm._v(_vm._s(item.type))]
+                ),
+                _vm._v(" "),
+                _vm.showDescription
+                  ? _c(
+                      "p",
+                      { staticClass: "group inner list-group-item-text" },
+                      [_vm._v(_vm._s(item.description))]
+                    )
+                  : _vm._e(),
+                _vm._v(" "),
+                _c("div", { staticClass: "row card-footer text-muted" }, [
+                  _c("div", { staticClass: "col-xs-12 col-md-6" }, [
+                    _c("p", { staticClass: "lead" }, [
+                      _vm._v(_vm._s(item.price) + "€")
+                    ])
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "col-xs-12 col-md-6" }, [
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-info",
+                        attrs: { type: "button" },
+                        on: {
+                          click: function($event) {
+                            $event.preventDefault()
+                            return _vm.toggleDescription($event)
+                          }
+                        }
+                      },
+                      [_vm._v("Description")]
+                    )
+                  ])
                 ])
               ])
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "card-footer text-muted" }, [
-              _c("p", { staticClass: "text-right" }, [
-                _vm._v(
-                  "\n                        " +
-                    _vm._s(item.price) +
-                    "€\n                    "
-                )
-              ])
             ])
-          ])
-        })
-      )
-    ])
+          ]
+        )
+      })
+    )
   ])
 }
 var staticRenderFns = []
@@ -54355,6 +54427,49 @@ if (false) {
     require("vue-hot-reload-api")      .rerender("data-v-7eab0eae", module.exports)
   }
 }
+
+/***/ }),
+/* 100 */,
+/* 101 */,
+/* 102 */,
+/* 103 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(104);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(14)("f11d7e14", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-98f701fa\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./MenuComponent.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-98f701fa\",\"scoped\":false,\"hasInlineConfig\":true}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./MenuComponent.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 104 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(13)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.thumbnail\n{\n    margin-bottom: 20px;\n    padding: 0px;\n    border-radius: 0px;\n}\n.item.list-group-item .list-group-image\n{\n    margin-right: 10px;\n}\n.item.list-group-item .thumbnail\n{\n    margin-bottom: 0px;\n}\n.item.list-group-item .caption\n{\n    padding: 9px 9px 0px 9px;\n}\n.item.list-group-item img\n{\n    float: left;\n}\n.img-wrapper {\n    position: relative;\n    padding-bottom: 100%;\n    overflow: hidden;\n    width: 100%;\n}\n.img-wrapper img {\n    position: absolute;\n    top:0;\n    left:0;\n    width:100%;\n    height:100%;\n}\n.list-group-item-text\n{\n    margin: 0 0 11px;\n}\n", ""]);
+
+// exports
+
 
 /***/ })
 /******/ ]);

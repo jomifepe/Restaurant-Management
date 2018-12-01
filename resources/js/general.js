@@ -68,6 +68,7 @@ const app = new Vue({
         onLoginSuccessful(message) {
             this.isUserLoggedIn = true;
             this.showMessage = true;
+            this.showRegisterForm = false;
             this.showLoginForm = false;
             this.alertClass = "alert-success";
             this.alertMessage = message;
