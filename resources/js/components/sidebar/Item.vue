@@ -4,12 +4,14 @@
             <template v-if="isRouterLink">
                 <router-link class="vsm-link" :to="item.href" :disabled="item.disabled">
                     <i v-if="item.icon" class="vsm-icon" :class="item.icon"></i>
+                    <img v-if="item.url" class="img-thumbnail" :src="item.url">
                     <span v-if="!isCollapsed" class="vsm-title">{{item.title}}</span>
                 </router-link>
             </template>
             <template v-else>
                 <a class="vsm-link" :href="item.href" :disabled="item.disabled">
                     <i v-if="item.icon" class="vsm-icon" :class="item.icon"></i>
+                    <img v-if="item.user"  class="card-img" :src="item.user.photo_url">
                     <span v-if="!isCollapsed" class="vsm-title">{{item.title}}</span>
                 </a>
             </template>
@@ -66,8 +68,8 @@
                     this.$parent.$emit('mouseEnterItem', {
                         item: this.item,
                         pos:
-                        event.currentTarget.getBoundingClientRect().top -
-                        this.$parent.$el.getBoundingClientRect().top,
+                            event.currentTarget.getBoundingClientRect().top -
+                            this.$parent.$el.getBoundingClientRect().top,
                         height: this.$el.offsetHeight
                     })
                 }
@@ -75,3 +77,18 @@
         }
     }
 </script>
+
+
+<style>
+    .wrapper{
+        position: relative;
+    }
+
+    .circle{
+        border: 2px solid red;
+        width: 200px;
+        height: 200px;
+        border-radius:100%;
+        background-image: url('')
+    }
+</style>

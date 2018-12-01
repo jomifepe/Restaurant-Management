@@ -16,7 +16,10 @@ import store from './stores/global-store';
 import VueRouter from 'vue-router';
 import Navigation from './components/sidebar/Navigation.vue';
 import Register from './components/RegisterUserComponent.vue';
+import VueSidebarMenu from 'vue-sidebar-menu'
 
+
+Vue.use(VueSidebarMenu)
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(store);
@@ -57,6 +60,7 @@ const app = new Vue({
         alertMessage: "",
         showLogoutButton: false,
         showRegisterForm: false,
+        loggedUser: null,
     },
     //router,
     store,
@@ -108,13 +112,17 @@ const app = new Vue({
         },
     },
     created() {
+        //CHECK IF USER IS LOGGED
         console.log('-----');
         this.$store.commit('loadTokenAndUserFromSession');
-        console.log(this.$store.state.user);
+        console.log("isUserLogged -> " + this.hasUserLoggedIn());
         console.log('-----');
+
+        //GET LOGGED USER INFO
         if(this.hasUserLoggedIn()){
             this.isUserLoggedIn=true;
             this.showLogoutButton = true;
+            this.loggedUser = this.$store.state.user
         }
     }
 }).$mount('#app');

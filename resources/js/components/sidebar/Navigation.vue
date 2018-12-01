@@ -10,13 +10,13 @@
             return {
                 menu: [
                     {
-                        href: '/',
-                        title: 'Dashboard',
-                        icon: 'fa fa-user'
+                        href: '',
+                        title: 'My Profile',
+                        user: this.$store.state.user,
                     },
                     {
                         href: '#',
-                        title: 'Charts',
+                        title: 'STOCK',
                         icon: 'fa fa-chart-area'
                     },
                 ]

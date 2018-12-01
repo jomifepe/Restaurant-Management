@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\Resource;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Resource
 {
@@ -20,8 +21,7 @@ class User extends Resource
             'username' => $this->username,
             'email' => $this->email,
             'type' => $this->type,
-            'photo_url' => storage_path('public/' . $this->photo_url),
-
+            'photo_url' => Storage::url("profiles/$this->photo_url")
         ];
     }
 }

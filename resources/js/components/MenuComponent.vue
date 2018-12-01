@@ -60,7 +60,6 @@
                 axios.get("items")
                     .then(response => {
                         this.items = response.data.data;
-                        console.log(this.items);
                     });
             },
             toggleDescription(){

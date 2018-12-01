@@ -10,7 +10,7 @@
 	<strong>@{{ alertMessage }}</strong>
 </div>
 
-<navigation></navigation>
+<navigation v-if="isUserLoggedIn"></navigation>
 
 <div class="mt-4 mb-4">
 	<login v-if="showLoginForm"
@@ -29,5 +29,6 @@
 <script src="https://unpkg.com/vuex"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 @stop
