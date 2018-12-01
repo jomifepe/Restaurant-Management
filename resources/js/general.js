@@ -17,18 +17,16 @@ import VueRouter from 'vue-router';
 import Navigation from './components/sidebar/Navigation.vue';
 import Register from './components/RegisterUserComponent.vue';
 
-import VueResource from 'vue-resource';
-import VuePaginator from 'vuejs-paginator';
+
 
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(store);
-Vue.use(VueResource);
-Vue.use(VuePaginator);
 
 
-Vue.component('v-paginator', VuePaginator);
+
+
 Vue.component('sidebar-menu', sideBar);
 Vue.component('menu-component', MenuList);
 Vue.component('login', Login);

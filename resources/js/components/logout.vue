@@ -1,7 +1,7 @@
 <template>
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+           data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             {{ getCurrentUserFirstName() }}
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -18,6 +18,7 @@
         },
         methods: {
             logout() {
+                console.log('logout clicked');
                 this.showMessage = false;
                 axios.post('logout')
                     .then(response => {

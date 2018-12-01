@@ -89,7 +89,6 @@
                 let $this=this;
                 axios.get(this.url)
                     .then(response => {
-                        console.log(response.data);
                         this.items = response.data.data;
                         this.makePagination(response.data);
                     });
