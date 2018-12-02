@@ -43,7 +43,6 @@ const routes = [
     { path: '/login', component: Login, name: 'login'},
 ];
 
-
 const router = new VueRouter({
     routes:routes
 });
@@ -59,9 +58,6 @@ router.beforeEach((to, from, next) => {
     next();
 });*/
 
-
-
-
 const app = new Vue({
     data: {
         isUserLoggedIn: false,
@@ -73,7 +69,6 @@ const app = new Vue({
         showRegisterForm: false,
         loggedUser: null,
     },
-    //router,
     store,
     router,
     methods: {
@@ -123,22 +118,18 @@ const app = new Vue({
                     this.showMessage = false
             }, 4000);
         },
+        checkLogin() {
+            let user = this.$store.state.user;
+            if (user != null) {
+                this.isUserLoggedIn = true;
+            }
+        },
         onCloseAlertMessage(){
             this.showMessage = false;
         }
     },
     created() {
-        //CHECK IF USER IS LOGGED
-        console.log('-----');
         this.$store.commit('loadTokenAndUserFromSession');
-        console.log("isUserLogged -> " + this.hasUserLoggedIn());
-        console.log('-----');
-
-        //GET LOGGED USER INFO
-        if(this.hasUserLoggedIn()){
-            this.isUserLoggedIn = true;
-            this.showLogoutButton = true;
-            this.loggedUser = this.$store.state.user
-        }
+        this.checkLogin();
     }
 }).$mount('#app');

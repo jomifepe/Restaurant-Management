@@ -12,7 +12,9 @@
 
 <register v-if="showRegisterForm" @register-cancel="onHideRegisterForm"></register>
 
-
+{{--<div class="mt-4 mb-4">--}}
+    {{--<menu-list></menu-list>--}}
+{{--</div>--}}
 
 <router-view></router-view>
 

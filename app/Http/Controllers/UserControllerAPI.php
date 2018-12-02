@@ -46,7 +46,7 @@ class UserControllerAPI extends Controller
 
         $user = new User();
         $user->fill($request->all());
-        $user->password = Hash::make($user->password);
+        $user->password = Hash::make(str_random(8));
         $user->save();
         return response()->json(new UserResource($user), 201);
     }
