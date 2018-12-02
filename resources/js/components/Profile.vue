@@ -7,27 +7,30 @@
         <user-edit :user="profileUser"  @user-saved="savedUser" @user-canceled="cancelEdit"></user-edit>
     </div>-->
 
-    <div class="container">
-        <div class="span3 well">
-            <center>
-                <a href="#aboutModal" data-toggle="modal" data-target="#myModal"><img :src="profileUser.photo_url" name="aboutme" width="140" height="140" class="img-circle"></a>
-                <h3>{{profileUser.name}}</h3>
-                <em>{{profileUser.type}}</em>
-            </center>
+
+        <div class="container mt-4" v-if="profileUser != null">
+            <div class="span3 well">
+                <div class="text-center">
+                    <a href="#aboutModal" data-toggle="modal" data-target="#myModal">
+                        <img :src="profileUser.photo_url" name="aboutme" width="140" height="140" class="img-circle" />
+                    </a>
+                    <h3>{{ profileUser.name }}</h3>
+                    <em>{{ profileUser.type }}</em>
+                </div>
+            </div>
+            <user-edit :user="profileUser" @user-saved="savedUser" @user-canceled="cancelEdit"></user-edit>
         </div>
-        <user-edit :user="profileUser"  @user-saved="savedUser" @user-canceled="cancelEdit"></user-edit>
-    </div>
 </template>
 
 <script type="text/javascript">    
-    import userEdit from './userEdit.vue';
+    import UserEdit from './UserEdit.vue';
 
     export default {
         components: {
-            'user-edit': userEdit, 
+            'user-edit': UserEdit,
         },
-        data: function(){
-            return { 
+        data: function() {
+            return {
                 profileUser: null,
                 successMessage: "",
                 showSuccess: false
@@ -36,6 +39,7 @@
         methods: {
             getInformationFromLoggedUser() {
                 this.profileUser = this.$store.state.user;
+                this.showProfile = true;
             },
             savedUser: function(){
                 this.showSuccess = true;
@@ -47,6 +51,6 @@
         },
         mounted() {
             this.getInformationFromLoggedUser();
-        }        
+        }
     }
 </script>

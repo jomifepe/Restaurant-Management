@@ -5,7 +5,7 @@
             {{ getCurrentUserFirstName() }}
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="#" v-on:click.prevent="logout">Logout</a>
+            <a class="dropdown-item" v-on:click.prevent="logout">Logout</a>
         </div>
     </li>
 </template>

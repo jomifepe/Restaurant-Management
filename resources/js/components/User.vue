@@ -15,8 +15,8 @@
 </template>
 
 <script type="text/javascript">
-	import UserList from './userList.vue';
-	import UserEdit from './userEdit.vue';
+	import UserList from './UserList.vue';
+	import UserEdit from './UserEdit.vue';
 	
 	export default {
 		data: function(){
@@ -30,11 +30,11 @@
 		},
 	    methods: {
 	        editUser: function(user){
-	            this.currentUser = user;
+	            this.currentUser = User;
 	            this.showSuccess = false;
 	        },
 	        deleteUser: function(user){
-	            axios.delete('api/users/'+user.id)
+	            axios.delete('api/users/'+User.id)
 	                .then(response => {
 	                    this.showSuccess = true;
 	                    this.successMessage = 'User Deleted';

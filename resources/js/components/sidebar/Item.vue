@@ -1,11 +1,10 @@
 <template>
     <div class="vsm-item" :class="[{'first-item' : firstItem}, {'open-item' : show}, {'active-item' : active}, {'parent-active-item' : childActive}]" @mouseenter="mouseEnter($event)">
         <template v-if="!item.child">
-
             <template v-if="isRouterLink">
                 <router-link class="vsm-link" :to="{ name: item.href}" :disabled="item.disabled">
                     <i v-if="item.icon" class="vsm-icon" :class="item.icon"></i>
-                    <img v-if="item.user" class="card-img img-circle" :src="item.user.photo_url">
+                    <img v-if="item.user" class="card-img img-circle img-nav-profile" :src="item.user.photo_url">
                     <span v-if="!isCollapsed" class="vsm-title">{{item.title}}</span>
                 </router-link>
             </template>
@@ -17,7 +16,6 @@
                     <span v-if="!isCollapsed" class="vsm-title">{{item.title}}</span>
                 </a>
             </template>
-
         </template>
 
         <template v-else>
@@ -81,3 +79,10 @@
         }
     }
 </script>
+
+<style>
+    .img-nav-profile {
+        max-width: 120px;
+        height: auto;
+    }
+</style>

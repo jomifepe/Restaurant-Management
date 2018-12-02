@@ -8,7 +8,6 @@
                 </template>
                 <item v-else :key="index" :item="item" :firstItem="true" :isCollapsed="isCollapsed" @after-selected="toggleCollapse"/>
             </template>
-
         </div>
         <div v-if="isCollapsed" :style="[{'position' : 'absolute'}, {'top' : `${mobileItemPos}px`}, {'left' : '0px'}, {'padding-left' : sidebarWidth}, {'width' : width}]">
             <mobile-item :item="mobileItem" />
@@ -50,11 +49,11 @@
             },
             width: {
                 type: String,
-                default: '350px'
+                default: '180px'
             },
             widthCollapsed: {
                 type: String,
-                default: '100px'
+                default: '50px'
             }
         },
         data() {

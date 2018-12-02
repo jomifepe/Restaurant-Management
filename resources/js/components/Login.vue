@@ -20,7 +20,7 @@
     </div>-->
 
     <!-- Default form login -->
-    <form class="text-center border border-light p-5">
+    <form class="jumbotron  text-center border border-light p-5">
         <p class="h4 mb-4">Login</p>
         <!-- Email -->
         <input type="email" id="defaultLoginFormEmail" class="form-control mb-4" placeholder="E-mail" v-model.trim="user.email">
@@ -34,10 +34,6 @@
         </div>
         <!-- Sign in button -->
         <button class="btn btn-info btn-block my-4" type="submit" v-on:click.prevent="login">Login</button>
-        <!-- Register -->
-        <p>Not a member?
-            <a href="">Register</a>
-        </p>
     </form>
     <!-- Default form login -->
 </template>

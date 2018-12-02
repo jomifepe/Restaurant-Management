@@ -1,4 +1,6 @@
 @import './var.scss';
+@import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
+
 
 .v-sidebar-menu,
 .v-sidebar-menu * {
@@ -79,7 +81,7 @@
 }
 .v-sidebar-menu .vsm-arrow:after {
   content: '\f105';
-  font-family: 'Font Awesome 5 Free';
+  font-family: "Font Awesome 5 Free";
 }
 .v-sidebar-menu .vsm-arrow.open-arrow {
   transform: translateY(-50%) rotate(90deg);
@@ -183,4 +185,9 @@
 .v-sidebar-menu .collapse-btn:after {
   content: '\f337';
   font-family: 'Font Awesome 5 Free';
+}
+
+.menu-img {
+  width: 30px;
+  height: auto;
 }

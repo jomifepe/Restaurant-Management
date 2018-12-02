@@ -3,7 +3,7 @@
         <button type="button" class="close" aria-label="Close" @click="closeAlertMessage">
             <span aria-hidden="true">&times;</span>
         </button>
-        <strong>@{{ message }}</strong>
+        <strong>{{ message }}</strong>
     </div>
 </template>
 

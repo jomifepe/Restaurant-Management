@@ -7,6 +7,10 @@
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
+@import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
+@import '~@fortawesome/fontawesome-free/scss/solid.scss';
+@import '~@fortawesome/fontawesome-free/scss/brands.scss';
+@import '~@fortawesome/fontawesome-free/scss/regular.scss';
 
 .v-sidebar-menu {
   z-index: 9999;
@@ -36,4 +40,8 @@
   @include media-breakpoint-only(sm) {
     column-count: 2;
   }
+}
+
+.nav-link {
+  cursor: pointer;
 }

@@ -1,20 +1,15 @@
 @extends('master')
-
 @section('title', 'Restaurant Management')
 @section('content')
 
-
-<alert-message :classtype="alertClass" :show="showMessage" :message="alertMessage" @close-message="onCloseAlertMessage"></alert-message>
+<alert-message :classtype="alertClass"
+               :show="showMessage"
+               :message="alertMessage"
+               @close-message="onCloseAlertMessage"></alert-message>
 
 <navigation v-if="isUserLoggedIn"></navigation>
 <login-form v-if="showLoginForm" @login-successful="onLoginSuccessful" @login-failed="onLoginFailed"></login-form>
-
-
 <register v-if="showRegisterForm" @register-cancel="onHideRegisterForm"></register>
-
-{{--<div class="mt-4 mb-4">--}}
-    {{--<menu-list></menu-list>--}}
-{{--</div>--}}
 
 <router-view></router-view>
 

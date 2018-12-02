@@ -4,7 +4,12 @@
 
 
 <script>
-    module.exports = {
+    import SideBar from './SideBarMenu.vue';
+
+    export default {
+        components: {
+          "sidebar-menu": SideBar
+        },
         data() {
             return {
                 menu: [

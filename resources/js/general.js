@@ -6,25 +6,24 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
-import MenuList from './components/MenuComponent.vue';
-import sideBar from './components/sidebar/sideBarMenu.vue';
-import Login from './components/login.vue';
-import Logout from './components/logout';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import store from './stores/global-store';
 import VueRouter from 'vue-router';
+
+import MenuList from './components/MenuComponent.vue';
+import Login from './components/Login.vue';
+import Logout from './components/Logout';
 import Navigation from './components/sidebar/Navigation.vue';
 import Register from './components/RegisterUserComponent.vue';
 import AlertMessage from './components/AlertMessage.vue';
-
+import Profile from './components/Profile.vue';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(store);
 
 Vue.component('alert-message', AlertMessage);
-Vue.component('sidebar-menu', sideBar);
 Vue.component('menu-component', MenuList);
 Vue.component('login-form', Login);
 Vue.component('logout', Logout);
@@ -33,18 +32,14 @@ Vue.component('register', Register);
 
 axios.defaults.baseURL = 'http://project.dad/api';
 
-
-const Profile = Vue.component('profile', require('./components/profile.vue'));
-
-
 const routes = [
     { path: '/', component: MenuList, name: 'menu'},
-    { path: '/profile', component: Profile, name: 'profile'},
-    { path: '/login', component: Login, name: 'login'},
+    { path: 'profile', component: Profile, name: 'profile' },
+    { path: 'login', component: Login, name: 'login'},
 ];
 
 const router = new VueRouter({
-    routes:routes
+    routes
 });
 
 /*
@@ -72,8 +67,8 @@ const app = new Vue({
     store,
     router,
     methods: {
-        onShowLogin() {
-            this.showLoginForm = true;
+        toggleLoginForm() {
+            this.showLoginForm = !this.showLoginForm;
             this.showRegisterForm = false;
         },
         onLoginSuccessful(message) {
@@ -106,9 +101,9 @@ const app = new Vue({
         hasUserLoggedIn(){
           return this.$store.state.user != null;
         },
-        onShowRegisterForm(){
+        toggleRegisterForm(){
+            this.showRegisterForm = !this.showRegisterForm;
             this.showLoginForm = false;
-            this.showRegisterForm = true;
         },
         onHideRegisterForm(){
             this.showRegisterForm = false;
