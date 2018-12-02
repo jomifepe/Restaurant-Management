@@ -86,7 +86,6 @@
         },
         methods: {
             getItems() {
-                let $this=this;
                 axios.get(this.url)
                     .then(response => {
                         this.items = response.data.data;
@@ -97,7 +96,6 @@
                 this.showDescription == true? this.showDescription=false : this.showDescription=true;
             },
             makePagination(data){
-                console.log(data);
                 let pagination = {
                     first_page_url:data.links.first,
                     last_page_url: data.links.last,

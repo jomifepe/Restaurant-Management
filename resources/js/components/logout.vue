@@ -18,7 +18,6 @@
         },
         methods: {
             logout() {
-                console.log('logout clicked');
                 this.showMessage = false;
                 axios.post('logout')
                     .then(response => {

@@ -16,43 +16,51 @@ import store from './stores/global-store';
 import VueRouter from 'vue-router';
 import Navigation from './components/sidebar/Navigation.vue';
 import Register from './components/RegisterUserComponent.vue';
-
-
+import AlertMessage from './components/AlertMessage.vue';
 
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(store);
 
-
-
-
+Vue.component('alert-message', AlertMessage);
 Vue.component('sidebar-menu', sideBar);
 Vue.component('menu-component', MenuList);
-Vue.component('login', Login);
+Vue.component('login-form ', Login);
 Vue.component('logout', Logout);
 Vue.component('navigation', Navigation);
 Vue.component('register', Register);
 
 axios.defaults.baseURL = 'http://project.dad/api';
 
-const user = Vue.component('user', require('./components/user.vue'));
-const login = Vue.component('login', require('./components/login.vue'));
-const logout = Vue.component('logout', require('./components/logout.vue'));
-const profile = Vue.component('profile', require('./components/profile.vue'));
 
-/*
+const Profile = Vue.component('profile', require('./components/profile.vue'));
+
+
 const routes = [
-    { path: '/users', component: user, name: 'users'},
-    { path: '/login', component: login, name: 'login'},
-    { path: '/logout', component: logout, name: 'logout'},
-    { path: '/profile', component: profile, name: 'profile'},
+    { path: '/', component: MenuList, name: 'menu'},
+    { path: '/profile', component: Profile, name: 'profile'},
+    { path: '/login', component: Login, name: 'login'},
 ];
+
 
 const router = new VueRouter({
     routes:routes
 });
-*/
+
+/*
+router.beforeEach((to, from, next) => {
+    if ((to.name == 'profile') || (to.name == 'logout')) {
+        if (!store.state.user) {
+            next("/login");
+            return;
+        }
+    }
+    next();
+});*/
+
+
+
 
 const app = new Vue({
     data: {
@@ -67,6 +75,7 @@ const app = new Vue({
     },
     //router,
     store,
+    router,
     methods: {
         onShowLogin() {
             this.showLoginForm = true;
@@ -113,6 +122,9 @@ const app = new Vue({
                     this.showMessage = false
             }, 4000);
         },
+        onCloseAlertMessage(){
+            this.showMessage = false;
+        }
     },
     created() {
         //CHECK IF USER IS LOGGED
@@ -123,7 +135,7 @@ const app = new Vue({
 
         //GET LOGGED USER INFO
         if(this.hasUserLoggedIn()){
-            this.isUserLoggedIn=true;
+            this.isUserLoggedIn = true;
             this.showLogoutButton = true;
             this.loggedUser = this.$store.state.user
         }

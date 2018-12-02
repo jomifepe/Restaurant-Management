@@ -1,5 +1,5 @@
 <template>
-	<div class="jumbotron">
+	<div class="jumbotron mt-4 mb-4">
 		<h2>Login</h2>
 		<form @submit.prevent="handleSignUp">
 			<div class="form-group">

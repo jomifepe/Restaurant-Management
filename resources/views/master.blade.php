@@ -10,6 +10,7 @@
         <!-- Latest compiled and minified CSS & JS -->
         <link rel="stylesheet" href="{{ URL::asset('css/app.css') }}">
         <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     </head> 
     <body>
         @yield('navbar')

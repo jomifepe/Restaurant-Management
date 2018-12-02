@@ -1,11 +1,22 @@
 <template>
-    <div>
+    <!--<div>
         <div class="alert alert-success" v-if="showSuccess">             
             <button type="button" class="close-btn" v-on:click="showSuccess=false">&times;</button>
             <strong>{{ successMessage }}</strong>
         </div>
         <user-edit :user="profileUser"  @user-saved="savedUser" @user-canceled="cancelEdit"></user-edit>
-    </div>              
+    </div>-->
+
+    <div class="container">
+        <div class="span3 well">
+            <center>
+                <a href="#aboutModal" data-toggle="modal" data-target="#myModal"><img :src="profileUser.photo_url" name="aboutme" width="140" height="140" class="img-circle"></a>
+                <h3>{{profileUser.name}}</h3>
+                <em>{{profileUser.type}}</em>
+            </center>
+        </div>
+        <user-edit :user="profileUser"  @user-saved="savedUser" @user-canceled="cancelEdit"></user-edit>
+    </div>
 </template>
 
 <script type="text/javascript">    
@@ -17,11 +28,7 @@
         },
         data: function(){
             return { 
-                profileUser: {
-                    email:"",
-                    age:"",
-                    name:"",
-                },
+                profileUser: null,
                 successMessage: "",
                 showSuccess: false
             }

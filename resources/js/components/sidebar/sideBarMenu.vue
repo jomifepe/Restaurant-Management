@@ -1,12 +1,14 @@
 <template>
     <div class="v-sidebar-menu" :class="[!isCollapsed ? 'vsm-default' : 'vsm-collapsed']" :style="{'width': sidebarWidth}" @mouseleave="mouseLeave">
         <div class="vsm-list" :style="[{'height' : '100%'}, {'overflow' : 'hidden auto'}]">
+
             <template v-for="(item, index) in menu">
                 <template v-if="item.header">
                     <div v-if="!isCollapsed" :key="index" class="vsm-header">{{item.title}}</div>
                 </template>
-                <item v-else :key="index" :item="item" :firstItem="true" :isCollapsed="isCollapsed" />
+                <item v-else :key="index" :item="item" :firstItem="true" :isCollapsed="isCollapsed" @after-selected="toggleCollapse"/>
             </template>
+
         </div>
         <div v-if="isCollapsed" :style="[{'position' : 'absolute'}, {'top' : `${mobileItemPos}px`}, {'left' : '0px'}, {'padding-left' : sidebarWidth}, {'width' : width}]">
             <mobile-item :item="mobileItem" />
@@ -52,7 +54,7 @@
             },
             widthCollapsed: {
                 type: String,
-                default: '50px'
+                default: '100px'
             }
         },
         data() {
@@ -66,9 +68,9 @@
         },
         created() {
             this.$on('mouseEnterItem', (val) => {
-                this.mobileItem = val.item
-                this.mobileItemPos = val.pos
-                this.mobileItemHeight = val.height
+                this.mobileItem = val.item;
+                this.mobileItemPos = val.pos;
+                this.mobileItemHeight = val.height;
             })
         },
         methods: {
@@ -76,8 +78,8 @@
                 this.mobileItem = null
             },
             toggleCollapse() {
-                this.isCollapsed = !this.isCollapsed
-                this.sidebarWidth = this.isCollapsed ? this.widthCollapsed : this.width
+                this.isCollapsed = !this.isCollapsed;
+                this.sidebarWidth = this.isCollapsed ? this.widthCollapsed : this.width;
                 this.$emit('collapse', this.isCollapsed)
             }
         },

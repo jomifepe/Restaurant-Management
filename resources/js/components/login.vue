@@ -1,5 +1,5 @@
 <template>
-    <div class="jumbotron">
+    <!--<div class="jumbotron mt-4 mb-4">
         <h2>Login</h2>
         <div class="form-group">
             <label for="inputEmail">Email</label>
@@ -17,7 +17,29 @@
         <div class="form-group">
             <a class="btn btn-primary" v-on:click.prevent="login">Login</a>
         </div>
-    </div>
+    </div>-->
+
+    <!-- Default form login -->
+    <form class="text-center border border-light p-5">
+        <p class="h4 mb-4">Login</p>
+        <!-- Email -->
+        <input type="email" id="defaultLoginFormEmail" class="form-control mb-4" placeholder="E-mail" v-model.trim="user.email">
+        <!-- Password -->
+        <input type="password" id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password" v-model="user.password">
+        <div class="d-flex justify-content-around">
+            <div>
+                <!-- Forgot password -->
+                <a href="">Forgot password?</a>
+            </div>
+        </div>
+        <!-- Sign in button -->
+        <button class="btn btn-info btn-block my-4" type="submit" v-on:click.prevent="login">Login</button>
+        <!-- Register -->
+        <p>Not a member?
+            <a href="">Register</a>
+        </p>
+    </form>
+    <!-- Default form login -->
 </template>
 
 <script type="text/javascript">
