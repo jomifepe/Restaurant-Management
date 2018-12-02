@@ -26,7 +26,7 @@ Vue.use(store);
 Vue.component('alert-message', AlertMessage);
 Vue.component('sidebar-menu', sideBar);
 Vue.component('menu-component', MenuList);
-Vue.component('login-form ', Login);
+Vue.component('login-form', Login);
 Vue.component('logout', Logout);
 Vue.component('navigation', Navigation);
 Vue.component('register', Register);
@@ -101,6 +101,7 @@ const app = new Vue({
             this.alertClass = "alert-success";
             this.alertMessage = "User was logged out successfully";
             this.closeAlertMessage();
+            this.$router.go('/');
         },
         onLogoutFailed(){
             this.showMessage = true;

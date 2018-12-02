@@ -48891,7 +48891,7 @@ __WEBPACK_IMPORTED_MODULE_4_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_6__sto
 __WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('alert-message', __WEBPACK_IMPORTED_MODULE_10__components_AlertMessage_vue___default.a);
 __WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('sidebar-menu', __WEBPACK_IMPORTED_MODULE_1__components_sidebar_sideBarMenu_vue___default.a);
 __WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('menu-component', __WEBPACK_IMPORTED_MODULE_0__components_MenuComponent_vue___default.a);
-__WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('login-form ', __WEBPACK_IMPORTED_MODULE_2__components_login_vue___default.a);
+__WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('login-form', __WEBPACK_IMPORTED_MODULE_2__components_login_vue___default.a);
 __WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('logout', __WEBPACK_IMPORTED_MODULE_3__components_logout___default.a);
 __WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('navigation', __WEBPACK_IMPORTED_MODULE_8__components_sidebar_Navigation_vue___default.a);
 __WEBPACK_IMPORTED_MODULE_4_vue___default.a.component('register', __WEBPACK_IMPORTED_MODULE_9__components_RegisterUserComponent_vue___default.a);
@@ -48956,6 +48956,7 @@ var app = new __WEBPACK_IMPORTED_MODULE_4_vue___default.a({
             this.alertClass = "alert-success";
             this.alertMessage = "User was logged out successfully";
             this.closeAlertMessage();
+            this.$router.go('/');
         },
         onLogoutFailed: function onLogoutFailed() {
             this.showMessage = true;
