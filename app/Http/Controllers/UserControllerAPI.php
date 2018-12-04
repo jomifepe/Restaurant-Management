@@ -40,8 +40,7 @@ class UserControllerAPI extends Controller
         $request->validate([
                 'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
                 'username' => 'required|string|max:30',
-                'email' => 'required|email|unique:users',
-                'password' => 'required|string|min:6'
+                'email' => 'required|email|unique:users'
             ]);
 
         $user = new User();
@@ -69,6 +68,7 @@ class UserControllerAPI extends Controller
         $user->delete();
         return response()->json(null, 204);
     }
+
     public function emailAvailable(Request $request)
     {
         $totalEmail = 1;

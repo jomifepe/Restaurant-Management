@@ -48,7 +48,7 @@
                     name: null,
                     username: null,
                     email: null,
-                    // password: null,
+                    password: "",
 					type: null,
                     photo: null,
                 },
@@ -59,10 +59,15 @@
             handleSignUp() {
                 axios.post('register', this.user)
                     .then(response => {
-                        console.log(response);
+                        if (response.status === 201) {
+                            let message = "User registered successfully";
+                            this.$emit("register-successful", message);
+						}
                     })
                     .catch(error => {
                         console.log(error);
+                        let message = "Failed to register user";
+                        this.$emit("register-failed", message);
                     })
 			},
             registerCancel(){

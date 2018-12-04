@@ -8,8 +8,13 @@
                @close-message="onCloseAlertMessage"></alert-message>
 
 <navigation v-if="isUserLoggedIn"></navigation>
-<login-form v-if="showLoginForm" @login-successful="onLoginSuccessful" @login-failed="onLoginFailed"></login-form>
-<register v-if="showRegisterForm" @register-cancel="onHideRegisterForm"></register>
+<login-form v-if="showLoginForm"
+            @login-successful="onLoginSuccessful"
+            @login-failed="onLoginFailed"></login-form>
+<register v-if="showRegisterForm"
+          @register-successful="onRegisterSuccessful"
+          @register-failed="onRegisterFailed"
+          @register-cancel="onHideRegisterForm"></register>
 
 <router-view></router-view>
 

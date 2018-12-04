@@ -15,7 +15,7 @@ import MenuList from './components/MenuComponent.vue';
 import Login from './components/Login.vue';
 import Logout from './components/Logout';
 import Navigation from './components/sidebar/Navigation.vue';
-import Register from './components/RegisterUserComponent.vue';
+import Register from './components/RegisterUser.vue';
 import AlertMessage from './components/AlertMessage.vue';
 import Profile from './components/Profile.vue';
 
@@ -121,6 +121,19 @@ const app = new Vue({
         },
         onCloseAlertMessage(){
             this.showMessage = false;
+        },
+        onRegisterSuccessful(message) {
+            this.showRegisterForm = false;
+            this.showMessage = true;
+            this.alertClass = "alert-success";
+            this.alertMessage = message;
+            this.closeAlertMessage();
+        },
+        onRegisterFailed(message) {
+            this.showMessage = true;
+            this.alertClass = "alert-danger";
+            this.alertMessage = message;
+            this.closeAlertMessage();
         }
     },
     created() {

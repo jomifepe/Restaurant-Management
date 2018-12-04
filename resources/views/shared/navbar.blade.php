@@ -8,7 +8,7 @@
 	<div class="collapse navbar-collapse" id="navbarNav">
 		<ul class="navbar-nav mr-auto">
 			<li class="nav-item">
-				<a class="nav-link" v-if="!isUserLoggedIn" @click.prevent="toggleRegisterForm">Register</a>
+				<a class="nav-link" v-if="isUserLoggedIn" @click.prevent="toggleRegisterForm">Register</a>
 			</li>
 		</ul>
 		<ul class="navbar-nav">

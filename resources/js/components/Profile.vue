@@ -41,11 +41,11 @@
                 this.profileUser = this.$store.state.user;
                 this.showProfile = true;
             },
-            savedUser: function(){
+            savedUser() {
                 this.showSuccess = true;
                 this.successMessage = "User's Profile Updated";
             },
-            cancelEdit: function(){
+            cancelEdit() {
                 this.showSuccess = false;
             },            
         },

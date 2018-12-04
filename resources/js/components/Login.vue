@@ -52,8 +52,10 @@
             login() {
                 axios.post('login', this.user)
                     .then(response => {
-                        this.$store.commit('setToken', response.data.access_token);
-                        return axios.get('users/me');
+                        if (response.status === 200) {
+                            this.$store.commit('setToken', response.data.access_token);
+                            return axios.get('users/me');
+                        }
                     })
                     .then(response => {
                         this.$store.commit('setUser', response.data.data);
