@@ -1,36 +1,50 @@
+/*jshint esversion: 6 */
 
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
+"use strict";
 
 require('./bootstrap');
 
 window.Vue = require('vue');
 
-/**
- * The following block of code may be used to automatically register your
- * Vue components. It will recursively scan this directory for the Vue
- * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
- */
+import Vue from 'vue';
+import Vuex from 'vuex';
+import store from './stores/global-store';
+import VueRouter from 'vue-router';
+import Vuelidate from 'vuelidate'
+import VueMoment from 'vue-moment'
 
-Vue.component('example-component', require('./components/ExampleComponent.vue'));
+import Routes from './routes';
+import App from './components/App.vue';
+import Vuetify from 'vuetify'
+import Toasted from 'vue-toasted';
 
-// const files = require.context('./', true, /\.vue$/i)
+Vue.use(VueRouter);
+Vue.use(Vuex);
+Vue.use(store);
+Vue.use(Vuelidate);
+Vue.use(VueMoment);
+Vue.use(Vuetify);
+Vue.use(Toasted);
 
-// files.keys().map(key => {
-//     return Vue.component(_.last(key.split('/')).split('.')[0], files(key))
-// })
+axios.defaults.baseURL = 'http://project.dad/api';
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
+const router = new VueRouter({
+    routes: Routes
+});
 
-const app = new Vue({
-    el: '#app'
+// router.beforeEach((to, from, next) => {
+//     if ((to.name == 'profile') || (to.name == 'logout')) {
+//         if (!store.state.user) {
+//             next("/login");
+//             return;
+//         }
+//     }
+//     next();
+// });
+
+new Vue({
+    el: "#app",
+    components: { App },
+    router,
+    store,
 });

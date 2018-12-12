@@ -1,25 +1,13 @@
 <template>
-    <!--<div>
-        <div class="alert alert-success" v-if="showSuccess">             
-            <button type="button" class="close-btn" v-on:click="showSuccess=false">&times;</button>
-            <strong>{{ successMessage }}</strong>
-        </div>
-        <user-edit :user="profileUser"  @user-saved="savedUser" @user-canceled="cancelEdit"></user-edit>
-    </div>-->
-
-
-        <div class="container mt-4" v-if="profileUser != null">
-            <div class="span3 well">
-                <div class="text-center">
-                    <a href="#aboutModal" data-toggle="modal" data-target="#myModal">
-                        <img :src="profileUser.photo_url" name="aboutme" width="140" height="140" class="img-circle" />
-                    </a>
-                    <h3>{{ profileUser.name }}</h3>
-                    <em>{{ profileUser.type }}</em>
-                </div>
-            </div>
-            <user-edit :user="profileUser" @user-saved="savedUser" @user-canceled="cancelEdit"></user-edit>
-        </div>
+    <v-flex xs12 class="ma-3" v-if="profileUser != null">
+        <v-avatar size="140"
+                color="grey lighten-4">
+            <img :src="profileUser.photo_url" alt="Worker photo">
+        </v-avatar>
+        <h3>{{ profileUser.name }}</h3>
+        <em>{{ profileUser.type }}</em>
+        <UserEdit :user="Object.assign({}, profileUser)"></UserEdit>
+    </v-flex>
 </template>
 
 <script type="text/javascript">    
@@ -27,29 +15,20 @@
 
     export default {
         components: {
-            'user-edit': UserEdit,
+            UserEdit,
         },
         data: function() {
             return {
                 profileUser: null,
-                successMessage: "",
-                showSuccess: false
             }
         },
         methods: {
             getInformationFromLoggedUser() {
                 this.profileUser = this.$store.state.user;
-                this.showProfile = true;
-            },
-            savedUser() {
-                this.showSuccess = true;
-                this.successMessage = "User's Profile Updated";
-            },
-            cancelEdit() {
-                this.showSuccess = false;
-            },            
+            }
         },
         mounted() {
+            this.$store.commit('setPanelTitle', 'Profile');
             this.getInformationFromLoggedUser();
         }
     }

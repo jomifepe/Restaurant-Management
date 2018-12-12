@@ -37,11 +37,11 @@ class UserControllerAPI extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-                'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
-                'username' => 'required|string|max:30',
-                'email' => 'required|email|unique:users'
-            ]);
+//        $request->validate([
+//                'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
+//                'username' => 'required|string|max:30',
+//                'email' => 'required|email|unique:users'
+//            ]);
 
         $user = new User();
         $user->fill($request->all());
@@ -53,11 +53,15 @@ class UserControllerAPI extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-                'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
-                'email' => 'required|email|unique:users,email,'.$id,
-                'age' => 'integer|between:18,75'
-            ]);
+            'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
+            'username' => 'required|string|max:30',
+            'email' => 'required|email|unique:users,email,'.$id
+        ]);
+
+
         $user = User::findOrFail($id);
+//        $user->photo_url = end(explode("/", $user->photo_url));
+//        $user->password = Hash::make($user->password);
         $user->update($request->all());
         return new UserResource($user);
     }

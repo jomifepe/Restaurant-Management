@@ -30,7 +30,7 @@
                         this.$emit('logout-failed');
                     })
             },
-            getCurrentUserFirstName() {
+            getUserFirstName() {
                 return this.$store.state.user.name.split(" ")[0];
             }
         }

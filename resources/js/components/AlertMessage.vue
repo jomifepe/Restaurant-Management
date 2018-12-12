@@ -1,20 +1,12 @@
 <template>
-    <div class="alert mt-4" :class="classtype" v-if="show">
-        <button type="button" class="close" aria-label="Close" @click="closeAlertMessage">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <strong>{{ message }}</strong>
-    </div>
+    <v-alert dismissible v-model="this.$store.state.alertShown" :type="this.$store.state.alertType">
+        {{ this.$store.state.alertMessage }}
+    </v-alert>
 </template>
 
 <script>
     export default {
-        props:['classtype', 'show', 'message'],
-        methods:{
-            closeAlertMessage(){
-                this.$emit('close-message');
-            }
-        }
+        name: "AlertMessage"
     }
 </script>
 
