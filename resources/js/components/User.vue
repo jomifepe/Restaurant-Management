@@ -29,11 +29,11 @@
 			}
 		},
 	    methods: {
-	        editUser: function(user){
+	        editUser: function(user) {
 	            this.currentUser = User;
 	            this.showSuccess = false;
 	        },
-	        deleteUser: function(user){
+	        deleteUser: function(user) {
 	            axios.delete('api/users/'+User.id)
 	                .then(response => {
 	                    this.showSuccess = true;

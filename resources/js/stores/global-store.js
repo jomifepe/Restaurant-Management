@@ -2,15 +2,20 @@
 
 import Vue from 'vue';
 import Vuex from 'vuex';
+import axios from 'axios'
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: { 
         token: "",
-        user: null
+        user: null,
+        panelTitle: "Restaurant Management",
+        alertShown: false,
+        alertMessage: "",
+        alertType: "success",
     },  
-    mutations: { 
+    mutations: {
         clearUserAndToken: (state) => {
             state.user = null;
             state.token = "";
@@ -28,7 +33,7 @@ export default new Vuex.Store({
             axios.defaults.headers.common.Authorization = undefined;
         },
         setUser: (state, user) => {
-            state.user =  user;
+            state.user = user;
             sessionStorage.setItem('user', JSON.stringify(user));
         },
         setToken: (state, token) => {
@@ -49,11 +54,37 @@ export default new Vuex.Store({
                 state.user = JSON.parse(user);
             }
         },
-        //loadDepartments: (state) => {
-        //    axios.get('api/departments')
-        //            .then(response => {
-        //                state.departments = response.data.data;
-        //            });
-        //}
-    } 
+        setPanelTitle(state, title) {
+            state.panelTitle = title;
+        },
+        showAlertMessage(state, {message, alertType}) {
+            state.alertMessage = message;
+            state.alertType = alertType;
+            state.alertShown = true;
+        },
+        hideAlertMessage: state => {
+            state.alertShown = false;
+        },
+        setUserLastShiftStartTime: (state, time) => {
+            state.user.last_shift_start = time;
+        },
+        setUserLastShiftEndTime: (state, time) => {
+            state.user.last_shift_end = time;
+        },
+    },
+    getters: {
+        userFirstName: state => {
+            return state.user.name.split(" ")[0];
+        },
+        userFirstAndLastName: state => {
+            let parts = state.user.name.split(" ");
+            if (parts.length > 1) {
+                return `${parts[0]} ${parts[parts.length - 1]}`;
+            }
+            return state.user.name;
+        },
+        hasUserShiftStarted: state => {
+            return !!state.user.shift_active;
+        }
+    }
 });
