@@ -3,7 +3,10 @@
         <v-layout row wrap>
             <v-flex xs12>
                 <v-toolbar flat color="gray">
-                    <v-toolbar-title>My Meals</v-toolbar-title>
+                    <v-toolbar-title>
+                        My Meals 
+                        <span class="body-1">(click to display a meal's orders)</span>
+                    </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <CreateMeal @onCreate="onMealCreated"></CreateMeal>
                 </v-toolbar>
@@ -23,7 +26,7 @@
                     </template>
                 </v-data-table>
             </v-flex>
-            <v-flex xs12 class="mt-5" v-if="mealItemsShown">
+            <v-flex xs12 id="mealOrders" class="mt-5">
                 <MealOrders v-if="mealItemsShown" :meal="chosenMeal"></MealOrders>
             </v-flex>
         </v-layout>
@@ -76,7 +79,7 @@
             formatDate: date => moment(date).format("YYYY-MM-DD, HH:mm"),
             onMealCreated(tableNumber) {
                 this.$toasted.show(`Meal successfuly started for table ${tableNumber}`, {
-                        icon : 'check',
+                        icon : "check",
                         position: "bottom-center",
                         duration : 5000
                     });

@@ -11,7 +11,7 @@ class ItemControllerAPI extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
     {
@@ -38,6 +38,17 @@ class ItemControllerAPI extends Controller
     public function show($id)
     {
         //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function showType($showType)
+    {
+        return ItemResource::collection(Item::where('type', $showType)->get());
     }
 
     /**

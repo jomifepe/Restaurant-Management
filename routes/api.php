@@ -24,7 +24,7 @@ Route::middleware('auth:api')->get('users/me', 'UserControllerAPI@myProfile');
 
 Route::post('register', 'UserControllerAPI@store')->name('register');
 
-Route::get('items', 'ItemControllerAPI@index');
+//Route::get('items', 'ItemControllerAPI@index');
 
 Route::apiResources(['meals'    => 'MealControllerAPI',
                      'invoices' => 'InvoiceControllerAPI',
@@ -34,3 +34,4 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
 
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
 Route::get('meals/{mealId}/items', 'OrderControllerAPI@mealItems')->name('meal.orders.items');
+Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type');

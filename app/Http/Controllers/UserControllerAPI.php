@@ -61,7 +61,7 @@ class UserControllerAPI extends Controller
 
         $user = User::findOrFail($id);
 //        $user->photo_url = end(explode("/", $user->photo_url));
-//        $user->password = Hash::make($user->password);
+        $user->password = bcrypt($user->password);
         $user->update($request->all());
         return new UserResource($user);
     }

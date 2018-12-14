@@ -17,6 +17,7 @@
 </template>
 
 <script>
+    import axios from 'axios';
     const moment = require('moment');
 
     export default {
@@ -43,14 +44,14 @@
             },
             startShift() {
                 let user = this.$store.state.user;
-                user.last_shift_start = moment().format("YYYY-DD-MM HH:mm:ss");
+                user.last_shift_start = moment().format("YYYY-MM-DD HH:mm:ss");
                 user.shift_active = 1;
 
                 this.updateUser(user, () => this.startShiftElapsedTimeUpdated());
             },
             endShift() {
                 let user = this.$store.state.user;
-                user.last_shift_end = moment().format("YYYY-DD-MM HH:mm:ss");
+                user.last_shift_end = moment().format("YYYY-MM-DD HH:mm:ss");
                 user.shift_active = 0;
 
                 this.updateUser(user, () => this.showLastShiftTime())
@@ -65,17 +66,19 @@
                             this.$store.commit('setUser', response.data.data);
                             success();
                         } else {
-                            this.$store.commit("showAlertMessage", {
-                                message: "Failed to start shift",
-                                alertType: "alert-danger"
+                            this.$toasted.show('Failed update shift state', {
+                                icon : 'error',
+                                position: "bottom-center",
+                                duration : 5000
                             });
                         }
                     })
                     .catch(error => {
                         console.log(error);
-                        this.$store.commit("showAlertMessage", {
-                            message: "Failed to start shift",
-                            alertType: "alert-danger"
+                        this.$toasted.show('Failed to update shift state', {
+                            icon : 'error',
+                            position: "bottom-center",
+                            duration : 5000
                         });
                     })
             },
@@ -87,15 +90,13 @@
                 }.bind(this), 10000);
             },
             getStartedShiftTimeDescription() {
-                let startedTime = moment(this.$store.state.user.last_shift_start)
-                    .format("DD/MM/YYYY HH:mm:ss");
+                let startedTime = this.$store.state.user.last_shift_start;
                 return `Your shift started at ${moment(startedTime).format("HH:mm")}
                     (${moment(startedTime).fromNow()})`;
             },
             showLastShiftTime() {
                 this.clearShiftTimer();
                 let endTime = moment(this.$store.state.user.last_shift_end)
-                    .format("DD/MM/YYYY HH:mm:ss");
                 this.shiftElapsedTime = `Your last shift ended at ${moment(endTime).format("HH:mm")}
                     (${moment(endTime).fromNow()})`
             },

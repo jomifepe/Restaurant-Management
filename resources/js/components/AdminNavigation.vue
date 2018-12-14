@@ -1,5 +1,5 @@
 <template>
-    <v-app>
+    <v-app v-if="user">
         <v-navigation-drawer
                 v-model="drawer"
                 :mini-variant="mini"
@@ -16,11 +16,11 @@
 
                 <v-list-tile avatar tag="div">
                     <v-list-tile-avatar>
-                        <img :src="this.$store.state.user.photo_url" alt="Worker photo">
+                        <img :src="user.photo_url" alt="Worker photo">
                     </v-list-tile-avatar>
 
                     <v-list-tile-content>
-                        <v-list-tile-title>{{ this.$store.getters.userFirstAndLastName }}</v-list-tile-title>
+                        <v-list-tile-title>{{ userFirstAndLastName }}</v-list-tile-title>
                     </v-list-tile-content>
 
                     <v-list-tile-action>
@@ -34,10 +34,10 @@
             <v-list class="pt-0" dense>
                 <v-divider light></v-divider>
 
-                <v-list-tile
-                        v-for="item in items"
-                        :key="item.title"
-                        :to="item.target">
+                <v-list-tile v-for="item in items" 
+                    :key="item.title" 
+                    :to="item.target"
+                    v-if="item.visible === true ? true : item.visible.includes(userType)">
                         <v-list-tile-action>
                             <v-icon>{{ item.icon }}</v-icon>
                         </v-list-tile-action>
@@ -55,7 +55,7 @@
             <v-toolbar-items class="hidden-sm-and-down">
                 <v-menu :nudge-width="100">
                     <v-toolbar-title slot="activator">
-                        <span>{{ this.$store.getters.userFirstName }}</span>
+                        <span>{{ userFirstName }}</span>
                         <v-icon>arrow_drop_down</v-icon>
                     </v-toolbar-title>
                     <v-list>
@@ -87,34 +87,46 @@
 </template>
 
 <script>
-    import Profile from './Profile';
     import WorkerInfo from './WorkerInfo';
+    import axios from 'axios';
 
     export default {
         name: "AdminNavigation",
         components: {
-            Profile,
             WorkerInfo
         },
         data() {
             return {
-                user: null,
                 clippedNavDrawer: false,
                 clippedToolbar: false,
                 drawer: true,
                 items: [
-                    { title: 'Home', icon: 'dashboard', target: '/admin' },
-                    { title: 'Profile', icon: 'person', target: '/admin/profile' },
-                    { title: 'Meals', icon: 'restaurant', target: '/admin/meals' }
+                    { 
+                        title: 'Home', 
+                        icon: 'dashboard', 
+                        target: '/admin', 
+                        visible: true },
+                    { 
+                        title: 'Profile', 
+                        icon: 'person', 
+                        target: '/admin/profile', 
+                        visible: true },
+                    { 
+                        title: 'Meals', 
+                        icon: 'restaurant', 
+                        target: '/admin/meals', 
+                        visible: ['waiter', 'manager'] },
+                    { 
+                        title: 'Menu', 
+                        icon: 'fas fa-list-ul', 
+                        target: '/admin/menu', 
+                        visible: true }
                 ],
                 mini: true,
                 right: null
             }
         },
         methods: {
-            loadUser() {
-                this.user = this.$store.state.user;
-            },
             logout() {
                 axios.post('logout')
                     .then(response => {
@@ -127,8 +139,25 @@
                     })
             },
         },
+        computed: {
+            user() { 
+                return this.$store.state.user; 
+            },
+            userFirstName() {
+                return this.$store.state.user.name.split(" ")[0];
+            },
+            userFirstAndLastName() {
+                let parts = this.$store.state.user.name.split(" ");
+                if (parts.length > 1) {
+                    return `${parts[0]} ${parts[parts.length - 1]}`;
+                }
+                return this.$store.state.user.name;
+            },
+            userType() {
+                return this.$store.state.user.type;
+            }
+        },
         mounted() {
-            this.loadUser();
         }
     }
 </script>

@@ -10,7 +10,7 @@ export default new Vuex.Store({
     state: { 
         token: "",
         user: null,
-        panelTitle: "Restaurant Management",
+        panelTitle: "",
         alertShown: false,
         alertMessage: "",
         alertType: "success",

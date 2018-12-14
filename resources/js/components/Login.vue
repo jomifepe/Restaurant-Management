@@ -1,25 +1,4 @@
 <template>
-    <!--<navigation>-->
-        <!--<div class="jumbotron mt-4 mb-4">
-            <h2>Login</h2>
-            <div class="form-group">
-                <label for="inputEmail">Email</label>
-                <input
-                    type="email" class="form-control" v-model.trim="user.email"
-                    name="email" id="inputEmail"
-                    placeholder="Email address"/>
-            </div>
-            <div class="form-group">
-                <label for="inputPassword">Password</label>
-                <input
-                    type="password" class="form-control" v-model="user.password"
-                    name="password" id="inputPassword"/>
-            </div>
-            <div class="form-group">
-                <a class="btn btn-primary" v-on:click.prevent="login">Login</a>
-            </div>
-        </div>-->
-
         <!-- Default form login -->
         <form class="jumbotron  text-center border border-light p-5">
             <p class="h4 mb-4">Login</p>
@@ -41,12 +20,8 @@
 </template>
 
 <script type="text/javascript">
-    // import UserNavigation from './UserNavigation.vue';
 
     export default {
-        components: {
-            // 'navigation': UserNavigation
-        },
         data() {
             return {
                 user: {
@@ -57,22 +32,38 @@
         },
         methods: {
             login() {
+                let toast;
                 axios.post('login', this.user)
                     .then(response => {
                         if (response.status === 200) {
+                            toast = this.$toasted.show(`Signing in...`, { 
+                                icon: "check",
+                                position: "bottom-center", 
+                                duration : 20000
+                            });
                             this.$store.commit('setToken', response.data.access_token);
                             return axios.get('users/me');
+                        } else {
+                            this.$toasted.show(`Failed to sign in (${response.status})`, { 
+                                icon: "error",
+                                position: "bottom-center", 
+                                duration : 4000
+                            });
                         }
                     })
                     .then(response => {
                         this.$store.commit('setUser', response.data.data);
                         this.$router.push('/admin');
+                        toast.goAway(1);
                     })
                     .catch(error => {
-                        console.log(error);
+                        // console.log(error);
                         this.$store.commit('clearUserAndToken');
-                        let message = "Invalid credentials";
-                        this.$emit("onMessage", "alert-danger", message);
+                        this.$toasted.show(`Failed to sign in due to invalid credentials`, { 
+                            icon: "error",
+                            position: "bottom-center", 
+                            duration : 4000
+                        });
                     })
             },
         }
