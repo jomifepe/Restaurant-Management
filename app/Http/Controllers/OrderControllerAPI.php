@@ -30,7 +30,17 @@ class OrderControllerAPI extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'state' => 'required|in:pending',
+            'item_id' => 'required|integer|exists:items,id',
+            'meal_id' => 'required|integer|exists:meals,id',
+            'start' => 'required|date'
+        ]);
+
+        $order = new Order();
+        $order->fill($request->all());
+        $order->save();
+        return response()->json(new OrderResource($order), 201);
     }
 
     /**

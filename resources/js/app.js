@@ -6,6 +6,7 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
+import '@fortawesome/fontawesome-free/css/all.css'
 import Vue from 'vue';
 import Vuex from 'vuex';
 import store from './stores/global-store';
@@ -23,7 +24,9 @@ Vue.use(Vuex);
 Vue.use(store);
 Vue.use(Vuelidate);
 Vue.use(VueMoment);
-Vue.use(Vuetify);
+Vue.use(Vuetify, {
+    iconfont: 'fa'
+});
 Vue.use(Toasted);
 
 axios.defaults.baseURL = 'http://project.dad/api';

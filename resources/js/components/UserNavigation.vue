@@ -19,13 +19,6 @@
                         </ul>
                     </div>
                 </nav>
-
-                <!--<AlertMessage :classtype="alertType"-->
-                               <!--:show="showAlertMessage"-->
-                               <!--:message="alertMessage"-->
-                               <!--@close-message="onCloseAlertMessage"></AlertMessage>-->
-
-                <!-- Content -->
                 <router-view></router-view>
             </div>
         </template>
@@ -33,38 +26,9 @@
 </template>
 
 <script>
-    // import AlertMessage from './AlertMessage.vue';
 
     export default {
-        name: "UserNavigation",
-        components: {
-            // AlertMessage
-        },
-        data() {
-            return {
-                // showAlertMessage: false,
-                // alertType: "alert-success",
-                // alertMessage: "",
-            }
-        },
-        methods: {
-            // showMessage(alertType, message) {
-            //     this.alertType = alertType;
-            //     this.alertMessage = message;
-            //     this.showAlertMessage = true;
-            //     this.addAlertCloseTimeout(5000);
-            // },
-            // onCloseAlertMessage(){
-            //     this.showAlertMessage = false;
-            // },
-            // addAlertCloseTimeout(millis) {
-            //     setTimeout(() => {
-            //         this.showAlertMessage = false
-            //     }, millis);
-            // },
-        },
-        created() {
-        }
+        name: "UserNavigation"
     }
 </script>
 

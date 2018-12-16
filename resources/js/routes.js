@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import Profile from './components/Profile.vue';
 import Meals from './components/Meals.vue';
 import RestaurantManagement from './components/RestaurantManagement.vue';
+import AdminItemMenu from './components/AdminItemMenu.vue';
 
 export default [
     { path: '/', component: UserNavigation,
@@ -22,6 +23,8 @@ export default [
             { path: 'profile', component: Profile, name: 'profile' },
             { path: 'meals', component: Meals, name: 'meals' },
             { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'}
+            { path: 'menu', component: AdminItemMenu, name: 'worker.menu' },
+            { path: 'menu/meal/:mealId', component: AdminItemMenu, name: 'menu.order.meal' },
         ]
     }
 ]
