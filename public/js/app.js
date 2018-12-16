@@ -3138,6 +3138,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _AdminItemMenu_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AdminItemMenu.vue */ "./resources/js/components/AdminItemMenu.vue");
 //
 //
 //
@@ -3198,10 +3199,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "ManageRestaurant",
+  components: {
+    'items-menu': _AdminItemMenu_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
   data: function data() {
     return {
       snackbar: false,
@@ -3226,6 +3229,9 @@ __webpack_require__.r(__webpack_exports__);
       }, {
         text: 'Updated At',
         value: 'updated_at'
+      }, {
+        text: 'Delete',
+        align: 'center'
       }],
       tables: [],
       editedIndex: -1,
@@ -3294,8 +3300,7 @@ __webpack_require__.r(__webpack_exports__);
         axios.post('tables', {
           "table_number": this.editedItem.table_number
         }).then(function (response) {
-          console.log(response); //Object.assign(this.tables[this.editedIndex], response.data.data.table_number)
-
+          console.log(response);
           _this4.text = 'Created Table Sucessfully';
           _this4.snackbar = true;
 
@@ -7830,7 +7835,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -20047,79 +20052,86 @@ var render = function() {
     "div",
     [
       _c(
-        "v-toolbar",
-        { attrs: { flat: "", color: "white" } },
+        "v-container",
+        { attrs: { "grid-list-md": "" } },
         [
-          _c("v-toolbar-title", [_vm._v("Restaurant Tables")]),
-          _vm._v(" "),
-          _c("v-divider", {
-            staticClass: "mx-2",
-            attrs: { inset: "", vertical: "" }
-          }),
-          _vm._v(" "),
-          _c("v-spacer"),
-          _vm._v(" "),
           _c(
-            "v-dialog",
-            {
-              attrs: { "max-width": "500px" },
-              model: {
-                value: _vm.dialog,
-                callback: function($$v) {
-                  _vm.dialog = $$v
-                },
-                expression: "dialog"
-              }
-            },
+            "v-toolbar",
+            { attrs: { flat: "", color: "white" } },
             [
-              _c(
-                "v-btn",
-                {
-                  staticClass: "mb-2",
-                  attrs: { slot: "activator", color: "primary", dark: "" },
-                  slot: "activator"
-                },
-                [_vm._v("New Table")]
-              ),
+              _c("v-toolbar-title", [_vm._v("Restaurant Tables")]),
+              _vm._v(" "),
+              _c("v-divider", {
+                staticClass: "mx-2",
+                attrs: { inset: "", vertical: "" }
+              }),
+              _vm._v(" "),
+              _c("v-spacer"),
               _vm._v(" "),
               _c(
-                "v-card",
+                "v-dialog",
+                {
+                  attrs: { "max-width": "500px" },
+                  model: {
+                    value: _vm.dialog,
+                    callback: function($$v) {
+                      _vm.dialog = $$v
+                    },
+                    expression: "dialog"
+                  }
+                },
                 [
-                  _c("v-card-title", [
-                    _c("span", { staticClass: "headline" }, [
-                      _vm._v(_vm._s(_vm.formTitle))
-                    ])
-                  ]),
+                  _c(
+                    "v-btn",
+                    {
+                      staticClass: "mb-2",
+                      attrs: { slot: "activator", color: "primary", dark: "" },
+                      slot: "activator"
+                    },
+                    [_vm._v("New Table")]
+                  ),
                   _vm._v(" "),
                   _c(
-                    "v-card-text",
+                    "v-card",
                     [
+                      _c("v-card-title", [
+                        _c("span", { staticClass: "headline" }, [
+                          _vm._v(_vm._s(_vm.formTitle))
+                        ])
+                      ]),
+                      _vm._v(" "),
                       _c(
-                        "v-container",
-                        { attrs: { "grid-list-md": "" } },
+                        "v-card-text",
                         [
                           _c(
-                            "v-layout",
-                            { attrs: { wrap: "" } },
+                            "v-container",
+                            { attrs: { "grid-list-md": "" } },
                             [
                               _c(
-                                "v-flex",
-                                { attrs: { xs12: "", sm6: "", md4: "" } },
+                                "v-layout",
+                                { attrs: { wrap: "" } },
                                 [
-                                  _c("v-text-field", {
-                                    attrs: { label: "Table number" },
-                                    model: {
-                                      value: _vm.editedItem.table_number,
-                                      callback: function($$v) {
-                                        _vm.$set(
-                                          _vm.editedItem,
-                                          "table_number",
-                                          $$v
-                                        )
-                                      },
-                                      expression: "editedItem.table_number"
-                                    }
-                                  })
+                                  _c(
+                                    "v-flex",
+                                    { attrs: { xs12: "", sm6: "", md4: "" } },
+                                    [
+                                      _c("v-text-field", {
+                                        attrs: { label: "Table number" },
+                                        model: {
+                                          value: _vm.editedItem.table_number,
+                                          callback: function($$v) {
+                                            _vm.$set(
+                                              _vm.editedItem,
+                                              "table_number",
+                                              $$v
+                                            )
+                                          },
+                                          expression: "editedItem.table_number"
+                                        }
+                                      })
+                                    ],
+                                    1
+                                  )
                                 ],
                                 1
                               )
@@ -20128,32 +20140,32 @@ var render = function() {
                           )
                         ],
                         1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-card-actions",
-                    [
-                      _c("v-spacer"),
-                      _vm._v(" "),
-                      _c(
-                        "v-btn",
-                        {
-                          attrs: { color: "blue darken-1", flat: "" },
-                          on: { click: _vm.close }
-                        },
-                        [_vm._v("Cancel")]
                       ),
                       _vm._v(" "),
                       _c(
-                        "v-btn",
-                        {
-                          attrs: { color: "blue darken-1", flat: "" },
-                          on: { click: _vm.save }
-                        },
-                        [_vm._v("Save")]
+                        "v-card-actions",
+                        [
+                          _c("v-spacer"),
+                          _vm._v(" "),
+                          _c(
+                            "v-btn",
+                            {
+                              attrs: { color: "blue darken-1", flat: "" },
+                              on: { click: _vm.close }
+                            },
+                            [_vm._v("Cancel")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "v-btn",
+                            {
+                              attrs: { color: "blue darken-1", flat: "" },
+                              on: { click: _vm.save }
+                            },
+                            [_vm._v("Save")]
+                          )
+                        ],
+                        1
                       )
                     ],
                     1
@@ -20163,143 +20175,152 @@ var render = function() {
               )
             ],
             1
-          )
-        ],
-        1
-      ),
-      _vm._v(" "),
-      _c(
-        "v-data-table",
-        {
-          staticClass: "elevation-1",
-          attrs: {
-            headers: _vm.headers,
-            items: _vm.tables,
-            pagination: _vm.pagination,
-            loading: _vm.loadingTableEffect,
-            rowsPerPage: _vm.rows
-          },
-          on: {
-            "update:pagination": function($event) {
-              _vm.pagination = $event
-            }
-          },
-          scopedSlots: _vm._u([
-            {
-              key: "items",
-              fn: function(props) {
-                return [
-                  _c("td", { staticClass: "text-xs-center" }, [
-                    _vm._v(_vm._s(props.item.table_number))
-                  ]),
-                  _vm._v(" "),
-                  _c("td", { staticClass: "text-xs-left" }, [
-                    _vm._v(_vm._s(props.item.created_at.date))
-                  ]),
-                  _vm._v(" "),
-                  _c("td", { staticClass: "text-xs-left" }, [
-                    _vm._v(_vm._s(props.item.updated_at.date))
-                  ]),
-                  _vm._v(" "),
-                  _c(
-                    "td",
-                    { staticClass: "justify-center layout px-0" },
-                    [
-                      _c(
-                        "v-icon",
-                        {
-                          attrs: { small: "" },
-                          on: {
-                            click: function($event) {
-                              _vm.deleteItem(props.item)
-                            }
-                          }
-                        },
-                        [_vm._v("delete")]
-                      )
-                    ],
-                    1
-                  )
-                ]
-              }
-            }
-          ])
-        },
-        [
-          _c("v-progress-linear", {
-            attrs: { slot: "progress", color: "blue", indeterminate: "" },
-            slot: "progress"
-          }),
-          _vm._v(" "),
-          _c(
-            "template",
-            { slot: "no-data" },
-            [
-              _c(
-                "v-alert",
-                {
-                  attrs: { value: _vm.noData, color: "error", icon: "warning" }
-                },
-                [
-                  _vm._v(
-                    "\n                Sorry, nothing to display here :(\n            "
-                  )
-                ]
-              )
-            ],
-            1
           ),
           _vm._v(" "),
           _c(
-            "template",
-            { slot: "no-data" },
+            "v-data-table",
+            {
+              staticClass: "elevation-1",
+              attrs: {
+                headers: _vm.headers,
+                items: _vm.tables,
+                pagination: _vm.pagination,
+                loading: _vm.loadingTableEffect,
+                rowsPerPage: _vm.rows
+              },
+              on: {
+                "update:pagination": function($event) {
+                  _vm.pagination = $event
+                }
+              },
+              scopedSlots: _vm._u([
+                {
+                  key: "items",
+                  fn: function(props) {
+                    return [
+                      _c("td", { staticClass: "text-xs-center" }, [
+                        _vm._v(_vm._s(props.item.table_number))
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "text-xs-left" }, [
+                        _vm._v(_vm._s(props.item.created_at.date))
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "text-xs-left" }, [
+                        _vm._v(_vm._s(props.item.updated_at.date))
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "td",
+                        { staticClass: "justify-center layout px-0" },
+                        [
+                          _c(
+                            "v-icon",
+                            {
+                              attrs: { small: "" },
+                              on: {
+                                click: function($event) {
+                                  _vm.deleteItem(props.item)
+                                }
+                              }
+                            },
+                            [_vm._v("delete")]
+                          )
+                        ],
+                        1
+                      )
+                    ]
+                  }
+                }
+              ])
+            },
             [
+              _c("v-progress-linear", {
+                attrs: { slot: "progress", color: "blue", indeterminate: "" },
+                slot: "progress"
+              }),
+              _vm._v(" "),
+              _c(
+                "template",
+                { slot: "no-data" },
+                [
+                  _c(
+                    "v-alert",
+                    {
+                      attrs: {
+                        value: _vm.noData,
+                        color: "error",
+                        icon: "warning"
+                      }
+                    },
+                    [
+                      _vm._v(
+                        "\n                    Sorry, nothing to display here :(\n                "
+                      )
+                    ]
+                  )
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "template",
+                { slot: "no-data" },
+                [
+                  _c(
+                    "v-btn",
+                    {
+                      attrs: { color: "primary" },
+                      on: { click: _vm.initialize }
+                    },
+                    [_vm._v("Reset")]
+                  )
+                ],
+                1
+              )
+            ],
+            2
+          ),
+          _vm._v(" "),
+          _c(
+            "v-snackbar",
+            {
+              attrs: {
+                color: _vm.color,
+                "multi-line": _vm.mode === "multi-line",
+                timeout: _vm.timeout,
+                vertical: _vm.mode === "vertical"
+              },
+              model: {
+                value: _vm.snackbar,
+                callback: function($$v) {
+                  _vm.snackbar = $$v
+                },
+                expression: "snackbar"
+              }
+            },
+            [
+              _vm._v("\n            " + _vm._s(_vm.text) + "\n            "),
               _c(
                 "v-btn",
-                { attrs: { color: "primary" }, on: { click: _vm.initialize } },
-                [_vm._v("Reset")]
+                {
+                  attrs: { dark: "", flat: "" },
+                  on: {
+                    click: function($event) {
+                      _vm.snackbar = false
+                    }
+                  }
+                },
+                [_vm._v(" Close")]
               )
             ],
             1
           )
         ],
-        2
+        1
       ),
       _vm._v(" "),
-      _c(
-        "v-snackbar",
-        {
-          attrs: {
-            color: _vm.color,
-            "multi-line": _vm.mode === "multi-line",
-            timeout: _vm.timeout,
-            vertical: _vm.mode === "vertical"
-          },
-          model: {
-            value: _vm.snackbar,
-            callback: function($$v) {
-              _vm.snackbar = $$v
-            },
-            expression: "snackbar"
-          }
-        },
-        [
-          _vm._v("\n            " + _vm._s(_vm.text) + "\n        "),
-          _c(
-            "v-btn",
-            {
-              attrs: { dark: "", flat: "" },
-              on: {
-                click: function($event) {
-                  _vm.snackbar = false
-                }
-              }
-            },
-            [_vm._v(" Close")]
-          )
-        ],
-        1
-      )
+      _c("items-menu")
     ],
     1
   )
