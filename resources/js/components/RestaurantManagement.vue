@@ -123,17 +123,18 @@
                 this.dialog = true
             },
             deleteItem (item) {
-                const index = this.tables.indexOf(item);
-                axios.delete('table/delete/'+item.table_number).then(response => {
-                    if(response.status === 204) {
-                        this.text = 'Deleted Table Sucessfully';
-                        this.snackbar = true;
-                        this.initialize();
-                    }
-                }).catch(error => {
-                    console.log(error);
-                });
-                confirm('Are you sure you want to delete this table?')
+                if(confirm('Are you sure you want to delete table ' + item.table_number +' ?')){
+                    const index = this.tables.indexOf(item);
+                    axios.delete('table/delete/'+item.table_number).then(response => {
+                        if(response.status === 204) {
+                            this.text = 'Deleted Table Sucessfully';
+                            this.snackbar = true;
+                            this.initialize();
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                    });
+                }
             },
             close () {
                 this.dialog = false

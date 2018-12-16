@@ -2256,16 +2256,18 @@ __webpack_require__.r(__webpack_exports__);
     deleteItem: function deleteItem(item) {
       var _this = this;
 
-      axios.delete('items/' + item.id).then(function (response) {
-        if (response.status === 204) {
-          _this.text = 'Deleted Item Sucessfully';
-          _this.snackbar = true;
+      if (confirm('Are you sure you want to delete ' + item.name + ' ?')) {
+        axios.delete('items/' + item.id).then(function (response) {
+          if (response.status === 204) {
+            _this.text = 'Deleted Item Sucessfully';
+            _this.snackbar = true;
 
-          _this.$emit('updateList');
-        }
-      }).catch(function (error) {
-        console.log(error);
-      });
+            _this.$emit('updateList');
+          }
+        }).catch(function (error) {
+          console.log(error);
+        });
+      }
     }
   }
 });
@@ -3304,18 +3306,19 @@ __webpack_require__.r(__webpack_exports__);
     deleteItem: function deleteItem(item) {
       var _this2 = this;
 
-      var index = this.tables.indexOf(item);
-      axios.delete('table/delete/' + item.table_number).then(function (response) {
-        if (response.status === 204) {
-          _this2.text = 'Deleted Table Sucessfully';
-          _this2.snackbar = true;
+      if (confirm('Are you sure you want to delete table ' + item.table_number + ' ?')) {
+        var index = this.tables.indexOf(item);
+        axios.delete('table/delete/' + item.table_number).then(function (response) {
+          if (response.status === 204) {
+            _this2.text = 'Deleted Table Sucessfully';
+            _this2.snackbar = true;
 
-          _this2.initialize();
-        }
-      }).catch(function (error) {
-        console.log(error);
-      });
-      confirm('Are you sure you want to delete this table?');
+            _this2.initialize();
+          }
+        }).catch(function (error) {
+          console.log(error);
+        });
+      }
     },
     close: function close() {
       var _this3 = this;
@@ -7678,7 +7681,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -7868,7 +7871,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -18909,46 +18912,46 @@ var render = function() {
                       }
                     },
                     [_vm._v("delete")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-snackbar",
+                    {
+                      attrs: {
+                        color: _vm.color,
+                        "multi-line": _vm.mode === "multi-line",
+                        timeout: _vm.timeout,
+                        vertical: _vm.mode === "vertical"
+                      },
+                      model: {
+                        value: _vm.snackbar,
+                        callback: function($$v) {
+                          _vm.snackbar = $$v
+                        },
+                        expression: "snackbar"
+                      }
+                    },
+                    [
+                      _vm._v("\n\t\t\t\t" + _vm._s(_vm.text) + "\n\t\t\t\t"),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { dark: "", flat: "" },
+                          on: {
+                            click: function($event) {
+                              _vm.snackbar = false
+                            }
+                          }
+                        },
+                        [_vm._v(" Close")]
+                      )
+                    ],
+                    1
                   )
                 ],
                 1
               )
-            : _vm._e(),
-          _vm._v(" "),
-          _c(
-            "v-snackbar",
-            {
-              attrs: {
-                color: _vm.color,
-                "multi-line": _vm.mode === "multi-line",
-                timeout: _vm.timeout,
-                vertical: _vm.mode === "vertical"
-              },
-              model: {
-                value: _vm.snackbar,
-                callback: function($$v) {
-                  _vm.snackbar = $$v
-                },
-                expression: "snackbar"
-              }
-            },
-            [
-              _vm._v("\n\t\t\t" + _vm._s(_vm.text) + "\n\t\t\t"),
-              _c(
-                "v-btn",
-                {
-                  attrs: { dark: "", flat: "" },
-                  on: {
-                    click: function($event) {
-                      _vm.snackbar = false
-                    }
-                  }
-                },
-                [_vm._v(" Close")]
-              )
-            ],
-            1
-          )
+            : _vm._e()
         ],
         1
       )

@@ -32,12 +32,12 @@
 			</v-list>
 			<div v-if="this.$route.name == 'restaurantManagement' && this.$store.state.user.type == 'manager'" >
 				<v-icon arge color="red darken-2" dark right @click.prevent="deleteItem(item)">delete</v-icon>
+				<v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
+							:timeout="timeout" :vertical="mode === 'vertical'">
+					{{ text }}
+					<v-btn dark flat @click="snackbar = false"> Close</v-btn>
+				</v-snackbar>
 			</div>
-			<v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
-						:timeout="timeout" :vertical="mode === 'vertical'">
-				{{ text }}
-				<v-btn dark flat @click="snackbar = false"> Close</v-btn>
-			</v-snackbar>
 		</v-card-text>
 	</v-card>
 </template>
@@ -70,17 +70,18 @@
                 }
             },
             deleteItem(item){
-                axios.delete('items/'+item.id).
-				then(response => {
-                    if(response.status === 204) {
-                        this.text = 'Deleted Item Sucessfully';
-						this.snackbar = true;
-                        this.$emit('updateList');
-                    }
-                }).catch(error => {
-                    console.log(error);
-                });
-			}
+                if( confirm('Are you sure you want to delete ' + item.name + ' ?')) {
+                    axios.delete('items/' + item.id).then(response => {
+                        if (response.status === 204) {
+                            this.text = 'Deleted Item Sucessfully';
+                            this.snackbar = true;
+                            this.$emit('updateList');
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                    });
+                }
+            }
         },
     }
 </script>
