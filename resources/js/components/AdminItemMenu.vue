@@ -49,10 +49,12 @@
 							:search="filter">
 								<v-flex slot="item" slot-scope="props"
 										xs12 sm6 md4 lg3>
-									<MenuCard :item="props.item" 
+									<MenuCard
+										:item="props.item"
 										:meal="meal"
 										@onItemSelect="selectItem"
-										@onItemDeselect="deselectItem"></MenuCard>
+										@onItemDeselect="deselectItem"
+										@updateList="getItems"></MenuCard>
 								</v-flex>
 							</v-data-iterator>
 						</v-card-text>
@@ -114,9 +116,11 @@
             getItems() {
                 axios.get(`/items/type/dish`)
                     .then(response => {
+                        this.items = [];
                         this.items.push(response.data.data);
                         axios.get(`/items/type/drink`)
-                            .then(response => this.items.push(response.data.data))
+                            .then(response =>
+								this.items.push(response.data.data))
                             .catch(error => {
                                 console.log(error);
                             })
@@ -124,7 +128,6 @@
                     .catch(error => {
                         console.log(error);
                     })
-                
 			},
 			selectItem(item) {
 				this.selectedItems.push(item);

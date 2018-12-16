@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Resources\Item as ItemResource;
 use App\Item;
+use Illuminate\Support\Facades\DB;
 
 class ItemControllerAPI extends Controller
 {
@@ -71,6 +72,27 @@ class ItemControllerAPI extends Controller
      */
     public function destroy($id)
     {
-        //
+        $item = Item::findOrFail($id);
+
+        $restriction = DB::table('orders')->where('item_id', $id)->count();
+        if($restriction>0) {
+            return $this->softDelete($item);
+        }
+
+        $restriction += DB::table('invoice_items')->where('item_id', $id)->count();
+
+        if($restriction>0){
+            return $this->softDelete($item);
+        }else{
+            $item->forceDelete();
+        }
+        return response()->json($item, 204);
+    }
+
+
+    public function softDelete($item)
+    {
+        $item->delete();
+        return response()->json($item, 204);
     }
 }

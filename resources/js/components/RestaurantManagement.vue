@@ -36,7 +36,8 @@
                     <td class="text-xs-left">{{ props.item.updated_at.date }}</td>
                     <td class="justify-center layout px-0">
                         <!--<v-icon small class="mr-2" @click="editItem(props.item)">edit</v-icon>-->
-                        <v-icon small @click="deleteItem(props.item)">delete</v-icon>
+                        <!--<v-icon arge color="red darken-2" dark right>delete</v-icon>-->
+                        <v-icon arge color="red darken-2" @click="deleteItem(props.item)">delete</v-icon>
                     </td>
                 </template>
                 <template slot="no-data">
@@ -48,11 +49,12 @@
                     <v-btn color="primary" @click="initialize">Reset</v-btn>
                 </template>
             </v-data-table>
-            <v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
+           <v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
                         :timeout="timeout" :vertical="mode === 'vertical'">
                 {{ text }}
                 <v-btn dark flat @click="snackbar = false"> Close</v-btn>
             </v-snackbar>
+
         </v-container>
         <items-menu></items-menu>
     </div>
