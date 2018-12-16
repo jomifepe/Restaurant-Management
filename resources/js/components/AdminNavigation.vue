@@ -120,7 +120,12 @@
                         title: 'Menu',
                         icon: 'fas fa-list-ul',
                         target: '/admin/menu',
-                        visible: true }
+                        visible: true },
+                    {
+                        title: 'Management',
+                        icon: 'build',
+                        target: '/admin/restaurantManagement',
+                        visible: ['manager']}
                 ],
                 mini: true,
                 right: null

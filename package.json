@@ -12,6 +12,8 @@
   "dependencies": {
     "ajv": "^6.6.1",
     "babel-helpers": "^6.24.1",
+    "currency-formatter": "^1.5.3",
+    "currency.js": "^1.2.1",
     "imagemin": "^6.0.0",
     "moment": "^2.22.2",
     "vue-loader": "^15.4.2",

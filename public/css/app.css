@@ -15155,6 +15155,23 @@ readers do not read off random characters that represent icons */
   font-weight: 400;
 }
 
+.chip-btn {
+  height: 34px;
+}
+
+.rounded-text-field {
+  border-radius: 28px;
+}
+
+.v-card--reveal {
+  align-items: center;
+  bottom: 0;
+  justify-content: center;
+  opacity: 0.5;
+  position: absolute;
+  width: 100%;
+}
+
 .v-sidebar-menu {
   z-index: 9999;
 }

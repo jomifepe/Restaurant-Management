@@ -22,7 +22,7 @@ export default [
             { path: '', component: Dashboard, name: 'dashboard' },
             { path: 'profile', component: Profile, name: 'profile' },
             { path: 'meals', component: Meals, name: 'meals' },
-            { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'}
+            { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'},
             { path: 'menu', component: AdminItemMenu, name: 'worker.menu' },
             { path: 'menu/meal/:mealId', component: AdminItemMenu, name: 'menu.order.meal' },
         ]
