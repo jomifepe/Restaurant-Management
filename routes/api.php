@@ -34,3 +34,13 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
 
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
 Route::get('meals/{mealId}/items', 'OrderControllerAPI@mealItems')->name('meal.orders.items');
+
+
+
+Route::post('tables', 'TableControllerAPI@store');
+Route::get('tables', 'TableControllerAPI@index');
+Route::put('table/{id}', 'TableControllerAPI@update');
+Route::delete('table/delete/{id}', 'TableControllerAPI@destroy');
+//Route::delete('table/softDelete/{id}', 'TableControllerAPI@softDelete');
+
+

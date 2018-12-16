@@ -105,7 +105,8 @@
                 items: [
                     { title: 'Home', icon: 'dashboard', target: '/admin' },
                     { title: 'Profile', icon: 'person', target: '/admin/profile' },
-                    { title: 'Meals', icon: 'restaurant', target: '/admin/meals' }
+                    { title: 'Meals', icon: 'restaurant', target: '/admin/meals' },
+                    { title: 'Management', icon: 'build', target: '/admin/restaurantManagement'},
                 ],
                 mini: true,
                 right: null
