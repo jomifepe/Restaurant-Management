@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Resources\Item as ItemResource;
 use App\Item;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Storage;
 
 class ItemControllerAPI extends Controller
 {
@@ -27,7 +29,25 @@ class ItemControllerAPI extends Controller
      */
     public function store(Request $request)
     {
-        //
+         $request->validate([
+            'name' => 'required|String',
+            'price' => 'required|numeric',
+            'description' => 'required|String',
+            'type' => 'required|in:drink,dish',
+            'photo_url' => 'nullable'
+       ]);
+
+        $newItem = new Item();
+        $newItem->fill($request->all());
+
+        if ($request->input("photo_url")) {
+            $fileName = Storage::disk('public')->putFile('profiles', Input::file('photo_url'));
+            $data['photo_url'] = explode('/', $fileName)[1];
+            $newItem->photo_url = $fileName;
+        }
+
+        //$newItem->save();
+        return response()->json(new ItemResource($newItem), 201);
     }
 
     /**

@@ -81,15 +81,10 @@
                 rowsPerPage: 10,
             },
             headers: [
-                {
-                    text: 'Table Number',
-                    align: 'left',
-                    value: 'table_number'
-                },
+                { text: 'Table Number', align: 'left', value: 'table_number'},
                 { text: 'Created At', value: 'created_at' },
                 { text: 'Updated At', value: 'updated_at' },
-                { text: 'Delete',   align: 'center'},
-            ],
+                { text: 'Delete',   align: 'center', value: ''} ],
             tables: [],
             editedIndex: -1,
             editedItem: {
@@ -146,9 +141,9 @@
             save () {
                 if (this.editedIndex > -1) {
                 } else {
-                    axios.post('tables',{
-                        "table_number": this.editedItem.table_number,
-                    }).then(response => {
+                    axios.post('tables',
+                        {"table_number": this.editedItem.table_number,})
+                    .then(response => {
                         console.log(response);
                         this.text = 'Created Table Sucessfully';
                         this.snackbar = true;

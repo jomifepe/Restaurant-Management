@@ -2,12 +2,16 @@
     <v-container grid-list-md>
 		<v-flex zs12 class="elevation-1">
 			<v-toolbar class="pb-3 grey lighten-3 elevation-0" light tabs>
+
 				<v-text-field v-model="filter"
 							class="mx-3 rounded-text-field"
 							flat small
 							label="Search"
 							prepend-inner-icon="search"
 							solo-inverted></v-text-field>
+
+				<NewItem> </NewItem>
+
 				<template v-if="meal">
 					<v-chip color="teal"
 						text-color="white">
@@ -90,11 +94,13 @@
 	import axios from 'axios';
 	import currency from 'currency.js'
 	import moment from 'moment';
+    import NewItem from "./NewItem";
 	// const moment = require('moment');
 
     export default {
 		name: "OrderItemMenu",
 		components: {
+            NewItem,
 			MenuCard
 		},
         data: () => ({

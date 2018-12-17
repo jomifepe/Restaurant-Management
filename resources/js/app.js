@@ -13,6 +13,10 @@ import store from './stores/global-store';
 import VueRouter from 'vue-router';
 import Vuelidate from 'vuelidate'
 import VueMoment from 'vue-moment'
+import VeeValidate from 'vee-validate';
+
+Vue.use(VeeValidate);
+
 
 import Routes from './routes';
 import App from './components/App.vue';
