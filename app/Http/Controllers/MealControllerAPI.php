@@ -71,7 +71,16 @@ class MealControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'table_number' => 'required|exists:restaurant_tables',
+            'state' => 'required|in:active,terminated,paid,not paid',
+            'start' => 'required|date',
+            'responsible_waiter_id' => 'required|integer|exists:users,id'
+        ]);
+
+        $meal = Meal::findOrFail($id);
+        $meal->update($request->all());
+        return new MealResource($meal);
     }
 
     /**

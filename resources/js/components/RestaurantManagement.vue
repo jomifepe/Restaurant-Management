@@ -36,8 +36,8 @@
                     <td class="text-xs-left">{{ props.item.updated_at.date }}</td>
                     <td class="justify-center layout px-0">
                         <!--<v-icon small class="mr-2" @click="editItem(props.item)">edit</v-icon>-->
-                        <!--<v-icon arge color="red darken-2" dark right>delete</v-icon>-->
-                        <v-icon arge color="red darken-2" @click="deleteItem(props.item)">delete</v-icon>
+                        <!--<v-icon large color="red darken-2" dark right>delete</v-icon>-->
+                        <v-icon color="red darken-2" @click="deleteItem(props.item)">delete</v-icon>
                     </td>
                 </template>
                 <template slot="no-data">

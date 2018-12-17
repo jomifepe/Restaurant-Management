@@ -1,39 +1,63 @@
 <template>
-        <!-- Default form login -->
-        <form class="jumbotron  text-center border border-light p-5">
+    <v-container class="blue-grey lighten-5 pa-5 rounded" fluid>
+        <v-layout wrap>
+            <v-flex xs12>
+                <v-form v-model="valid">
+                    <v-text-field box
+                        v-model="usernameOrEmail"
+                        :rules="usernameOrEmailRules"
+                        label="Username or email"
+                        required></v-text-field>
+                    <v-text-field box
+                        v-model="password"
+                        :rules="passwordRules"
+                        label="Password"
+                        :append-icon="showPassword ? 'visibility_off' : 'visibility'"
+                        :type="showPassword ? 'text' : 'password'"
+                        @click:append="showPassword = !showPassword"
+                        required></v-text-field>
+
+                    <v-btn :disabled="!valid" @click="login">Login</v-btn>
+                </v-form>
+            </v-flex>
+        </v-layout>
+    </v-container>
+        <!-- <form class="jumbotron  text-center border border-light p-5">
             <p class="h4 mb-4">Login</p>
-            <!-- Email -->
             <input type="email" id="defaultLoginFormEmail" class="form-control mb-4" placeholder="E-mail" v-model.trim="user.email">
-            <!-- Password -->
             <input type="password" id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password" v-model="user.password">
-            <div class="d-flex justify-content-around">
-                <div>
-                    <!-- Forgot password -->
-                    <a href="">Forgot password?</a>
-                </div>
-            </div>
-            <!-- Sign in button -->
             <button class="btn btn-info btn-block my-4" type="submit" v-on:click.prevent="login">Login</button>
-        </form>
-        <!-- Default form login -->
-    <!--</navigation>-->
+        </form> -->
 </template>
 
 <script type="text/javascript">
 
     export default {
-        data() {
-            return {
-                user: {
-                    email: "",
-                    password: ""
-                }
-            }
-        },
+        data: () => ({
+            valid: false,
+            usernameOrEmail: '',
+            password: '',
+            usernameOrEmailRules: [
+                v => !!v || 'Username or Email is required',
+            ],
+            passwordRules: [
+                v => !!v || 'Password is required',
+            ],
+            showPassword: false
+        }),
         methods: {
             login() {
+                let re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+                let isValidEmail = re.test(this.usernameOrEmail);
+                let user = {
+                    [isValidEmail ? 'email' : 'username']: this.usernameOrEmail,
+                    'password': this.password
+                };
+                this.performLogin(user);
+            },
+            performLogin(user) {
                 let toast;
-                axios.post('login', this.user)
+                axios.post('login', user)
                     .then(response => {
                         if (response.status === 200) {
                             toast = this.$toasted.show(`Signing in...`, { 
