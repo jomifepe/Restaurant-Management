@@ -10,25 +10,54 @@
                     <v-spacer></v-spacer>
                     <CreateMeal @onCreate="onMealCreated"></CreateMeal>
                 </v-toolbar>
-                <v-data-table :headers="myMealsHeaders"
-                        :items="meals"
-                        class="elevation-1">
-                    <template slot="items" slot-scope="props">
-                        <tr class="clickable" @click="showMealItems(props.item)">
-                            <td>{{ props.item.table_number }}</td>
-                            <td>{{ formatDate(props.item.start) }}</td>
-                            <td>{{ formatDate(props.item.created_at.date) }}</td>
-                            <td>{{ props.item.total_price_preview }}€</td>
-                            <td :class="getStateColor(props.item.state)">
-                                <strong>{{ props.item.state }}</strong>
-                            </td>
-                        </tr>
-                    </template>
-                </v-data-table>
+                <v-card>
+                    <v-card-title>
+                        <v-spacer></v-spacer>
+                        <v-text-field v-model="search" append-icon="search" 
+                            label="Search" single-line hide-details></v-text-field>
+                    </v-card-title>
+                    <v-data-table :headers="myMealsHeaders" :items="meals" class="elevation-1"
+                            :search="search" :pagination.sync="pagination" :loading="myMealsProgressBar">
+                        <v-progress-linear slot="progress" color="blue-grey" indeterminate></v-progress-linear>
+                        <template slot="items" slot-scope="props">
+                            <tr class="clickable" @click="showMealItems(props.item)">
+                                <td>{{ props.item.table_number }}</td>
+                                <td>{{ formatDate(props.item.start) }}</td>
+                                <td>{{ formatDate(props.item.created_at.date) }}</td>
+                                <td>{{ props.item.total_price_preview }}€</td>
+                                <td :class="getStateColor(props.item.state)">
+                                    <strong>{{ props.item.state }}</strong>
+                                </td>
+                                <td class="justify-center layout px-0">
+                                    <v-icon small v-if="props.item.state === 'active'" @click="terminateMeal(props.item)">
+                                        fas fa-user-check
+                                    </v-icon>
+                                </td>
+                            </tr>
+                        </template>
+                    </v-data-table>
+                </v-card>
             </v-flex>
             <v-flex xs12 id="mealOrders" class="mt-5">
-                <MealOrders v-if="mealItemsShown" :meal="chosenMeal"></MealOrders>
+                <router-view></router-view>
             </v-flex>
+            <v-dialog v-model="terminateMealDialog" max-width="450">
+				<v-card>
+					<v-card-text class="subheading">
+						Are you sure you want to declare this meal as <span class="orange--text darken-1">terminated</span> ?
+					</v-card-text>
+					<v-card-actions>
+						<v-spacer></v-spacer>
+						<v-btn flat @click="terminateMealDialog = false; mealToTerminate = null">
+							No
+						</v-btn>
+						<v-btn color="orange darken-1" flat="flat" @click="performMealTermination"
+                            alt="Terminate meal">
+							Yes
+						</v-btn>
+					</v-card-actions>
+				</v-card>
+			</v-dialog>
         </v-layout>
     </v-container>
 </template>
@@ -53,26 +82,26 @@
                     { text: 'Started', value: 'start' },
                     { text: 'Created', value: 'created_at' },
                     { text: 'Price', value: 'total_price_preview' },
-                    { text: 'State', value: 'state' }
+                    { text: 'State', value: 'state' },
+                    { text: 'Actions', value: '', align: 'center' }
                 ],
-                chosenMeal: null,
-                mealItemsShown: false,
-                items: [],
-                itemsRowsPerPageItems: [4, 8, 12],
-                itemsPagination: {
-                    rowsPerPage: 4
+                search: '',
+                pagination: {
+                    sortBy: 'state'
                 },
-                alertShown: false,
-                alertMessage: '',
-                alertType: 'success'
+                myMealsProgressBar: true,
+                mealToTerminate: null,
+                terminateMealDialog: false
             }
         },
         methods: {
             loadMeals() {
+                this.myMealsProgressBar = true;
                 axios.get(`/meals/waiter/${this.$store.state.user.id}`)
                     .then(response => {
                         if (response.status === 200) {
                             this.meals = response.data.data;
+                            this.myMealsProgressBar = false;
                         }
                     });
             },
@@ -87,18 +116,49 @@
             },
             getStateColor(state) {
                 return state === 'active' ? 'red--text' :
-                    state === 'terminated' ? 'yellow--text' :
+                    state === 'terminated' ? 'orange--text' :
                         state === 'not paid' ? 'blue--text' : 'green--text';
             },
             showMealItems(meal) {
-                this.chosenMeal = meal;
-                this.mealItemsShown = true;
+                this.$router.push({ name: 'meal.orders', params: { mealId: meal.id }});
+            },
+            terminateMeal(meal) {
+                this.mealToTerminate = meal;
+                this.terminateMealDialog = true;
+            },
+            performMealTermination() {
+                this.terminateMealDialog = false;
+
+                let meal = this.mealToTerminate;
+                meal.state = 'terminated';
+                axios.patch(`/meals/${meal.id}`, meal)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.$toasted.show('Meal successfully terminated', {
+                                icon : 'check',
+                                position: "bottom-center",
+                                duration : 2000
+                            });
+                            this.loadMeals();
+                        } else {
+                            this.$toasted.show('Failed to terminated meal', {
+                                icon : 'error',
+                                position: "bottom-center",
+                                duration : 3000
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.$toasted.show('Failed to terminated meal', {
+                            icon : 'error',
+                            position: "bottom-center",
+                            duration : 3000
+                        });
+                    })
+
+                this.mealToTerminate = null;
             }
-        },
-        showAlertMessage(show, message, type) {
-            this.alertMessage = message;
-            this.alertType = type;
-            this.alertShown = true;
         },
         mounted() {
             this.$store.commit('setPanelTitle', 'Meals');

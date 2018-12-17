@@ -51,7 +51,7 @@ class OrderControllerAPI extends Controller
      */
     public function show($id)
     {
-        //
+        return new OrderResource(Order::find($id));
     }
 
     /**
@@ -86,7 +86,16 @@ class OrderControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'state' => 'required|in:pending,confirmed,in preparation,prepared,delivered,not delivered',
+            'item_id' => 'required|integer|exists:items,id',
+            'meal_id' => 'required|integer|exists:meals,id',
+            'start' => 'required|date'
+        ]);
+
+        $order = Order::findOrFail($id);
+        $order->update($request->all());
+        return new OrderResource($order);
     }
 
     /**
@@ -97,6 +106,8 @@ class OrderControllerAPI extends Controller
      */
     public function destroy($id)
     {
-        //
+        $order = Order::findOrFail($id);
+        $order->delete();
+        return response()->json(null, 204);
     }
 }
