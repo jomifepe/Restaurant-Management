@@ -17,8 +17,7 @@ class TableControllerAPI extends Controller
      */
     public function index()
     {
-        //return response()->json(null, 500);
-        return TableResource::collection(Table::all());
+        return TableResource::collection(Table::withTrashed()->get());
     }
 
     /**
@@ -53,6 +52,13 @@ class TableControllerAPI extends Controller
     public function show($id)
     {
         //
+    }
+
+    public function restore($id)
+    {
+        $table = Table::onlyTrashed()->where('table_number', $id)->firstOrFail();
+        $table->restore();
+        return response()->json(new TableResource($table), 200);
     }
 
     /**

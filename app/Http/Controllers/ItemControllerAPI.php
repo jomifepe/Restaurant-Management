@@ -30,23 +30,24 @@ class ItemControllerAPI extends Controller
     public function store(Request $request)
     {
          $request->validate([
-            'name' => 'required|String',
+            'name' => 'required|String|unique:items,name',
             'price' => 'required|numeric',
             'description' => 'required|String',
             'type' => 'required|in:drink,dish',
-            'photo_url' => 'nullable'
+            'photo_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
        ]);
 
         $newItem = new Item();
         $newItem->fill($request->all());
 
-        if ($request->input("photo_url")) {
-            $fileName = Storage::disk('public')->putFile('profiles', Input::file('photo_url'));
-            $data['photo_url'] = explode('/', $fileName)[1];
-            $newItem->photo_url = $fileName;
+        if ($request->hasFile('photo_url'))
+        {
+            $fileName = Storage::disk('public')->putFile('items', Input::file('photo_url'));
+            $photoName = explode('/', $fileName)[1];
+            $newItem->photo_url = $photoName;
         }
 
-        //$newItem->save();
+        $newItem->save();
         return response()->json(new ItemResource($newItem), 201);
     }
 

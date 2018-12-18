@@ -30,7 +30,8 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
                      'invoices' => 'InvoiceControllerAPI',
                      'orders'   => 'OrderControllerAPI',
                      'items'    => 'ItemControllerAPI',
-                     'users'    => 'UserControllerAPI']);
+                     'users'    => 'UserControllerAPI',
+                     'tables'    => 'TableControllerAPI']);
 
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
 Route::get('meals/{mealId}/items', 'OrderControllerAPI@mealItems')->name('meal.orders.items');
@@ -38,10 +39,8 @@ Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type'
 
 
 
-Route::post('tables', 'TableControllerAPI@store');
-Route::get('tables', 'TableControllerAPI@index');
-Route::put('table/{id}', 'TableControllerAPI@update');
-Route::delete('table/delete/{id}', 'TableControllerAPI@destroy');
-//Route::delete('table/softDelete/{id}', 'TableControllerAPI@softDelete');
+Route::put('table/restore/{id}', 'TableControllerAPI@restore');
+
+
 
 

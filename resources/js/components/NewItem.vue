@@ -1,11 +1,6 @@
 <template>
     <div class="text-xs-center">
-        <v-btn
-                :disabled="loading"
-                :loading="loading"
-                dark class="mb-2"
-                color="primary"
-                @click="loading = true">
+        <v-btn :disabled="loading" :loading="loading" dark class="mb-2" color="primary" @click="loading = true">
             New Item
         </v-btn>
         <v-dialog
@@ -35,6 +30,11 @@
                         </v-card-title>
                         <form @submit.prevent="validateBeforeSubmit">
                             <v-card-text>
+                                <div v-if="hasValidationErrors">
+                                    <ul class="alert alert-danger">
+                                        <li v-for="(value, key, index) in validationErrors">{{ value }}</li>
+                                    </ul>
+                                </div>`
                                 <v-container grid-list-md>
                                     <v-layout wrap>
                                         <v-flex xs12 sm6 md4>
@@ -46,7 +46,7 @@
                                             <span style="color:red">{{ errors.first('price') }}</span>
                                         </v-flex>
                                         <v-flex xs12 sm6 md4>
-                                            <input type="file" @change="onFileSelected">
+                                            <input type="file" name="photo_url" @change="onFileSelected">
                                         </v-flex>
                                         <v-flex xs12>
                                             <v-text-field v-model="item.description" v-validate="'required|alpha_spaces'" name="description" type="text" label="Description*" required></v-text-field>
@@ -95,6 +95,8 @@
                 loading: false,
                 dialog: false,
                 selectedFile: null,
+                hasValidationErrors: false,
+                validationErrors:[],
                 item:{
                     name: '',
                     type:'',
@@ -106,41 +108,61 @@
         },
         methods: {
             save() {
-                console.log('entered SAVED function');
+                let toast;
+                let form = new FormData;
                 console.log(this.item);
 
-                axios.post('items',
-                    { "name": this.item.name,
-                     "price": this.item.price,
-                     "description": this.item.description,
-                     "type": this.item.type,
-                     "photo_url": this.item.photo,
-                    }).
-                then(response =>{
-                    console.log('Saved Success!');
-                    console.log(response);
+                form.append('name', this.item.name);
+                form.append('price', this.item.price);
+                form.append('description', this.item.description);
+                form.append('type', this.item.type);
+                form.append('photo_url', this.item.photo);
+                //const config = {headers: {'Content-Type': 'multipart/form-data'}};
 
+                axios.post('items', form).then(response =>{
+                    toast = this.$toasted.show('New item created successfully', {
+                        icon: "check",
+                        position: "bottom-center",
+                        duration : 3000
+                    });
+                    this.$emit('onGetItems');
+                    this.clearItemData();
+                    this.dialog = false;
                 }).catch(error =>{
-                    console.log(error);
+                    this.hasErrors(error.response.data.errors);
+                    toast = this.$toasted.show('problem occurred in item creation', {
+                        icon: "error",
+                        position: "bottom-center",
+                        duration : 3000
+                    });
                 });
             },
             onFileSelected(event){
+                console.log('entered event');
                 this.item.photo = event.target.files[0];
             },
-
             validateBeforeSubmit() {
                 this.$validator.validateAll().then((result) => {
-                    if (result) {
-                        // eslint-disable-next-line
-                        alert('Form Submitted!');
-                        this.dialog = false;
+                    if (!result) {
+                        alert('Correct them errors!');
+                    }else{
                         this.save();
                         return;
                     }
-
-                    alert('Correct them errors!');
                 });
             },
+            clearItemData(){
+                this.item.name='',
+                this.item.type='',
+                this.item.description = '',
+                this.item.price = '',
+                this.item.photo = null
+            },
+            hasErrors(errors){
+                this.validationErrors = errors;
+                this.hasValidationErrors = true;
+                setTimeout(() => (this.hasValidationErrors = false), 6000)
+            }
         },
         watch: {
             loading (val) {

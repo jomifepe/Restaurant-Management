@@ -32,11 +32,6 @@
 			</v-list>
 			<div v-if="this.$route.name == 'restaurantManagement' && this.$store.state.user.type == 'manager'" >
 				<v-icon arge color="red darken-2" dark right @click.prevent="deleteItem(item)">delete</v-icon>
-				<v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
-							:timeout="timeout" :vertical="mode === 'vertical'">
-					{{ text }}
-					<v-btn dark flat @click="snackbar = false"> Close</v-btn>
-				</v-snackbar>
 			</div>
 		</v-card-text>
 	</v-card>
@@ -47,11 +42,7 @@
         props: ['item', 'meal'],
         data: () => ({
             isSelected: false,
-            snackbar: false,
-            color: 'black',
-            mode: '',
-            timeout: 3000,
-            text: '',
+
             buttonColor: 'blue-grey',
             buttonIcon: 'fas fa-plus',
         }),
@@ -73,12 +64,19 @@
                 if( confirm('Are you sure you want to delete ' + item.name + ' ?')) {
                     axios.delete('items/' + item.id).then(response => {
                         if (response.status === 204) {
-                            this.text = 'Deleted Item Sucessfully';
-                            this.snackbar = true;
+                            this.$toasted.show('Deleted Item Sucessfully', {
+                                icon: "check",
+                                position: "bottom-center",
+                                duration : 3000
+                            });
                             this.$emit('updateList');
                         }
                     }).catch(error => {
-                        console.log(error);
+                       		this.$toasted.show('Problem occurred in deleting Item', {
+                            icon: "error",
+                            position: "bottom-center",
+                            duration : 3000
+                        });
                     });
                 }
             }

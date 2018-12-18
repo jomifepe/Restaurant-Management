@@ -15,7 +15,7 @@ import Vuelidate from 'vuelidate'
 import VueMoment from 'vue-moment'
 import VeeValidate from 'vee-validate';
 
-Vue.use(VeeValidate);
+
 
 
 import Routes from './routes';
@@ -23,6 +23,7 @@ import App from './components/App.vue';
 import Vuetify from 'vuetify'
 import Toasted from 'vue-toasted';
 
+Vue.use(VeeValidate);
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(store);

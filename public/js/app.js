@@ -2034,29 +2034,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -2071,9 +2048,11 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
+      progressBar: true,
       meal: null,
       items: [],
       selectedItems: [],
+      submitedOrders: [],
       selectedItemsSubtotal: 0,
       tab: null,
       tabs: [{
@@ -2088,25 +2067,46 @@ __webpack_require__.r(__webpack_exports__);
       pagination: {
         rowsPerPage: 12
       },
-      orderSubmitDialog: false
+      orderSubmitDialog: false,
+      toastButtonClicked: false
     };
   },
   methods: {
     getItems: function getItems() {
       var _this = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/items/type/dish").then(function (response) {
-        _this.items = [];
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/items/type/dish").then(function (dishesResponse) {
+        if (dishesResponse.status === 200) {
+          _this.items = [];
 
-        _this.items.push(response.data.data);
+          _this.items.push(dishesResponse.data.data);
 
-        axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/items/type/drink").then(function (response) {
-          return _this.items.push(response.data.data);
-        }).catch(function (error) {
-          console.log(error);
-        });
+          axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/items/type/drink").then(function (drinksResponse) {
+            if (drinksResponse.status === 200) {
+              _this.items.push(drinksResponse.data.data);
+            }
+
+            _this.progressBar = false;
+          }).catch(function (error) {
+            _this.progressBar = false;
+            console.log(error);
+
+            _this.$toasted.show('Failed to load items of type drink', {
+              icon: 'error',
+              position: "bottom-center",
+              duration: 4000
+            });
+          });
+        }
       }).catch(function (error) {
+        _this.progressBar = false;
         console.log(error);
+
+        _this.$toasted.show('Failed to load items of type dish', {
+          icon: 'error',
+          position: "bottom-center",
+          duration: 4000
+        });
       });
     },
     selectItem: function selectItem(item) {
@@ -2123,47 +2123,128 @@ __webpack_require__.r(__webpack_exports__);
       });
       this.selectedItemsSubtotal = currency_js__WEBPACK_IMPORTED_MODULE_2___default()(this.selectedItemsSubtotal).subtract(itemToRemove.price).format();
     },
-    submitOrders: function submitOrders() {
+    undoOrders: function undoOrders() {
       var _this3 = this;
 
-      var count = 0;
-      this.selectedItems.forEach(function (item) {
+      this.submitedOrders.forEach(function (orderId, i) {
+        axios__WEBPACK_IMPORTED_MODULE_1___default.a.delete("/orders/".concat(orderId)).then(function (response) {
+          if (response.status === 204) {
+            if (i === _this3.submitedOrders.length - 1) {
+              _this3.$toasted.show('All previously submited orders were deleted', {
+                icon: "check",
+                position: "bottom-center",
+                duration: 3000
+              });
+            }
+          } else {
+            _this3.$toasted.show("Failed to undo order #".concat(i + 1), {
+              icon: "error",
+              position: "bottom-center",
+              duration: 3000
+            });
+          }
+
+          _this3.toastButtonClicked = false;
+        }).catch(function (error) {
+          console.log(error);
+
+          _this3.$toasted.show("Failed to undo order #".concat(i + 1), {
+            icon: "error",
+            position: "bottom-center",
+            duration: 3000
+          });
+
+          _this3.toastButtonClicked = false;
+          return;
+        });
+      });
+    },
+    submitOrders: function submitOrders() {
+      var _this4 = this;
+
+      this.orderSubmitDialog = false;
+      this.progressBar = true;
+      this.selectedItems.forEach(function (item, i) {
         var newOrder = {
           state: 'pending',
           item_id: item.id,
-          meal_id: _this3.meal.id,
+          meal_id: _this4.meal.id,
           responsible_cook_id: null,
           start: moment__WEBPACK_IMPORTED_MODULE_3___default()().format('YYYY-MM-DD HH:mm:ss')
         };
         axios__WEBPACK_IMPORTED_MODULE_1___default.a.post("/orders", newOrder).then(function (response) {
           if (response.status === 201) {
-            console.log("Success");
+            _this4.submitedOrders.push(response.data.id);
 
-            if (++count === _this3.selectedItems.length) {
-              _this3.$router.push({
-                name: 'meals'
+            if (i === _this4.selectedItems.length - 1) {
+              var toast = _this4.$toasted.show("Order(s) placed, redirecting to the meals page in 5 seconds", {
+                position: "bottom-center",
+                icon: "check",
+                duration: 5000,
+                onComplete: function onComplete() {
+                  if (!_this4.toastButtonClicked) {
+                    _this4.$router.push({
+                      name: 'meal.orders',
+                      params: {
+                        mealId: _this4.meal.id
+                      }
+                    });
+                  }
+                },
+                action: [{
+                  text: 'Skip',
+                  onClick: function onClick(e, toastObject) {
+                    _this4.toastButtonClicked = true;
+                    toastObject.goAway(1);
+
+                    _this4.$router.push({
+                      name: 'meal.orders',
+                      params: {
+                        mealId: _this4.meal.id
+                      }
+                    });
+                  }
+                }, {
+                  text: 'Undo',
+                  onClick: function onClick(e, toastObject) {
+                    _this4.toastButtonClicked = true;
+                    toastObject.goAway(1);
+
+                    _this4.undoOrders();
+                  }
+                }]
               });
             }
           }
+
+          _this4.progressBar = false;
         }).catch(function (error) {
+          _this4.progressBar = false;
           console.log(error);
+
+          _this4.$toasted.show("Failed to submit order #".concat(i + 1), {
+            icon: 'error',
+            position: "bottom-center",
+            duration: 3000
+          });
+
           return;
         });
       });
     }
   },
   mounted: function mounted() {
-    var _this4 = this;
+    var _this5 = this;
 
     if (this.$route.params.mealId) {
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/meals/".concat(this.$route.params.mealId)).then(function (response) {
-        _this4.meal = response.data.data;
+        _this5.meal = response.data.data;
 
-        _this4.$store.commit('setPanelTitle', "Ordering items for meal #".concat(_this4.meal.id));
+        _this5.$store.commit('setPanelTitle', "Ordering items for meal #".concat(_this5.meal.id));
       }).catch(function (error) {
         console.log(error);
 
-        _this4.$toasted.show('Failed to get meal identified by the given id', {
+        _this5.$toasted.show('Failed to get meal identified by the given id', {
           icon: 'error',
           position: "bottom-center",
           duration: 4000
@@ -2227,21 +2308,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['item', 'meal'],
   data: function data() {
     return {
       isSelected: false,
-      snackbar: false,
-      color: 'black',
-      mode: '',
-      timeout: 3000,
-      text: '',
       buttonColor: 'blue-grey',
       buttonIcon: 'fas fa-plus'
     };
@@ -2266,13 +2337,20 @@ __webpack_require__.r(__webpack_exports__);
       if (confirm('Are you sure you want to delete ' + item.name + ' ?')) {
         axios.delete('items/' + item.id).then(function (response) {
           if (response.status === 204) {
-            _this.text = 'Deleted Item Sucessfully';
-            _this.snackbar = true;
+            _this.$toasted.show('Deleted Item Sucessfully', {
+              icon: "check",
+              position: "bottom-center",
+              duration: 3000
+            });
 
             _this.$emit('updateList');
           }
         }).catch(function (error) {
-          console.log(error);
+          _this.$toasted.show('Problem occurred in deleting Item', {
+            icon: "error",
+            position: "bottom-center",
+            duration: 3000
+          });
         });
       }
     }
@@ -2808,6 +2886,19 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2832,18 +2923,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      user: {
-        email: "",
-        password: ""
-      }
+      valid: false,
+      usernameOrEmail: '',
+      password: '',
+      usernameOrEmailRules: [function (v) {
+        return !!v || 'Username or Email is required';
+      }],
+      passwordRules: [function (v) {
+        return !!v || 'Password is required';
+      }],
+      showPassword: false
     };
   },
   methods: {
     login: function login() {
+      var _user;
+
+      var re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+      var isValidEmail = re.test(this.usernameOrEmail);
+      var user = (_user = {}, _defineProperty(_user, isValidEmail ? 'email' : 'username', this.usernameOrEmail), _defineProperty(_user, 'password', this.password), _user);
+      this.performLogin(user);
+    },
+    performLogin: function performLogin(user) {
       var _this = this;
 
       var toast;
-      axios.post('login', this.user).then(function (response) {
+      axios.post('login', user).then(function (response) {
         if (response.status === 200) {
           toast = _this.$toasted.show("Signing in...", {
             icon: "check",
@@ -2943,37 +3048,66 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  name: "MealOrdersPreview",
-  components: {},
-  props: {
-    meal: null
-  },
+  name: "MealOrders",
   data: function data() {
     return {
+      meal: null,
       items: [],
       rowsPerPageItems: [4, 8, 12],
       pagination: {
         rowsPerPage: 4
-      }
+      },
+      progressBar: true
     };
   },
   watch: {
-    meal: function meal() {
-      this.loadMealItems();
+    $route: function $route(to, from) {
+      this.loadMealsOrdersFromRouteId();
     }
   },
   methods: {
-    loadMealItems: function loadMealItems() {
+    loadMealsOrdersFromRouteId: function loadMealsOrdersFromRouteId() {
       var _this = this;
+
+      if (this.$route.params.mealId) {
+        this.progressBar = true;
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get("/meals/".concat(this.$route.params.mealId)).then(function (response) {
+          if (response.status === 200) {
+            _this.meal = response.data.data;
+
+            _this.$store.commit('setPanelTitle', "Orders for meal #".concat(_this.meal.id));
+
+            _this.loadMealItems();
+          } else {
+            _this.progressBar = false;
+
+            _this.$toasted.show('Failed to get orders associated to the selected meal', {
+              icon: 'error',
+              position: "bottom-center",
+              duration: 3000
+            });
+          }
+        }).catch(function (error) {
+          _this.progressBar = false;
+          console.log(error);
+
+          _this.$toasted.show('Failed to get meal identified by the given id', {
+            icon: 'error',
+            position: "bottom-center",
+            duration: 3000
+          });
+        });
+      }
+    },
+    loadMealItems: function loadMealItems() {
+      var _this2 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get("/meals/".concat(this.meal.id, "/items")).then(function (response) {
         if (response.status === 200) {
-          _this.items = response.data;
+          _this2.items = response.data;
+          _this2.progressBar = false;
         }
       }).catch(function (error) {
         console.log(error);
@@ -2984,7 +3118,7 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   mounted: function mounted() {
-    this.loadMealItems();
+    this.loadMealsOrdersFromRouteId();
   }
 });
 
@@ -3003,6 +3137,35 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _MealOrders__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./MealOrders */ "./resources/js/components/MealOrders.vue");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -3069,26 +3232,29 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       }, {
         text: 'State',
         value: 'state'
+      }, {
+        text: 'Actions',
+        value: '',
+        align: 'center'
       }],
-      chosenMeal: null,
-      mealItemsShown: false,
-      items: [],
-      itemsRowsPerPageItems: [4, 8, 12],
-      itemsPagination: {
-        rowsPerPage: 4
+      search: '',
+      pagination: {
+        sortBy: 'state'
       },
-      alertShown: false,
-      alertMessage: '',
-      alertType: 'success'
+      myMealsProgressBar: true,
+      mealToTerminate: null,
+      terminateMealDialog: false
     };
   },
   methods: {
     loadMeals: function loadMeals() {
       var _this = this;
 
+      this.myMealsProgressBar = true;
       axios__WEBPACK_IMPORTED_MODULE_2___default.a.get("/meals/waiter/".concat(this.$store.state.user.id)).then(function (response) {
         if (response.status === 200) {
           _this.meals = response.data.data;
+          _this.myMealsProgressBar = false;
         }
       });
     },
@@ -3104,17 +3270,53 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       this.loadMeals();
     },
     getStateColor: function getStateColor(state) {
-      return state === 'active' ? 'red--text' : state === 'terminated' ? 'yellow--text' : state === 'not paid' ? 'blue--text' : 'green--text';
+      return state === 'active' ? 'red--text' : state === 'terminated' ? 'orange--text' : state === 'not paid' ? 'blue--text' : 'green--text';
     },
     showMealItems: function showMealItems(meal) {
-      this.chosenMeal = meal;
-      this.mealItemsShown = true;
+      this.$router.push({
+        name: 'meal.orders',
+        params: {
+          mealId: meal.id
+        }
+      });
+    },
+    terminateMeal: function terminateMeal(meal) {
+      this.mealToTerminate = meal;
+      this.terminateMealDialog = true;
+    },
+    performMealTermination: function performMealTermination() {
+      var _this2 = this;
+
+      this.terminateMealDialog = false;
+      var meal = this.mealToTerminate;
+      meal.state = 'terminated';
+      axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch("/meals/".concat(meal.id), meal).then(function (response) {
+        if (response.status === 200) {
+          _this2.$toasted.show('Meal successfully terminated', {
+            icon: 'check',
+            position: "bottom-center",
+            duration: 2000
+          });
+
+          _this2.loadMeals();
+        } else {
+          _this2.$toasted.show('Failed to terminated meal', {
+            icon: 'error',
+            position: "bottom-center",
+            duration: 3000
+          });
+        }
+      }).catch(function (error) {
+        console.log(error);
+
+        _this2.$toasted.show('Failed to terminated meal', {
+          icon: 'error',
+          position: "bottom-center",
+          duration: 3000
+        });
+      });
+      this.mealToTerminate = null;
     }
-  },
-  showAlertMessage: function showAlertMessage(show, message, type) {
-    this.alertMessage = message;
-    this.alertType = type;
-    this.alertShown = true;
   },
   mounted: function mounted() {
     this.$store.commit('setPanelTitle', 'Meals');
@@ -3230,6 +3432,8 @@ __webpack_require__.r(__webpack_exports__);
       loading: false,
       dialog: false,
       selectedFile: null,
+      hasValidationErrors: false,
+      validationErrors: [],
       item: {
         name: '',
         type: '',
@@ -3241,49 +3445,76 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     save: function save() {
-      console.log('entered SAVED function');
+      var _this = this;
+
+      var toast;
+      var form = new FormData();
       console.log(this.item);
-      axios.post('items', {
-        "name": this.item.name,
-        "price": this.item.price,
-        "description": this.item.description,
-        "type": this.item.type,
-        "photo_url": this.item.photo
-      }).then(function (response) {
-        console.log('Saved Success!');
-        console.log(response);
+      form.append('name', this.item.name);
+      form.append('price', this.item.price);
+      form.append('description', this.item.description);
+      form.append('type', this.item.type);
+      form.append('photo_url', this.item.photo); //const config = {headers: {'Content-Type': 'multipart/form-data'}};
+
+      axios.post('items', form).then(function (response) {
+        toast = _this.$toasted.show('New item created successfully', {
+          icon: "check",
+          position: "bottom-center",
+          duration: 3000
+        });
+
+        _this.$emit('onGetItems');
+
+        _this.clearItemData();
+
+        _this.dialog = false;
       }).catch(function (error) {
-        console.log(error);
+        _this.hasErrors(error.response.data.errors);
+
+        toast = _this.$toasted.show('problem occurred in item creation', {
+          icon: "error",
+          position: "bottom-center",
+          duration: 3000
+        });
       });
     },
     onFileSelected: function onFileSelected(event) {
+      console.log('entered event');
       this.item.photo = event.target.files[0];
     },
     validateBeforeSubmit: function validateBeforeSubmit() {
-      var _this = this;
+      var _this2 = this;
 
       this.$validator.validateAll().then(function (result) {
-        if (result) {
-          // eslint-disable-next-line
-          alert('Form Submitted!');
-          _this.dialog = false;
-
-          _this.save();
+        if (!result) {
+          alert('Correct them errors!');
+        } else {
+          _this2.save();
 
           return;
         }
-
-        alert('Correct them errors!');
       });
+    },
+    clearItemData: function clearItemData() {
+      this.item.name = '', this.item.type = '', this.item.description = '', this.item.price = '', this.item.photo = null;
+    },
+    hasErrors: function hasErrors(errors) {
+      var _this3 = this;
+
+      this.validationErrors = errors;
+      this.hasValidationErrors = true;
+      setTimeout(function () {
+        return _this3.hasValidationErrors = false;
+      }, 6000);
     }
   },
   watch: {
     loading: function loading(val) {
-      var _this2 = this;
+      var _this4 = this;
 
       if (!val) return;
       setTimeout(function () {
-        return _this2.loading = false, _this2.dialog = true;
+        return _this4.loading = false, _this4.dialog = true;
       }, 1000);
     }
   }
@@ -3408,6 +3639,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "ManageRestaurant",
@@ -3416,11 +3654,11 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      snackbar: false,
-      color: 'black',
-      mode: '',
-      timeout: 3000,
-      text: '',
+      //snackbar: false,
+      //color: 'black',
+      //mode: '',
+      //timeout: 3000,
+      //text: '',
       dialog: false,
       noData: false,
       loadingTableEffect: true,
@@ -3439,21 +3677,20 @@ __webpack_require__.r(__webpack_exports__);
         text: 'Updated At',
         value: 'updated_at'
       }, {
-        text: 'Delete',
+        text: 'Deleted At',
+        value: 'deleted_at'
+      }, {
+        text: 'Action',
         align: 'center',
         value: ''
       }],
       tables: [],
       editedIndex: -1,
       editedItem: {
-        table_number: 0,
-        created_at: 0,
-        updated_at: 0
+        table_number: 0
       },
       defaultItem: {
-        table_number: 0,
-        created_at: 0,
-        updated_at: 0
+        table_number: 0
       }
     };
   },
@@ -3474,50 +3711,90 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     editItem: function editItem(item) {
-      this.editedIndex = this.tables.indexOf(item);
-      this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
-    deleteItem: function deleteItem(item) {
+    deleteTable: function deleteTable(item) {
       var _this2 = this;
 
       if (confirm('Are you sure you want to delete table ' + item.table_number + ' ?')) {
-        var index = this.tables.indexOf(item);
-        axios.delete('table/delete/' + item.table_number).then(function (response) {
+        axios.delete('tables/' + item.table_number).then(function (response) {
           if (response.status === 204) {
-            _this2.text = 'Deleted Table Sucessfully';
-            _this2.snackbar = true;
+            //this.text = 'Deleted Table Sucessfuly';
+            //this.snackbar = true;
+            _this2.$toasted.show('Deleted table successfully', {
+              icon: "check",
+              position: "bottom-center",
+              duration: 3000
+            });
 
             _this2.initialize();
           }
         }).catch(function (error) {
-          console.log(error);
+          _this2.$toasted.show('Problem deleting table', {
+            icon: "check",
+            position: "bottom-center",
+            duration: 3000
+          });
+        });
+      }
+    },
+    restoreTable: function restoreTable(item) {
+      var _this3 = this;
+
+      if (confirm('Are you sure you want to recover table ' + item.table_number + ' ?')) {
+        axios.put('table/restore/' + item.table_number).then(function (response) {
+          if (response.status === 200) {
+            //this.text = 'Table Recovered Sucessfuly';
+            //this.snackbar = true;
+            _this3.$toasted.show('Table recovered successfully', {
+              icon: "check",
+              position: "bottom-center",
+              duration: 3000
+            });
+
+            _this3.initialize();
+          }
+        }).catch(function (error) {
+          _this3.$toasted.show('Problem recovering table', {
+            icon: "check",
+            position: "bottom-center",
+            duration: 3000
+          });
         });
       }
     },
     close: function close() {
-      var _this3 = this;
+      var _this4 = this;
 
       this.dialog = false;
       setTimeout(function () {
-        _this3.editedItem = Object.assign({}, _this3.defaultItem);
-        _this3.editedIndex = -1;
+        _this4.editedItem = Object.assign({}, _this4.defaultItem);
+        _this4.editedIndex = -1;
       }, 300);
     },
     save: function save() {
-      var _this4 = this;
+      var _this5 = this;
 
       if (this.editedIndex > -1) {} else {
         axios.post('tables', {
           "table_number": this.editedItem.table_number
         }).then(function (response) {
-          console.log(response);
-          _this4.text = 'Created Table Sucessfully';
-          _this4.snackbar = true;
+          console.log(response); //this.text = 'Created Table Sucessfully';
+          //this.snackbar = true;
 
-          _this4.initialize();
+          _this5.$toasted.show('Created table successfully', {
+            icon: "check",
+            position: "bottom-center",
+            duration: 3000
+          });
+
+          _this5.initialize();
         }).catch(function (error) {
-          console.log(error);
+          _this5.$toasted.show('Problem creating table', {
+            icon: "check",
+            position: "bottom-center",
+            duration: 3000
+          });
         });
       }
 
@@ -7837,7 +8114,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -7856,7 +8133,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8008,7 +8285,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8027,7 +8304,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8046,7 +8323,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8065,7 +8342,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -18724,6 +19001,12 @@ var render = function() {
               attrs: { light: "", tabs: "" }
             },
             [
+              _vm.progressBar
+                ? _c("v-progress-circular", {
+                    attrs: { indeterminate: "", color: "blue-grey" }
+                  })
+                : _vm._e(),
+              _vm._v(" "),
               _c("v-text-field", {
                 staticClass: "mx-3 rounded-text-field",
                 attrs: {
@@ -18742,7 +19025,13 @@ var render = function() {
                 }
               }),
               _vm._v(" "),
-              _c("NewItem"),
+              _c("NewItem", {
+                on: {
+                  onGetItems: function($event) {
+                    _vm.getItems()
+                  }
+                }
+              }),
               _vm._v(" "),
               _vm.meal
                 ? [
@@ -19108,41 +19397,6 @@ var render = function() {
                       }
                     },
                     [_vm._v("delete")]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-snackbar",
-                    {
-                      attrs: {
-                        color: _vm.color,
-                        "multi-line": _vm.mode === "multi-line",
-                        timeout: _vm.timeout,
-                        vertical: _vm.mode === "vertical"
-                      },
-                      model: {
-                        value: _vm.snackbar,
-                        callback: function($$v) {
-                          _vm.snackbar = $$v
-                        },
-                        expression: "snackbar"
-                      }
-                    },
-                    [
-                      _vm._v("\n\t\t\t\t" + _vm._s(_vm.text) + "\n\t\t\t\t"),
-                      _c(
-                        "v-btn",
-                        {
-                          attrs: { dark: "", flat: "" },
-                          on: {
-                            click: function($event) {
-                              _vm.snackbar = false
-                            }
-                          }
-                        },
-                        [_vm._v(" Close")]
-                      )
-                    ],
-                    1
                   )
                 ],
                 1
@@ -19849,98 +20103,92 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c(
-    "form",
-    { staticClass: "jumbotron  text-center border border-light p-5" },
+    "v-container",
+    { staticClass: "blue-grey lighten-5 pa-5 rounded", attrs: { fluid: "" } },
     [
-      _c("p", { staticClass: "h4 mb-4" }, [_vm._v("Login")]),
-      _vm._v(" "),
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model.trim",
-            value: _vm.user.email,
-            expression: "user.email",
-            modifiers: { trim: true }
-          }
-        ],
-        staticClass: "form-control mb-4",
-        attrs: {
-          type: "email",
-          id: "defaultLoginFormEmail",
-          placeholder: "E-mail"
-        },
-        domProps: { value: _vm.user.email },
-        on: {
-          input: function($event) {
-            if ($event.target.composing) {
-              return
-            }
-            _vm.$set(_vm.user, "email", $event.target.value.trim())
-          },
-          blur: function($event) {
-            _vm.$forceUpdate()
-          }
-        }
-      }),
-      _vm._v(" "),
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.user.password,
-            expression: "user.password"
-          }
-        ],
-        staticClass: "form-control mb-4",
-        attrs: {
-          type: "password",
-          id: "defaultLoginFormPassword",
-          placeholder: "Password"
-        },
-        domProps: { value: _vm.user.password },
-        on: {
-          input: function($event) {
-            if ($event.target.composing) {
-              return
-            }
-            _vm.$set(_vm.user, "password", $event.target.value)
-          }
-        }
-      }),
-      _vm._v(" "),
-      _vm._m(0),
-      _vm._v(" "),
       _c(
-        "button",
-        {
-          staticClass: "btn btn-info btn-block my-4",
-          attrs: { type: "submit" },
-          on: {
-            click: function($event) {
-              $event.preventDefault()
-              return _vm.login($event)
-            }
-          }
-        },
-        [_vm._v("Login")]
+        "v-layout",
+        { attrs: { wrap: "" } },
+        [
+          _c(
+            "v-flex",
+            { attrs: { xs12: "" } },
+            [
+              _c(
+                "v-form",
+                {
+                  model: {
+                    value: _vm.valid,
+                    callback: function($$v) {
+                      _vm.valid = $$v
+                    },
+                    expression: "valid"
+                  }
+                },
+                [
+                  _c("v-text-field", {
+                    attrs: {
+                      box: "",
+                      rules: _vm.usernameOrEmailRules,
+                      label: "Username or email",
+                      required: ""
+                    },
+                    model: {
+                      value: _vm.usernameOrEmail,
+                      callback: function($$v) {
+                        _vm.usernameOrEmail = $$v
+                      },
+                      expression: "usernameOrEmail"
+                    }
+                  }),
+                  _vm._v(" "),
+                  _c("v-text-field", {
+                    attrs: {
+                      box: "",
+                      rules: _vm.passwordRules,
+                      label: "Password",
+                      "append-icon": _vm.showPassword
+                        ? "visibility_off"
+                        : "visibility",
+                      type: _vm.showPassword ? "text" : "password",
+                      required: ""
+                    },
+                    on: {
+                      "click:append": function($event) {
+                        _vm.showPassword = !_vm.showPassword
+                      }
+                    },
+                    model: {
+                      value: _vm.password,
+                      callback: function($$v) {
+                        _vm.password = $$v
+                      },
+                      expression: "password"
+                    }
+                  }),
+                  _vm._v(" "),
+                  _c(
+                    "v-btn",
+                    {
+                      attrs: { disabled: !_vm.valid },
+                      on: { click: _vm.login }
+                    },
+                    [_vm._v("Login")]
+                  )
+                ],
+                1
+              )
+            ],
+            1
+          )
+        ],
+        1
       )
-    ]
+    ],
+    1
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "d-flex justify-content-around" }, [
-      _c("div", [
-        _c("a", { attrs: { href: "" } }, [_vm._v("Forgot password?")])
-      ])
-    ])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -19962,7 +20210,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm.meal != null
+  return _vm.meal
     ? _c(
         "v-flex",
         [
@@ -19989,11 +20237,17 @@ var render = function() {
                       attrs: {
                         dark: "",
                         color: "success",
-                        to: "/admin/menu/order/" + _vm.meal.id
+                        to: "/admin/menu/meal/" + _vm.meal.id
                       }
                     },
                     [_vm._v("\n            Order new item(s)\n        ")]
                   )
+                : _vm._e(),
+              _vm._v(" "),
+              _vm.progressBar
+                ? _c("v-progress-circular", {
+                    attrs: { indeterminate: "", color: "blue-grey" }
+                  })
                 : _vm._e()
             ],
             1
@@ -20191,7 +20445,7 @@ var render = function() {
                 [
                   _c("v-toolbar-title", [
                     _vm._v(
-                      "\n                    My Meals \n                    "
+                      "\n                        My Meals \n                        "
                     ),
                     _c("span", { staticClass: "body-1" }, [
                       _vm._v("(click to display a meal's orders)")
@@ -20205,57 +20459,153 @@ var render = function() {
                 1
               ),
               _vm._v(" "),
-              _c("v-data-table", {
-                staticClass: "elevation-1",
-                attrs: { headers: _vm.myMealsHeaders, items: _vm.meals },
-                scopedSlots: _vm._u([
-                  {
-                    key: "items",
-                    fn: function(props) {
-                      return [
-                        _c(
-                          "tr",
-                          {
-                            staticClass: "clickable",
-                            on: {
-                              click: function($event) {
-                                _vm.showMealItems(props.item)
-                              }
-                            }
+              _c(
+                "v-card",
+                [
+                  _c(
+                    "v-card-title",
+                    [
+                      _c("v-spacer"),
+                      _vm._v(" "),
+                      _c("v-text-field", {
+                        attrs: {
+                          "append-icon": "search",
+                          label: "Search",
+                          "single-line": "",
+                          "hide-details": ""
+                        },
+                        model: {
+                          value: _vm.search,
+                          callback: function($$v) {
+                            _vm.search = $$v
                           },
-                          [
-                            _c("td", [_vm._v(_vm._s(props.item.table_number))]),
-                            _vm._v(" "),
-                            _c("td", [
-                              _vm._v(_vm._s(_vm.formatDate(props.item.start)))
-                            ]),
-                            _vm._v(" "),
-                            _c("td", [
-                              _vm._v(
-                                _vm._s(
-                                  _vm.formatDate(props.item.created_at.date)
-                                )
+                          expression: "search"
+                        }
+                      })
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-data-table",
+                    {
+                      staticClass: "elevation-1",
+                      attrs: {
+                        headers: _vm.myMealsHeaders,
+                        items: _vm.meals,
+                        search: _vm.search,
+                        pagination: _vm.pagination,
+                        loading: _vm.myMealsProgressBar
+                      },
+                      on: {
+                        "update:pagination": function($event) {
+                          _vm.pagination = $event
+                        }
+                      },
+                      scopedSlots: _vm._u([
+                        {
+                          key: "items",
+                          fn: function(props) {
+                            return [
+                              _c(
+                                "tr",
+                                {
+                                  staticClass: "clickable",
+                                  on: {
+                                    click: function($event) {
+                                      _vm.showMealItems(props.item)
+                                    }
+                                  }
+                                },
+                                [
+                                  _c("td", [
+                                    _vm._v(_vm._s(props.item.table_number))
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _vm._v(
+                                      _vm._s(_vm.formatDate(props.item.start))
+                                    )
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _vm._v(
+                                      _vm._s(
+                                        _vm.formatDate(
+                                          props.item.created_at.date
+                                        )
+                                      )
+                                    )
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _vm._v(
+                                      _vm._s(props.item.total_price_preview) +
+                                        "€"
+                                    )
+                                  ]),
+                                  _vm._v(" "),
+                                  _c(
+                                    "td",
+                                    {
+                                      class: _vm.getStateColor(props.item.state)
+                                    },
+                                    [
+                                      _c("strong", [
+                                        _vm._v(_vm._s(props.item.state))
+                                      ])
+                                    ]
+                                  ),
+                                  _vm._v(" "),
+                                  _c(
+                                    "td",
+                                    {
+                                      staticClass: "justify-center layout px-0"
+                                    },
+                                    [
+                                      props.item.state === "active"
+                                        ? _c(
+                                            "v-icon",
+                                            {
+                                              attrs: { small: "" },
+                                              on: {
+                                                click: function($event) {
+                                                  _vm.terminateMeal(props.item)
+                                                }
+                                              }
+                                            },
+                                            [
+                                              _vm._v(
+                                                "\n                                        fas fa-user-check\n                                    "
+                                              )
+                                            ]
+                                          )
+                                        : _vm._e()
+                                    ],
+                                    1
+                                  )
+                                ]
                               )
-                            ]),
-                            _vm._v(" "),
-                            _c("td", [
-                              _vm._v(
-                                _vm._s(props.item.total_price_preview) + "€"
-                              )
-                            ]),
-                            _vm._v(" "),
-                            _c(
-                              "td",
-                              { class: _vm.getStateColor(props.item.state) },
-                              [_c("strong", [_vm._v(_vm._s(props.item.state))])]
-                            )
-                          ]
-                        )
-                      ]
-                    }
-                  }
-                ])
-              })
+                            ]
+                          }
+                        }
+                      ])
+                    },
+                    [
+                      _c("v-progress-linear", {
+                        attrs: {
+                          slot: "progress",
+                          color: "blue-grey",
+                          indeterminate: ""
+                        },
+                        slot: "progress"
+                      })
+                    ],
+                    1
+                  )
+                ],
+                1
+              )
             ],
             1
           ),
@@ -20263,10 +20613,73 @@ var render = function() {
           _c(
             "v-flex",
             { staticClass: "mt-5", attrs: { xs12: "", id: "mealOrders" } },
+            [_c("router-view")],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "v-dialog",
+            {
+              attrs: { "max-width": "450" },
+              model: {
+                value: _vm.terminateMealDialog,
+                callback: function($$v) {
+                  _vm.terminateMealDialog = $$v
+                },
+                expression: "terminateMealDialog"
+              }
+            },
             [
-              _vm.mealItemsShown
-                ? _c("MealOrders", { attrs: { meal: _vm.chosenMeal } })
-                : _vm._e()
+              _c(
+                "v-card",
+                [
+                  _c("v-card-text", { staticClass: "subheading" }, [
+                    _vm._v(
+                      "\n\t\t\t\t\t\tAre you sure you want to declare this meal as "
+                    ),
+                    _c("span", { staticClass: "orange--text darken-1" }, [
+                      _vm._v("terminated")
+                    ]),
+                    _vm._v(" ?\n\t\t\t\t\t")
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "v-card-actions",
+                    [
+                      _c("v-spacer"),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { flat: "" },
+                          on: {
+                            click: function($event) {
+                              _vm.terminateMealDialog = false
+                              _vm.mealToTerminate = null
+                            }
+                          }
+                        },
+                        [_vm._v("\n\t\t\t\t\t\t\tNo\n\t\t\t\t\t\t")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: {
+                            color: "orange darken-1",
+                            flat: "flat",
+                            alt: "Terminate meal"
+                          },
+                          on: { click: _vm.performMealTermination }
+                        },
+                        [_vm._v("\n\t\t\t\t\t\t\tYes\n\t\t\t\t\t\t")]
+                      )
+                    ],
+                    1
+                  )
+                ],
+                1
+              )
             ],
             1
           )
@@ -20401,6 +20814,25 @@ var render = function() {
                               _c(
                                 "v-card-text",
                                 [
+                                  _vm.hasValidationErrors
+                                    ? _c("div", [
+                                        _c(
+                                          "ul",
+                                          { staticClass: "alert alert-danger" },
+                                          _vm._l(_vm.validationErrors, function(
+                                            value,
+                                            key,
+                                            index
+                                          ) {
+                                            return _c("li", [
+                                              _vm._v(_vm._s(value))
+                                            ])
+                                          }),
+                                          0
+                                        )
+                                      ])
+                                    : _vm._e(),
+                                  _vm._v("`\n                            "),
                                   _c(
                                     "v-container",
                                     { attrs: { "grid-list-md": "" } },
@@ -20533,7 +20965,10 @@ var render = function() {
                                             },
                                             [
                                               _c("input", {
-                                                attrs: { type: "file" },
+                                                attrs: {
+                                                  type: "file",
+                                                  name: "photo_url"
+                                                },
                                                 on: {
                                                   change: _vm.onFileSelected
                                                 }
@@ -20945,6 +21380,12 @@ var render = function() {
                         _vm._v(_vm._s(props.item.updated_at.date))
                       ]),
                       _vm._v(" "),
+                      props.item.deleted_at != null
+                        ? _c("td", { staticClass: "text-xs-left" }, [
+                            _vm._v(_vm._s(props.item.deleted_at.date))
+                          ])
+                        : _c("td", [_vm._v(" N/A ")]),
+                      _vm._v(" "),
                       _c(
                         "td",
                         { staticClass: "justify-center layout px-0" },
@@ -20952,15 +21393,66 @@ var render = function() {
                           _c(
                             "v-icon",
                             {
-                              attrs: { arge: "", color: "red darken-2" },
+                              staticClass: "mr-2",
+                              attrs: { arge: "" },
                               on: {
                                 click: function($event) {
-                                  _vm.deleteItem(props.item)
+                                  _vm.editItem(props.item)
                                 }
                               }
                             },
-                            [_vm._v("delete")]
-                          )
+                            [_vm._v("edit")]
+                          ),
+                          _vm._v(" "),
+                          props.item.deleted_at != null
+                            ? _c(
+                                "div",
+                                [
+                                  _c(
+                                    "v-icon",
+                                    {
+                                      attrs: {
+                                        arge: "",
+                                        color: "green darken-2",
+                                        dark: "",
+                                        right: ""
+                                      },
+                                      on: {
+                                        click: function($event) {
+                                          $event.preventDefault()
+                                          _vm.restoreTable(props.item)
+                                        }
+                                      }
+                                    },
+                                    [_vm._v("undo")]
+                                  )
+                                ],
+                                1
+                              )
+                            : _c(
+                                "div",
+                                [
+                                  _c(
+                                    "v-icon",
+                                    {
+                                      attrs: {
+                                        arge: "",
+                                        color: "red darken-2",
+                                        dark: "",
+                                        right: ""
+                                      },
+                                      on: {
+                                        click: function($event) {
+                                          $event.preventDefault()
+                                          _vm.deleteTable(props.item)
+                                        }
+                                      }
+                                    },
+                                    [_vm._v("delete")]
+                                  )
+                                ],
+                                1
+                              )
                         ],
                         1
                       )
@@ -21015,41 +21507,6 @@ var render = function() {
               )
             ],
             2
-          ),
-          _vm._v(" "),
-          _c(
-            "v-snackbar",
-            {
-              attrs: {
-                color: _vm.color,
-                "multi-line": _vm.mode === "multi-line",
-                timeout: _vm.timeout,
-                vertical: _vm.mode === "vertical"
-              },
-              model: {
-                value: _vm.snackbar,
-                callback: function($$v) {
-                  _vm.snackbar = $$v
-                },
-                expression: "snackbar"
-              }
-            },
-            [
-              _vm._v("\n            " + _vm._s(_vm.text) + "\n            "),
-              _c(
-                "v-btn",
-                {
-                  attrs: { dark: "", flat: "" },
-                  on: {
-                    click: function($event) {
-                      _vm.snackbar = false
-                    }
-                  }
-                },
-                [_vm._v(" Close")]
-              )
-            ],
-            1
           )
         ],
         1
@@ -112878,11 +113335,11 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
 
 
 
+
+
+
+
 vue__WEBPACK_IMPORTED_MODULE_1___default.a.use(vee_validate__WEBPACK_IMPORTED_MODULE_7__["default"]);
-
-
-
-
 vue__WEBPACK_IMPORTED_MODULE_1___default.a.use(vue_router__WEBPACK_IMPORTED_MODULE_4__["default"]);
 vue__WEBPACK_IMPORTED_MODULE_1___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_2__["default"]);
 vue__WEBPACK_IMPORTED_MODULE_1___default.a.use(_stores_global_store__WEBPACK_IMPORTED_MODULE_3__["default"]);
@@ -114523,6 +114980,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_Meals_vue__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/Meals.vue */ "./resources/js/components/Meals.vue");
 /* harmony import */ var _components_RestaurantManagement_vue__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/RestaurantManagement.vue */ "./resources/js/components/RestaurantManagement.vue");
 /* harmony import */ var _components_AdminItemMenu_vue__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/AdminItemMenu.vue */ "./resources/js/components/AdminItemMenu.vue");
+/* harmony import */ var _components_MealOrders_vue__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/MealOrders.vue */ "./resources/js/components/MealOrders.vue");
+
 
 
 
@@ -114563,11 +115022,12 @@ __webpack_require__.r(__webpack_exports__);
   }, {
     path: 'meals',
     component: _components_Meals_vue__WEBPACK_IMPORTED_MODULE_7__["default"],
-    name: 'meals'
-  }, {
-    path: 'restaurantManagement',
-    component: _components_RestaurantManagement_vue__WEBPACK_IMPORTED_MODULE_8__["default"],
-    name: 'restaurantManagement'
+    name: 'meals',
+    children: [{
+      path: ':mealId/orders',
+      component: _components_MealOrders_vue__WEBPACK_IMPORTED_MODULE_10__["default"],
+      name: 'meal.orders'
+    }]
   }, {
     path: 'menu',
     component: _components_AdminItemMenu_vue__WEBPACK_IMPORTED_MODULE_9__["default"],
@@ -114575,7 +115035,11 @@ __webpack_require__.r(__webpack_exports__);
   }, {
     path: 'menu/meal/:mealId',
     component: _components_AdminItemMenu_vue__WEBPACK_IMPORTED_MODULE_9__["default"],
-    name: 'menu.order.meal'
+    name: 'menu.meal.orders'
+  }, {
+    path: 'restaurantManagement',
+    component: _components_RestaurantManagement_vue__WEBPACK_IMPORTED_MODULE_8__["default"],
+    name: 'restaurantManagement'
   }]
 }]);
 

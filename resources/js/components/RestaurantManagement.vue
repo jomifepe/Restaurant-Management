@@ -28,16 +28,23 @@
                     </v-card>
                 </v-dialog>
             </v-toolbar>
-            <v-data-table :headers="headers" :items="tables" :pagination.sync="pagination" :loading="loadingTableEffect" :rowsPerPage="rows" class="elevation-1">
+            <v-data-table :headers="headers" :items="tables" :pagination.sync="pagination" :loading="loadingTableEffect"
+                          :rowsPerPage="rows" class="elevation-1">
                 <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                 <template slot="items" slot-scope="props">
                     <td class="text-xs-center">{{ props.item.table_number }}</td>
                     <td class="text-xs-left">{{ props.item.created_at.date }}</td>
                     <td class="text-xs-left">{{ props.item.updated_at.date }}</td>
+                    <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
+                    <td v-else> N/A </td>
                     <td class="justify-center layout px-0">
-                        <!--<v-icon small class="mr-2" @click="editItem(props.item)">edit</v-icon>-->
-                        <!--<v-icon large color="red darken-2" dark right>delete</v-icon>-->
-                        <v-icon color="red darken-2" @click="deleteItem(props.item)">delete</v-icon>
+                        <v-icon arge class="mr-2" @click="editItem(props.item)">edit</v-icon>
+                        <div v-if="props.item.deleted_at != null">
+                            <v-icon arge color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
+                        </div>
+                        <div v-else>
+                            <v-icon arge color="red darken-2" dark right @click.prevent="deleteTable(props.item)">delete</v-icon>
+                        </div>
                     </td>
                 </template>
                 <template slot="no-data">
@@ -49,11 +56,11 @@
                     <v-btn color="primary" @click="initialize">Reset</v-btn>
                 </template>
             </v-data-table>
-           <v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
+           <!--<v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
                         :timeout="timeout" :vertical="mode === 'vertical'">
                 {{ text }}
                 <v-btn dark flat @click="snackbar = false"> Close</v-btn>
-            </v-snackbar>
+            </v-snackbar>-->
 
         </v-container>
         <items-menu></items-menu>
@@ -68,11 +75,11 @@
             'items-menu':AdminItemMenu
         },
         data: () => ({
-            snackbar: false,
-            color: 'black',
-            mode: '',
-            timeout: 3000,
-            text: '',
+            //snackbar: false,
+            //color: 'black',
+            //mode: '',
+            //timeout: 3000,
+            //text: '',
             dialog: false,
             noData: false,
             loadingTableEffect: true,
@@ -84,18 +91,15 @@
                 { text: 'Table Number', align: 'left', value: 'table_number'},
                 { text: 'Created At', value: 'created_at' },
                 { text: 'Updated At', value: 'updated_at' },
-                { text: 'Delete',   align: 'center', value: ''} ],
+                { text: 'Deleted At', value: 'deleted_at'},
+                { text: 'Action',   align: 'center', value: ''} ],
             tables: [],
             editedIndex: -1,
             editedItem: {
                 table_number: 0,
-                created_at: 0,
-                updated_at: 0
             },
             defaultItem: {
                 table_number: 0,
-                created_at: 0,
-                updated_at: 0
             }
         }),
         methods: {
@@ -113,23 +117,52 @@
                 });
             },
             editItem (item) {
-                this.editedIndex = this.tables.indexOf(item)
-                this.editedItem = Object.assign({}, item)
                 this.dialog = true
             },
-            deleteItem (item) {
+            deleteTable (item) {
                 if(confirm('Are you sure you want to delete table ' + item.table_number +' ?')){
-                    const index = this.tables.indexOf(item);
-                    axios.delete('table/delete/'+item.table_number).then(response => {
+                    axios.delete('tables/'+item.table_number).then(response => {
                         if(response.status === 204) {
-                            this.text = 'Deleted Table Sucessfully';
-                            this.snackbar = true;
+                            //this.text = 'Deleted Table Sucessfuly';
+                            //this.snackbar = true;
+                            this.$toasted.show('Deleted table successfully', {
+                                icon: "check",
+                                position: "bottom-center",
+                                duration : 3000
+                            });
                             this.initialize();
                         }
                     }).catch(error => {
-                        console.log(error);
+                        this.$toasted.show('Problem deleting table', {
+                            icon: "check",
+                            position: "bottom-center",
+                            duration : 3000
+                        });
                     });
                 }
+            },
+            restoreTable(item){
+                if(confirm('Are you sure you want to recover table ' + item.table_number +' ?')){
+                    axios.put('table/restore/'+item.table_number).then(response => {
+                        if(response.status === 200) {
+                            //this.text = 'Table Recovered Sucessfuly';
+                            //this.snackbar = true;
+                            this.$toasted.show('Table recovered successfully', {
+                                icon: "check",
+                                position: "bottom-center",
+                                duration : 3000
+                            });
+                            this.initialize();
+                        }
+                    }).catch(error => {
+                        this.$toasted.show('Problem recovering table', {
+                            icon: "check",
+                            position: "bottom-center",
+                            duration : 3000
+                        });
+                    });
+                }
+
             },
             close () {
                 this.dialog = false
@@ -145,11 +178,20 @@
                         {"table_number": this.editedItem.table_number,})
                     .then(response => {
                         console.log(response);
-                        this.text = 'Created Table Sucessfully';
-                        this.snackbar = true;
+                        //this.text = 'Created Table Sucessfully';
+                        //this.snackbar = true;
+                        this.$toasted.show('Created table successfully', {
+                            icon: "check",
+                            position: "bottom-center",
+                            duration : 3000
+                        });
                         this.initialize();
                     }).catch(error =>{
-                        console.log(error);
+                        this.$toasted.show('Problem creating table', {
+                            icon: "check",
+                            position: "bottom-center",
+                            duration : 3000
+                        });
                     });
                 }
                 this.close()
