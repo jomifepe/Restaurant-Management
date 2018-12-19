@@ -32,17 +32,25 @@
 			</v-list>
 			<div v-if="this.$route.name == 'restaurantManagement' && this.$store.state.user.type == 'manager'" >
 				<v-icon arge color="red darken-2" dark right @click.prevent="deleteItem(item)">delete</v-icon>
+				<v-icon arge color="yellow darken-2" dark right @click.prevent="showForm = true">border_color</v-icon>
+				<div v-if="showForm">
+					<item-form  :itemSelectedToEdit="item" @onGetItems="onGetItems()" @onCloseForm="onCloseForm()"></item-form>
+				</div>
 			</div>
 		</v-card-text>
 	</v-card>
 </template>
 
 <script>
+    import ItemForm from './ItemForm';
     export default {
         props: ['item', 'meal'],
+        components:{
+            ItemForm,
+        },
         data: () => ({
+            showForm: false,
             isSelected: false,
-
             buttonColor: 'blue-grey',
             buttonIcon: 'fas fa-plus',
         }),
@@ -72,13 +80,19 @@
                             this.$emit('updateList');
                         }
                     }).catch(error => {
-                       		this.$toasted.show('Problem occurred in deleting Item', {
+                        this.$toasted.show('Problem occurred in deleting Item', {
                             icon: "error",
                             position: "bottom-center",
                             duration : 3000
                         });
                     });
                 }
+            },
+            onCloseForm(){
+                this.showForm = false;
+            },
+            onGetItems(){
+                this.$emit('getItems');
             }
         },
     }

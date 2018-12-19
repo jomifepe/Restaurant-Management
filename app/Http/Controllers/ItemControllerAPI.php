@@ -8,6 +8,7 @@ use App\Item;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Storage;
+use Validator;
 
 class ItemControllerAPI extends Controller
 {
@@ -29,13 +30,13 @@ class ItemControllerAPI extends Controller
      */
     public function store(Request $request)
     {
-         $request->validate([
+        $request->validate([
             'name' => 'required|String|unique:items,name',
             'price' => 'required|numeric',
             'description' => 'required|String',
             'type' => 'required|in:drink,dish',
             'photo_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-       ]);
+        ]);
 
         $newItem = new Item();
         $newItem->fill($request->all());
@@ -59,7 +60,7 @@ class ItemControllerAPI extends Controller
      */
     public function show($id)
     {
-        //
+        return Item::findOrFail($id);
     }
 
     /**
@@ -82,7 +83,37 @@ class ItemControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|String|unique:items,name',
+            'price' => 'required|numeric',
+            'description' => 'required|String',
+            'type' => 'required|in:drink,dish',
+            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
+
+        $oldItem = Item::findOrFail($id);
+
+        if ($request->hasFile('photo_url'))
+        {
+            $fileName = Storage::disk('public')->putFile('items', Input::file('photo_url'));
+            $photoName = explode('/', $fileName)[1];
+
+            if($photoName != $oldItem->photo_url){
+                $oldItem->photo_url = $photoName;
+            }
+        }
+
+
+
+
+        $oldItem->name = $data['name'];
+        $oldItem->price = $data['price'];
+        $oldItem->description = $data['description'];
+        $oldItem->type = $data['type'];
+
+
+        $oldItem->save();
+        return response()->json(new ItemResource($oldItem), 201);
     }
 
     /**

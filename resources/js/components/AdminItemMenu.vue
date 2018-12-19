@@ -7,7 +7,9 @@
 				<v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
 							label="Search" prepend-inner-icon="search" solo-inverted>
 				</v-text-field>
+
 				<NewItem @onGetItems="getItems()"> </NewItem>
+
 				<template v-if="meal">
 					<v-chip color="teal" text-color="white">
 						<v-avatar>

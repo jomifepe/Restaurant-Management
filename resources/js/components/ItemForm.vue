@@ -1,0 +1,181 @@
+<template>
+    <v-layout row justify-center>
+        <v-dialog v-model="dialog" persistent max-width="600px">
+            <v-card>
+                <v-card-title>
+                    <span class="headline">User Profile</span>
+                </v-card-title>
+                <form @submit.prevent="validateBeforeSubmit">
+                    <v-card-text>
+                        <div v-if="hasValidationErrors">
+                            <ul class="alert alert-danger">
+                                <li v-for="(value, key, index) in validationErrors">{{ value }}</li>
+                            </ul>
+                        </div>
+                        <v-container grid-list-md>
+                            <v-layout wrap>
+                                <v-flex xs12 sm6 md4>
+                                    <v-text-field v-model="item.name" v-validate="'required|alpha_spaces'" name="name" type="text" label="Item name*" required></v-text-field>
+                                    <span style="color:red">{{ errors.first('name') }}</span>
+                                </v-flex>
+                                <v-flex xs12 sm6 md4>
+                                    <v-text-field v-model="item.price" v-validate="'required|decimal:2'" name="price" type="text" label="Price*" hint="example: 10,30"></v-text-field>
+                                    <span style="color:red">{{ errors.first('price') }}</span>
+                                </v-flex>
+                                <v-flex xs12 sm6 md4>
+                                    <input type="file" name="photo_url" @change="onFileSelected">
+                                </v-flex>
+                                <v-flex xs12>
+                                    <v-text-field v-model="item.description" v-validate="'required|alpha_spaces'" name="description" type="text" label="Description*" required></v-text-field>
+                                    <span style="color:red">{{ errors.first('description') }}</span>
+                                </v-flex>
+                                <v-flex xs12 sm6>
+                                    <v-select v-model="item.type" v-validate="'required'" name="type" type="text"
+                                              :items="['dish', 'drink']"
+                                              label="Type"
+                                              required
+                                    ></v-select>
+                                    <span style="color:red">{{ errors.first('type') }}</span>
+                                </v-flex>
+                                <v-flex xs12 sm6>
+                                </v-flex>
+                            </v-layout>
+                        </v-container>
+                        <small>*indicates required field</small>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" flat @click.prevent="onCloseForm()" >Close</v-btn>
+                        <v-btn color="blue darken-1" flat type="submit" >Save</v-btn>
+                    </v-card-actions>
+                </form>
+            </v-card>
+        </v-dialog>
+    </v-layout>
+</template>
+
+<script>
+    export default {
+        name: "ItemForm",
+        props:['itemSelectedToEdit'],
+        data() {
+            return {
+                dialog: true,
+                isNewItem: false,
+                selectedFile: null,
+                hasValidationErrors: false,
+                validationErrors:[],
+                item:{
+                    name: '',
+                    type:'',
+                    description: '',
+                    price: '',
+                    photo_url: null,
+                }
+            }
+        },
+        methods:{
+            save() {
+                let toast;
+                let form = new FormData;
+                form.append('name', this.item.name);
+                form.append('price', this.item.price);
+                form.append('description', this.item.description);
+                form.append('type', this.item.type);
+                form.append('photo_url', this.item.photo_url);
+                const config = {headers: {'Content-Type': 'application/json; charset=utf-8'}};
+
+                if(this.isNewItem) {
+                    console.log('NEW');
+                    console.log(this.item);
+
+                    axios.post('items', form).then(response => {
+                        toast = this.$toasted.show('New item created successfully', {
+                            icon: "check",
+                            position: "bottom-center",
+                            duration: 3000
+                        });
+                        this.$emit('onGetItems');
+                        //this.clearItemData();
+                        this.$emit('onCloseForm');
+                    }).catch(error => {
+                        console.log(error);
+                        this.hasErrors(error.response.data.errors);
+                        toast = this.$toasted.show('problem occurred in item creation', {
+                            icon: "error",
+                            position: "bottom-center",
+                            duration: 3000
+                        });
+                    });
+                } else { //editing Item
+                    console.log('EDIT');
+                    console.log(this.item);
+                    axios.put('items/' + this.item.id, this.item,
+                    ).then(response => {
+                        toast = this.$toasted.show('Item edited successfully', {
+                            icon: "check",
+                            position: "bottom-center",
+                            duration: 3000
+                        });
+                        console.log(response);
+                        this.$emit('onGetItems');
+                        //this.clearItemData();
+                        this.$emit('onCloseForm');
+                    }).catch(error => {
+                        this.hasErrors(error.response.data.errors);
+                        toast = this.$toasted.show('problem occurred in item creation', {
+                            icon: "error",
+                            position: "bottom-center",
+                            duration: 3000
+                        });
+                    });
+                }
+            },
+            onFileSelected(event){
+                this.item.photo_url = event.target.files[0];
+            },
+            validateBeforeSubmit() {
+                this.$validator.validateAll().then((result) => {
+                    if (!result) {
+                        alert('Correct them errors!');
+                    }else{
+                        this.save();
+                        return;
+                    }
+                });
+            },
+            clearItemData(){
+                this.item.name='',
+                this.item.type='',
+                this.item.description = '',
+                this.item.price = '',
+                this.item.photo_url = null
+            },
+            hasErrors(errors){
+                this.validationErrors = errors;
+                this.hasValidationErrors = true;
+                setTimeout(() => (this.hasValidationErrors = false), 6000)
+            },
+            onCloseForm(){
+                this.$emit('onCloseForm');
+            }
+        },
+        created(){
+            console.log('created');
+            console.log(this.itemSelectedToEdit);
+            if(this.itemSelectedToEdit != null) {
+                this.item = this.itemSelectedToEdit;
+                this.item.photo_url = null;
+                this.isNewItem = false;
+            }else{
+                this.isNewItem = true;
+            }
+            console.log('item');
+            console.log(this.item);
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

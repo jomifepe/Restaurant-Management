@@ -1,27 +1,14 @@
 <template>
     <div class="text-xs-center">
-        <v-btn :disabled="loading" :loading="loading" dark class="mb-2" color="primary" @click="loading = true">
+        <v-btn dark class="mb-2" color="primary" @click.prevent="showForm = true">
             New Item
         </v-btn>
-        <v-dialog
-                v-model="loading"
-                hide-overlay
-                persistent
-                width="300">
-            <v-card color="primary" dark>
-                <v-card-text>
-                    Please stand by
-                    <v-progress-linear
-                            indeterminate
-                            color="white"
-                            class="mb-0"
-                    ></v-progress-linear>
-                </v-card-text>
-            </v-card>
-        </v-dialog>
 
+        <div v-if="showForm">
+            <item-form  @onGetItems="onGetItems()" @onCloseForm="closeForm()"></item-form>
+        </div>
 
-        <div v-if="dialog">
+        <!--<div v-if="dialog">
             <v-layout row justify-center>
                 <v-dialog v-model="dialog" persistent max-width="600px">
                     <v-card>
@@ -63,7 +50,6 @@
                                         <v-flex xs12 sm6>
                                         </v-flex>
                                     </v-layout>
-
                                 </v-container>
                                 <small>*indicates required field</small>
                             </v-card-text>
@@ -76,37 +62,32 @@
                     </v-card>
                 </v-dialog>
             </v-layout>
-        </div>
-
-
+        </div> -->
     </div>
 </template>
 
 <script>
-    import UploadButton from 'vuetify-upload-button';
+    import ItemForm from './ItemForm';
 
     export default {
         name: "NewItem",
         components:{
-            UploadButton
+            ItemForm
         },
         data () {
             return {
-                loading: false,
-                dialog: false,
-                selectedFile: null,
-                hasValidationErrors: false,
-                validationErrors:[],
-                item:{
-                    name: '',
-                    type:'',
-                    description: '',
-                    price: '',
-                    photo: null,
-                }
+                showForm: false,
             }
         },
-        methods: {
+        methods:{
+            closeForm(){
+                this.showForm = false;
+            },
+            onGetItems(){
+                this.$emit('onGetItems');
+            }
+        }
+        /*methods: {
             save() {
                 let toast;
                 let form = new FormData;
@@ -164,12 +145,13 @@
                 setTimeout(() => (this.hasValidationErrors = false), 6000)
             }
         },
+
         watch: {
             loading (val) {
                 if (!val) return;
                 setTimeout(() => (this.loading = false, this.dialog= true), 1000)
             }
-        },
+        },*/
     }
 </script>
 
