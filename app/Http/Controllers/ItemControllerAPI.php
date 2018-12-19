@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Storage;
 use Validator;
+use Illuminate\Validation\Rule;
 
 class ItemControllerAPI extends Controller
 {
@@ -83,39 +84,14 @@ class ItemControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = $request->validate([
-            'name' => 'required|String',
-            'price' => 'required|numeric',
-            'description' => 'required|String',
-            'type' => 'required|in:drink,dish',
-            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-        ]);
 
-        $oldItem = Item::findOrFail($id);
-
-        if ($request->hasFile('photo_url'))
-        {
-            $fileName = Storage::disk('public')->putFile('items', Input::file('photo_url'));
-            $newPhoto_url = explode('/', $fileName)[1];
-            if($newPhoto_url != $oldItem->photo_url){
-                $oldItem->photo_url = $newPhoto_url;
-            }
-        }
-
-        $oldItem->name = $data['name'];
-        $oldItem->price = $data['price'];
-        $oldItem->description = $data['description'];
-        $oldItem->type = $data['type'];
-
-        $oldItem->save();
-        return response()->json(new ItemResource($oldItem), 201);
     }
 
 
    public function updatePost(Request $request, $id)
     {
         $data = $request->validate([
-            'name' => 'required|String',
+            'name' => 'required|String|unique:items,name,'.$id.',id',
             'price' => 'required|numeric',
             'description' => 'required|String',
             'type' => 'required|in:drink,dish',
@@ -144,26 +120,6 @@ class ItemControllerAPI extends Controller
 
 
 
-   /* public function updatePhoto(Request $request, $id){
-         $request-> validate([
-           'photo_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-         ]);
-
-        $oldItem = Item::findOrFail($id);
-
-        if ($request->hasFile('photo_url'))
-        {
-            $fileName = Storage::disk('public')->putFile('items', Input::file('photo_url'));
-            $newPhoto_url = explode('/', $fileName)[1];
-            if($newPhoto_url != $oldItem->photo_url){
-                $oldItem->photo_url = $newPhoto_url;
-            }
-        }
-
-        $oldItem->save();
-
-        return response()->json(new ItemResource($oldItem), 200);
-    }*/
 
     /**
      * Remove the specified resource from storage.

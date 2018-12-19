@@ -7,15 +7,13 @@
                 </v-card-title>
                 <form id="form" @submit.prevent="validateBeforeSubmit">
                     <v-card-text>
-                        <div v-if="hasValidationErrors">
-                            <ul class="alert alert-danger">
-                                <li v-for="(value, key, index) in validationErrors">{{ value }}</li>
-                            </ul>
+                        <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
+                            <errors :msg="value"></errors>
                         </div>
                         <v-container grid-list-md>
                             <v-layout wrap>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="item.name" v-validate="'required|alpha_spaces'" name="name" type="text" label="Item name*" required></v-text-field>
+                                <v-flex xs12 sm6 md4> <!--  ^[a-zA-Z0-9!@#$&()-`.+,/\"]*$   v-validate="{ required: true, regex: /\\.(js|ts)$/ }-->
+                                    <v-text-field v-model="item.name" v-validate="{ required: true, regex: /^[a-z\d\-_!,\wãçá.\s]+$/}" name="name" type="text" label="Item name*" required></v-text-field>
                                     <span style="color:red">{{ errors.first('name') }}</span>
                                 </v-flex>
                                 <v-flex xs12 sm6 md4>
@@ -55,8 +53,10 @@
 </template>
 
 <script>
+    import Errors from "./Errors";
     export default {
         name: "ItemForm",
+        components: {Errors},
         props:['itemSelectedToEdit'],
         data() {
             return {
@@ -116,9 +116,6 @@
                 });
             },
             editItem(form){
-                //if(this.item.photo_url != null) {
-                //    form.append('photo_url', this.item.photo_url);
-                //}
                 form.append('method_', 'PUT');
 
                 axios.post('items/update/'+this.item.id, form

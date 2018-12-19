@@ -7,33 +7,34 @@
                 <v-spacer></v-spacer>
                 <v-dialog v-model="dialog" max-width="500px">
                     <v-btn slot="activator" color="primary" dark class="mb-2">New Table</v-btn>
-                    <v-card>
-                        <v-card-title>
-                            <span class="headline">{{ formTitle }}</span>
-                        </v-card-title>
-                        <v-card-title>
-                            <span >Insert 0 to auto create table</span>
-                        </v-card-title>
-                        <div v-if="hasValidationErrors">
-                            <ul class="alert alert-danger">
-                                <li v-for="(value, key, index) in validationErrors">{{ value }}</li>
-                            </ul>
-                        </div>
-                        <v-card-text>
-                            <v-container grid-list-md>
-                                <v-layout wrap>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="editedItem.table_number" label="Table number"></v-text-field>
-                                    </v-flex>
-                                </v-layout>
-                            </v-container>
-                        </v-card-text>
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                            <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
-                        </v-card-actions>
-                    </v-card>
+                    <form id="form" @submit.prevent="validateBeforeSubmit">
+                        <v-card>
+                            <v-card-title>
+                                <span class="headline">{{ formTitle }}</span>
+                            </v-card-title>
+                            <v-card-title>
+                                <span >Insert 0 to auto create table</span>
+                            </v-card-title>
+                            <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
+                                <errors :msg="value"></errors>
+                            </div>
+                            <v-card-text>
+                                <v-container grid-list-md>
+                                    <v-layout wrap>
+                                        <v-flex xs12 sm6 md4>
+                                            <v-text-field v-model="editedItem.table_number" v-validate="'required|numeric'" name="tableNumber" type="text" label="Table number"></v-text-field>
+                                            <span style="color:red">{{ errors.first('tableNumber') }}</span>
+                                        </v-flex>
+                                    </v-layout>
+                                </v-container>
+                            </v-card-text>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                                <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </form>
                 </v-dialog>
             </v-toolbar>
             <v-data-table :headers="headers" :items="tables" :pagination.sync="pagination" :loading="loadingTableEffect"
@@ -46,7 +47,7 @@
                     <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
                     <td v-else> N/A </td>
                     <td class="justify-center layout px-0">
-                        <v-icon arge class="mr-2" @click="editItem(props.item)">edit</v-icon>
+                        <!--<v-icon arge class="mr-2" @click="editItem()">edit</v-icon>-->
                         <div v-if="props.item.deleted_at != null">
                             <v-icon arge color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
                         </div>
@@ -61,7 +62,7 @@
                     </v-alert>
                 </template>
                 <template slot="no-data">
-                    <v-btn color="primary" @click="initialize">Reset</v-btn>
+                    <v-btn color="primary" @click="getTables">Reset</v-btn>
                 </template>
             </v-data-table>
         </v-container>
@@ -71,10 +72,12 @@
 
 <script>
     import AdminItemMenu from './AdminItemMenu.vue';
+    import Errors from './Errors.vue';
     export default {
         name: "ManageRestaurant",
         components: {
-            'items-menu':AdminItemMenu
+            'items-menu':AdminItemMenu,
+            Errors
         },
         data: () => ({
             dialog: false,
@@ -102,7 +105,7 @@
             }
         }),
         methods: {
-            initialize () {
+            getTables () {
                 this.loadingTableEffect=true;
                 axios.get('tables').then(response => {
                     if (response.status === 200) {
@@ -114,9 +117,9 @@
                     this.loadingTableEffect=false;
                 });
             },
-            editItem (item) {
+            /*editItem () {
                 this.dialog = true
-            },
+            },*/
             deleteTable (item) {
                 if(confirm('Are you sure you want to delete table ' + item.table_number +' ?')){
                     axios.delete('tables/'+item.table_number).then(response => {
@@ -126,7 +129,7 @@
                                 position: "bottom-center",
                                 duration : 3000
                             });
-                            this.initialize();
+                            this.getTables();
                         }
                     }).catch(error => {
                         this.hasErrors(error.response.data.errors);
@@ -147,7 +150,7 @@
                                 position: "bottom-center",
                                 duration : 3000
                             });
-                            this.initialize();
+                            this.getTables();
                         }
                     }).catch(error => {
                         this.hasErrors(error.response.data.errors);
@@ -170,15 +173,15 @@
                 if (this.editedIndex > -1) {
                 } else {
                     axios.post('tables',{"table_number": this.editedItem.table_number,})
-                    .then(response => {
-                        this.$toasted.show('Created table successfully', {
-                            icon: "check",
-                            position: "bottom-center",
-                            duration : 3000
-                        });
-                        this.close();
-                        this.initialize();
-                    }).catch(error =>{
+                        .then(response => {
+                            this.$toasted.show('Created table successfully', {
+                                icon: "check",
+                                position: "bottom-center",
+                                duration : 3000
+                            });
+                            this.close();
+                            this.getTables();
+                        }).catch(error =>{
                         this.hasErrors(error.response.data.errors);
                         this.$toasted.show('Problem creating table', {
                             icon: "check",
@@ -187,16 +190,25 @@
                         });
                     });
                 }
-                //this.close()
             },
             hasErrors(errors){
                 this.validationErrors = errors;
                 this.hasValidationErrors = true;
                 setTimeout(() => (this.hasValidationErrors = false), 6000)
             },
+            validateBeforeSubmit() {
+                this.$validator.validateAll().then((result) => {
+                    if (!result) {
+                        alert('Correct them errors!');
+                    }else{
+                        this.save();
+                        return;
+                    }
+                });
+            },
         },
         created () {
-            this.initialize()
+            this.getTables()
         },
         computed: {
             formTitle () {

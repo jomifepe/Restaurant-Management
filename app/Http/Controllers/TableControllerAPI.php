@@ -32,20 +32,16 @@ class TableControllerAPI extends Controller
             'table_number' => 'required|numeric|unique:restaurant_tables,table_number',
         ]);
 
-        $table = new Table();
-        dd($request->input());
+        $newTable = new Table();
 
         if($request->table_number != null && $request->table_number != 0){
-            $request->validate([
-                'table_number' => 'required|numeric|unique:restaurant_tables,table_number']);
-            $table->table_number = $request->table_number;
+            $newTable->fill($request->all());
         }else{
-            $table->table_number = (DB::table('restaurant_tables')->max('table_number')+1);
+            $newTable->table_number = (DB::table('restaurant_tables')->max('table_number')+1);
         }
-        $table->fill($request->all());
-        $table->save();
 
-        return response()->json(new TableResource($table), 201);
+        $newTable->save();
+        return response()->json(new TableResource($newTable), 201);
     }
 
     /**
@@ -76,15 +72,17 @@ class TableControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-        dump($request);
-
-        $updatedTable = $request->validate([
-            'table_number' => 'required|numeric|unique:restaurant_tables,table_number,'.$id.',table_number',
+         $request->validate([
+            'table_number' => [
+                'required|numeric',
+                Rule::unique('restaurant_tables')->ignore($request->table_number),
+                Rule::notIn(DB::table('orders')->where('table_number', $id)->get()),
+            ],
             'created_at' => 'nullable|date',
             'updated_at' => 'nullable|date',
         ]);
 
-        dd($updatedTable);
+
         $table = new Table();
         $table->fill($request->all());
         $table->save();
@@ -115,4 +113,6 @@ class TableControllerAPI extends Controller
         $table->delete();
         return response()->json(null, 204);
     }
+
+
 }
