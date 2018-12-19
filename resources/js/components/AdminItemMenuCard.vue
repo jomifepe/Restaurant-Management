@@ -92,7 +92,7 @@
                 this.showForm = false;
             },
             onGetItems(){
-                this.$emit('getItems');
+                this.$emit('onGetItems');
             }
         },
     }

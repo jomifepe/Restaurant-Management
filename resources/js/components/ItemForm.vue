@@ -3,9 +3,9 @@
         <v-dialog v-model="dialog" persistent max-width="600px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">User Profile</span>
+                    <span class="headline">Item</span>
                 </v-card-title>
-                <form @submit.prevent="validateBeforeSubmit">
+                <form id="form" @submit.prevent="validateBeforeSubmit">
                     <v-card-text>
                         <div v-if="hasValidationErrors">
                             <ul class="alert alert-danger">
@@ -76,32 +76,37 @@
         },
         methods:{
             save() {
-                let toast;
                 let form = new FormData;
                 form.append('name', this.item.name);
                 form.append('price', this.item.price);
                 form.append('description', this.item.description);
                 form.append('type', this.item.type);
-                form.append('photo_url', this.item.photo_url);
-                const config = {headers: {'Content-Type': 'application/json; charset=utf-8'}};
+                if(this.item.photo_url != null) {
+                    form.append('photo_url', this.item.photo_url);
+                }
+
+                const config = {
+                    headers: { 'content-type': 'multipart/form-data' }
+                }
 
                 if(this.isNewItem) {
                     console.log('NEW');
                     console.log(this.item);
+                    form.append('photo_url', this.item.photo_url);
+
 
                     axios.post('items', form).then(response => {
-                        toast = this.$toasted.show('New item created successfully', {
+                        this.$toasted.show('New item created successfully', {
                             icon: "check",
                             position: "bottom-center",
                             duration: 3000
                         });
                         this.$emit('onGetItems');
-                        //this.clearItemData();
                         this.$emit('onCloseForm');
                     }).catch(error => {
                         console.log(error);
                         this.hasErrors(error.response.data.errors);
-                        toast = this.$toasted.show('problem occurred in item creation', {
+                        this.$toasted.show('problem occurred in item creation', {
                             icon: "error",
                             position: "bottom-center",
                             duration: 3000
@@ -110,20 +115,23 @@
                 } else { //editing Item
                     console.log('EDIT');
                     console.log(this.item);
-                    axios.put('items/' + this.item.id, this.item,
-                    ).then(response => {
-                        toast = this.$toasted.show('Item edited successfully', {
+                    if(this.item.photo_url != null) {
+                        form.append('photo_url', this.item.photo_url);
+                    }
+                    form.append('method_', 'PUT');
+
+                    axios.post('items/update/'+this.item.id, form
+                        ).then(response => {
+                        this.$toasted.show('Item edited successfully', {
                             icon: "check",
                             position: "bottom-center",
                             duration: 3000
                         });
-                        console.log(response);
                         this.$emit('onGetItems');
-                        //this.clearItemData();
                         this.$emit('onCloseForm');
                     }).catch(error => {
                         this.hasErrors(error.response.data.errors);
-                        toast = this.$toasted.show('problem occurred in item creation', {
+                        this.$toasted.show('problem occurred in item creation', {
                             icon: "error",
                             position: "bottom-center",
                             duration: 3000
@@ -158,21 +166,33 @@
             },
             onCloseForm(){
                 this.$emit('onCloseForm');
-            }
+            },
         },
         created(){
             console.log('created');
             console.log(this.itemSelectedToEdit);
             if(this.itemSelectedToEdit != null) {
-                this.item = this.itemSelectedToEdit;
+                this.item = iterationCopy(this.itemSelectedToEdit);
                 this.item.photo_url = null;
                 this.isNewItem = false;
+                console.log('editing Item');
+                console.log(this.item);
             }else{
                 this.isNewItem = true;
+                console.log('new Item');
+                console.log(this.item);
             }
-            console.log('item');
-            console.log(this.item);
-        }
+
+            function iterationCopy(src) {
+                let target = {};
+                for (let prop in src) {
+                    if (src.hasOwnProperty(prop)) {
+                        target[prop] = src[prop];
+                    }
+                }
+                return target;
+            }
+        },
     }
 </script>
 

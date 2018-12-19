@@ -2370,7 +2370,7 @@ __webpack_require__.r(__webpack_exports__);
       this.showForm = false;
     },
     onGetItems: function onGetItems() {
-      this.$emit('getItems');
+      this.$emit('onGetItems');
     }
   }
 });
@@ -2800,31 +2800,34 @@ __webpack_require__.r(__webpack_exports__);
     save: function save() {
       var _this = this;
 
-      var toast;
       var form = new FormData();
       form.append('name', this.item.name);
       form.append('price', this.item.price);
       form.append('description', this.item.description);
       form.append('type', this.item.type);
-      form.append('photo_url', this.item.photo_url);
+
+      if (this.item.photo_url != null) {
+        form.append('photo_url', this.item.photo_url);
+      }
+
       var config = {
         headers: {
-          'Content-Type': 'application/json; charset=utf-8'
+          'content-type': 'multipart/form-data'
         }
       };
 
       if (this.isNewItem) {
         console.log('NEW');
         console.log(this.item);
+        form.append('photo_url', this.item.photo_url);
         axios.post('items', form).then(function (response) {
-          toast = _this.$toasted.show('New item created successfully', {
+          _this.$toasted.show('New item created successfully', {
             icon: "check",
             position: "bottom-center",
             duration: 3000
           });
 
-          _this.$emit('onGetItems'); //this.clearItemData();
-
+          _this.$emit('onGetItems');
 
           _this.$emit('onCloseForm');
         }).catch(function (error) {
@@ -2832,7 +2835,7 @@ __webpack_require__.r(__webpack_exports__);
 
           _this.hasErrors(error.response.data.errors);
 
-          toast = _this.$toasted.show('problem occurred in item creation', {
+          _this.$toasted.show('problem occurred in item creation', {
             icon: "error",
             position: "bottom-center",
             duration: 3000
@@ -2842,22 +2845,26 @@ __webpack_require__.r(__webpack_exports__);
         //editing Item
         console.log('EDIT');
         console.log(this.item);
-        axios.put('items/' + this.item.id, this.item).then(function (response) {
-          toast = _this.$toasted.show('Item edited successfully', {
+
+        if (this.item.photo_url != null) {
+          form.append('photo_url', this.item.photo_url);
+        }
+
+        form.append('method_', 'PUT');
+        axios.post('items/update/' + this.item.id, form).then(function (response) {
+          _this.$toasted.show('Item edited successfully', {
             icon: "check",
             position: "bottom-center",
             duration: 3000
           });
-          console.log(response);
 
-          _this.$emit('onGetItems'); //this.clearItemData();
-
+          _this.$emit('onGetItems');
 
           _this.$emit('onCloseForm');
         }).catch(function (error) {
           _this.hasErrors(error.response.data.errors);
 
-          toast = _this.$toasted.show('problem occurred in item creation', {
+          _this.$toasted.show('problem occurred in item creation', {
             icon: "error",
             position: "bottom-center",
             duration: 3000
@@ -2902,15 +2909,28 @@ __webpack_require__.r(__webpack_exports__);
     console.log(this.itemSelectedToEdit);
 
     if (this.itemSelectedToEdit != null) {
-      this.item = this.itemSelectedToEdit;
+      this.item = iterationCopy(this.itemSelectedToEdit);
       this.item.photo_url = null;
       this.isNewItem = false;
+      console.log('editing Item');
+      console.log(this.item);
     } else {
       this.isNewItem = true;
+      console.log('new Item');
+      console.log(this.item);
     }
 
-    console.log('item');
-    console.log(this.item);
+    function iterationCopy(src) {
+      var target = {};
+
+      for (var prop in src) {
+        if (src.hasOwnProperty(prop)) {
+          target[prop] = src[prop];
+        }
+      }
+
+      return target;
+    }
   }
 });
 
@@ -3570,62 +3590,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewItem",
@@ -3645,69 +3609,6 @@ __webpack_require__.r(__webpack_exports__);
       this.$emit('onGetItems');
     }
   }
-  /*methods: {
-      save() {
-          let toast;
-          let form = new FormData;
-          console.log(this.item);
-           form.append('name', this.item.name);
-          form.append('price', this.item.price);
-          form.append('description', this.item.description);
-          form.append('type', this.item.type);
-          form.append('photo_url', this.item.photo);
-          //const config = {headers: {'Content-Type': 'multipart/form-data'}};
-           axios.post('items', form).then(response =>{
-              toast = this.$toasted.show('New item created successfully', {
-                  icon: "check",
-                  position: "bottom-center",
-                  duration : 3000
-              });
-              this.$emit('onGetItems');
-              this.clearItemData();
-              this.dialog = false;
-          }).catch(error =>{
-              this.hasErrors(error.response.data.errors);
-              toast = this.$toasted.show('problem occurred in item creation', {
-                  icon: "error",
-                  position: "bottom-center",
-                  duration : 3000
-              });
-          });
-      },
-      onFileSelected(event){
-          console.log('entered event');
-          this.item.photo = event.target.files[0];
-      },
-      validateBeforeSubmit() {
-          this.$validator.validateAll().then((result) => {
-              if (!result) {
-                  alert('Correct them errors!');
-              }else{
-                  this.save();
-                  return;
-              }
-          });
-      },
-      clearItemData(){
-          this.item.name='',
-          this.item.type='',
-          this.item.description = '',
-          this.item.price = '',
-          this.item.photo = null
-      },
-      hasErrors(errors){
-          this.validationErrors = errors;
-          this.hasValidationErrors = true;
-          setTimeout(() => (this.hasValidationErrors = false), 6000)
-      }
-  },
-   watch: {
-      loading (val) {
-          if (!val) return;
-          setTimeout(() => (this.loading = false, this.dialog= true), 1000)
-      }
-  },*/
-
 });
 
 /***/ }),
@@ -8437,7 +8338,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8532,7 +8433,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -19391,7 +19292,10 @@ var render = function() {
                                         on: {
                                           onItemSelect: _vm.selectItem,
                                           onItemDeselect: _vm.deselectItem,
-                                          updateList: _vm.getItems
+                                          updateList: _vm.getItems,
+                                          onGetItems: function($event) {
+                                            _vm.getItems()
+                                          }
                                         }
                                       })
                                     ],
@@ -20171,14 +20075,13 @@ var render = function() {
             "v-card",
             [
               _c("v-card-title", [
-                _c("span", { staticClass: "headline" }, [
-                  _vm._v("User Profile")
-                ])
+                _c("span", { staticClass: "headline" }, [_vm._v("Item")])
               ]),
               _vm._v(" "),
               _c(
                 "form",
                 {
+                  attrs: { id: "form" },
                   on: {
                     submit: function($event) {
                       $event.preventDefault()

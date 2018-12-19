@@ -41,7 +41,7 @@
 								<v-flex slot="item" slot-scope="props"
 										xs12 sm6 md4 lg3>
 									<MenuCard :item="props.item" :meal="meal" @onItemSelect="selectItem"
-										@onItemDeselect="deselectItem" @updateList="getItems"></MenuCard>
+										@onItemDeselect="deselectItem" @updateList="getItems" @onGetItems="getItems()"></MenuCard>
 								</v-flex>
 							</v-data-iterator>
 						</v-card-text>
@@ -108,21 +108,21 @@
 							this.items = [];
 							this.items.push(dishesResponse.data.data);
 							axios.get(`/items/type/drink`)
-								.then(drinksResponse => {
-									if (drinksResponse.status === 200) {
-										this.items.push(drinksResponse.data.data);
-									}
-									this.progressBar = false;
-								})
-								.catch(error => {
-									this.progressBar = false;
-									console.log(error);
-									this.$toasted.show('Failed to load items of type drink', {
-										icon : 'error',
-										position: "bottom-center",
-										duration : 4000
-									});
-								})
+							.then(drinksResponse => {
+								if (drinksResponse.status === 200) {
+									this.items.push(drinksResponse.data.data);
+								}
+								this.progressBar = false;
+							})
+							.catch(error => {
+								this.progressBar = false;
+								console.log(error);
+								this.$toasted.show('Failed to load items of type drink', {
+									icon : 'error',
+									position: "bottom-center",
+									duration : 4000
+								});
+							})
 						}
                     })
                     .catch(error => {

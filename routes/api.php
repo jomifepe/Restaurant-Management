@@ -33,6 +33,7 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
                      'users'    => 'UserControllerAPI',
                      'tables'    => 'TableControllerAPI']);
 
+Route::post('items/update/{id}', 'ItemControllerAPI@updatePost');
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
 Route::get('meals/{mealId}/items', 'OrderControllerAPI@mealItems')->name('meal.orders.items');
 Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type');
