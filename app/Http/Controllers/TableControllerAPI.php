@@ -28,9 +28,14 @@ class TableControllerAPI extends Controller
      */
     public function store(Request $request)
     {
-        $table = new Table();
+        $request->validate([
+            'table_number' => 'required|numeric|unique:restaurant_tables,table_number',
+        ]);
 
-        if($request->table_number != null){
+        $table = new Table();
+        dd($request->input());
+
+        if($request->table_number != null && $request->table_number != 0){
             $request->validate([
                 'table_number' => 'required|numeric|unique:restaurant_tables,table_number']);
             $table->table_number = $request->table_number;
@@ -51,7 +56,8 @@ class TableControllerAPI extends Controller
      */
     public function show($id)
     {
-        //
+        $table = Table::findOrFail($id);
+        return response()->json(new TableResource($table), 200);
     }
 
     public function restore($id)

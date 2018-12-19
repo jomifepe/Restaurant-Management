@@ -76,68 +76,68 @@
         },
         methods:{
             save() {
+                /** FORM **/
                 let form = new FormData;
                 form.append('name', this.item.name);
                 form.append('price', this.item.price);
                 form.append('description', this.item.description);
                 form.append('type', this.item.type);
                 if(this.item.photo_url != null) {
-                    form.append('photo_url', this.item.photo_url);
-                }
-
-                const config = {
-                    headers: { 'content-type': 'multipart/form-data' }
+                    form.append('photo_url', this.item.photo_url);  /** HAS IMAGE ? -> ADD TO FORM**/
                 }
 
                 if(this.isNewItem) {
-                    console.log('NEW');
-                    console.log(this.item);
-                    form.append('photo_url', this.item.photo_url);
-
-
-                    axios.post('items', form).then(response => {
-                        this.$toasted.show('New item created successfully', {
-                            icon: "check",
-                            position: "bottom-center",
-                            duration: 3000
-                        });
-                        this.$emit('onGetItems');
-                        this.$emit('onCloseForm');
-                    }).catch(error => {
-                        console.log(error);
-                        this.hasErrors(error.response.data.errors);
-                        this.$toasted.show('problem occurred in item creation', {
-                            icon: "error",
-                            position: "bottom-center",
-                            duration: 3000
-                        });
-                    });
-                } else { //editing Item
-                    console.log('EDIT');
-                    console.log(this.item);
-                    if(this.item.photo_url != null) {
-                        form.append('photo_url', this.item.photo_url);
-                    }
-                    form.append('method_', 'PUT');
-
-                    axios.post('items/update/'+this.item.id, form
-                        ).then(response => {
-                        this.$toasted.show('Item edited successfully', {
-                            icon: "check",
-                            position: "bottom-center",
-                            duration: 3000
-                        });
-                        this.$emit('onGetItems');
-                        this.$emit('onCloseForm');
-                    }).catch(error => {
-                        this.hasErrors(error.response.data.errors);
-                        this.$toasted.show('problem occurred in item creation', {
-                            icon: "error",
-                            position: "bottom-center",
-                            duration: 3000
-                        });
-                    });
+                    /** CREATE NEW ITEM**/
+                    this.createNewItem(form);
+                } else {
+                    /** EDIT ITEM**/
+                    this.editItem(form);
                 }
+            },
+            createNewItem(form){
+                //form.append('photo_url', this.item.photo_url);
+
+                axios.post('items', form).then(response => {
+                    this.$toasted.show('New item created successfully', {
+                        icon: "check",
+                        position: "bottom-center",
+                        duration: 3000
+                    });
+                    this.$emit('onGetItems');
+                    this.$emit('onCloseForm');
+                }).catch(error => {
+                    console.log(error);
+                    this.hasErrors(error.response.data.errors);
+                    this.$toasted.show('problem occurred in item creation', {
+                        icon: "error",
+                        position: "bottom-center",
+                        duration: 3000
+                    });
+                });
+            },
+            editItem(form){
+                //if(this.item.photo_url != null) {
+                //    form.append('photo_url', this.item.photo_url);
+                //}
+                form.append('method_', 'PUT');
+
+                axios.post('items/update/'+this.item.id, form
+                ).then(response => {
+                    this.$toasted.show('Item edited successfully', {
+                        icon: "check",
+                        position: "bottom-center",
+                        duration: 3000
+                    });
+                    this.$emit('onGetItems');
+                    this.$emit('onCloseForm');
+                }).catch(error => {
+                    this.hasErrors(error.response.data.errors);
+                    this.$toasted.show('problem occurred in item creation', {
+                        icon: "error",
+                        position: "bottom-center",
+                        duration: 3000
+                    });
+                });
             },
             onFileSelected(event){
                 this.item.photo_url = event.target.files[0];
@@ -169,20 +169,14 @@
             },
         },
         created(){
-            console.log('created');
-            console.log(this.itemSelectedToEdit);
             if(this.itemSelectedToEdit != null) {
                 this.item = iterationCopy(this.itemSelectedToEdit);
                 this.item.photo_url = null;
                 this.isNewItem = false;
-                console.log('editing Item');
-                console.log(this.item);
             }else{
                 this.isNewItem = true;
-                console.log('new Item');
-                console.log(this.item);
             }
-
+            /** CLONE AN OBJECT **/
             function iterationCopy(src) {
                 let target = {};
                 for (let prop in src) {

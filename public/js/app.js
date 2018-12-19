@@ -2798,8 +2798,7 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     save: function save() {
-      var _this = this;
-
+      /** FORM **/
       var form = new FormData();
       form.append('name', this.item.name);
       form.append('price', this.item.price);
@@ -2808,81 +2807,81 @@ __webpack_require__.r(__webpack_exports__);
 
       if (this.item.photo_url != null) {
         form.append('photo_url', this.item.photo_url);
+        /** HAS IMAGE ? -> ADD TO FORM**/
       }
-
-      var config = {
-        headers: {
-          'content-type': 'multipart/form-data'
-        }
-      };
 
       if (this.isNewItem) {
-        console.log('NEW');
-        console.log(this.item);
-        form.append('photo_url', this.item.photo_url);
-        axios.post('items', form).then(function (response) {
-          _this.$toasted.show('New item created successfully', {
-            icon: "check",
-            position: "bottom-center",
-            duration: 3000
-          });
-
-          _this.$emit('onGetItems');
-
-          _this.$emit('onCloseForm');
-        }).catch(function (error) {
-          console.log(error);
-
-          _this.hasErrors(error.response.data.errors);
-
-          _this.$toasted.show('problem occurred in item creation', {
-            icon: "error",
-            position: "bottom-center",
-            duration: 3000
-          });
-        });
+        /** CREATE NEW ITEM**/
+        this.createNewItem(form);
       } else {
-        //editing Item
-        console.log('EDIT');
-        console.log(this.item);
-
-        if (this.item.photo_url != null) {
-          form.append('photo_url', this.item.photo_url);
-        }
-
-        form.append('method_', 'PUT');
-        axios.post('items/update/' + this.item.id, form).then(function (response) {
-          _this.$toasted.show('Item edited successfully', {
-            icon: "check",
-            position: "bottom-center",
-            duration: 3000
-          });
-
-          _this.$emit('onGetItems');
-
-          _this.$emit('onCloseForm');
-        }).catch(function (error) {
-          _this.hasErrors(error.response.data.errors);
-
-          _this.$toasted.show('problem occurred in item creation', {
-            icon: "error",
-            position: "bottom-center",
-            duration: 3000
-          });
-        });
+        /** EDIT ITEM**/
+        this.editItem(form);
       }
+    },
+    createNewItem: function createNewItem(form) {
+      var _this = this;
+
+      //form.append('photo_url', this.item.photo_url);
+      axios.post('items', form).then(function (response) {
+        _this.$toasted.show('New item created successfully', {
+          icon: "check",
+          position: "bottom-center",
+          duration: 3000
+        });
+
+        _this.$emit('onGetItems');
+
+        _this.$emit('onCloseForm');
+      }).catch(function (error) {
+        console.log(error);
+
+        _this.hasErrors(error.response.data.errors);
+
+        _this.$toasted.show('problem occurred in item creation', {
+          icon: "error",
+          position: "bottom-center",
+          duration: 3000
+        });
+      });
+    },
+    editItem: function editItem(form) {
+      var _this2 = this;
+
+      //if(this.item.photo_url != null) {
+      //    form.append('photo_url', this.item.photo_url);
+      //}
+      form.append('method_', 'PUT');
+      axios.post('items/update/' + this.item.id, form).then(function (response) {
+        _this2.$toasted.show('Item edited successfully', {
+          icon: "check",
+          position: "bottom-center",
+          duration: 3000
+        });
+
+        _this2.$emit('onGetItems');
+
+        _this2.$emit('onCloseForm');
+      }).catch(function (error) {
+        _this2.hasErrors(error.response.data.errors);
+
+        _this2.$toasted.show('problem occurred in item creation', {
+          icon: "error",
+          position: "bottom-center",
+          duration: 3000
+        });
+      });
     },
     onFileSelected: function onFileSelected(event) {
       this.item.photo_url = event.target.files[0];
     },
     validateBeforeSubmit: function validateBeforeSubmit() {
-      var _this2 = this;
+      var _this3 = this;
 
       this.$validator.validateAll().then(function (result) {
         if (!result) {
           alert('Correct them errors!');
         } else {
-          _this2.save();
+          _this3.save();
 
           return;
         }
@@ -2892,12 +2891,12 @@ __webpack_require__.r(__webpack_exports__);
       this.item.name = '', this.item.type = '', this.item.description = '', this.item.price = '', this.item.photo_url = null;
     },
     hasErrors: function hasErrors(errors) {
-      var _this3 = this;
+      var _this4 = this;
 
       this.validationErrors = errors;
       this.hasValidationErrors = true;
       setTimeout(function () {
-        return _this3.hasValidationErrors = false;
+        return _this4.hasValidationErrors = false;
       }, 6000);
     },
     onCloseForm: function onCloseForm() {
@@ -2905,20 +2904,15 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   created: function created() {
-    console.log('created');
-    console.log(this.itemSelectedToEdit);
-
     if (this.itemSelectedToEdit != null) {
       this.item = iterationCopy(this.itemSelectedToEdit);
       this.item.photo_url = null;
       this.isNewItem = false;
-      console.log('editing Item');
-      console.log(this.item);
     } else {
       this.isNewItem = true;
-      console.log('new Item');
-      console.log(this.item);
     }
+    /** CLONE AN OBJECT **/
+
 
     function iterationCopy(src) {
       var target = {};
@@ -3737,6 +3731,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "ManageRestaurant",
@@ -3745,13 +3741,10 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      //snackbar: false,
-      //color: 'black',
-      //mode: '',
-      //timeout: 3000,
-      //text: '',
       dialog: false,
       noData: false,
+      hasValidationErrors: false,
+      validationErrors: [],
       loadingTableEffect: true,
       rows: 20,
       pagination: {
@@ -3798,7 +3791,6 @@ __webpack_require__.r(__webpack_exports__);
       }).catch(function (error) {
         _this.noData = true;
         _this.loadingTableEffect = false;
-        console.log(error);
       });
     },
     editItem: function editItem(item) {
@@ -3810,8 +3802,6 @@ __webpack_require__.r(__webpack_exports__);
       if (confirm('Are you sure you want to delete table ' + item.table_number + ' ?')) {
         axios.delete('tables/' + item.table_number).then(function (response) {
           if (response.status === 204) {
-            //this.text = 'Deleted Table Sucessfuly';
-            //this.snackbar = true;
             _this2.$toasted.show('Deleted table successfully', {
               icon: "check",
               position: "bottom-center",
@@ -3821,6 +3811,8 @@ __webpack_require__.r(__webpack_exports__);
             _this2.initialize();
           }
         }).catch(function (error) {
+          _this2.hasErrors(error.response.data.errors);
+
           _this2.$toasted.show('Problem deleting table', {
             icon: "check",
             position: "bottom-center",
@@ -3835,8 +3827,6 @@ __webpack_require__.r(__webpack_exports__);
       if (confirm('Are you sure you want to recover table ' + item.table_number + ' ?')) {
         axios.put('table/restore/' + item.table_number).then(function (response) {
           if (response.status === 200) {
-            //this.text = 'Table Recovered Sucessfuly';
-            //this.snackbar = true;
             _this3.$toasted.show('Table recovered successfully', {
               icon: "check",
               position: "bottom-center",
@@ -3846,6 +3836,8 @@ __webpack_require__.r(__webpack_exports__);
             _this3.initialize();
           }
         }).catch(function (error) {
+          _this3.hasErrors(error.response.data.errors);
+
           _this3.$toasted.show('Problem recovering table', {
             icon: "check",
             position: "bottom-center",
@@ -3870,26 +3862,35 @@ __webpack_require__.r(__webpack_exports__);
         axios.post('tables', {
           "table_number": this.editedItem.table_number
         }).then(function (response) {
-          console.log(response); //this.text = 'Created Table Sucessfully';
-          //this.snackbar = true;
-
           _this5.$toasted.show('Created table successfully', {
             icon: "check",
             position: "bottom-center",
             duration: 3000
           });
 
+          _this5.close();
+
           _this5.initialize();
         }).catch(function (error) {
+          _this5.hasErrors(error.response.data.errors);
+
           _this5.$toasted.show('Problem creating table', {
             icon: "check",
             position: "bottom-center",
             duration: 3000
           });
         });
-      }
+      } //this.close()
 
-      this.close();
+    },
+    hasErrors: function hasErrors(errors) {
+      var _this6 = this;
+
+      this.validationErrors = errors;
+      this.hasValidationErrors = true;
+      setTimeout(function () {
+        return _this6.hasValidationErrors = false;
+      }, 6000);
     }
   },
   created: function created() {
@@ -3897,7 +3898,7 @@ __webpack_require__.r(__webpack_exports__);
   },
   computed: {
     formTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item';
+      return this.editedIndex === -1 ? 'New Table' : 'Edit Table';
     }
   },
   watch: {
@@ -8338,7 +8339,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8452,7 +8453,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -21332,6 +21333,27 @@ var render = function() {
                           _vm._v(_vm._s(_vm.formTitle))
                         ])
                       ]),
+                      _vm._v(" "),
+                      _c("v-card-title", [
+                        _c("span", [_vm._v("Insert 0 to auto create table")])
+                      ]),
+                      _vm._v(" "),
+                      _vm.hasValidationErrors
+                        ? _c("div", [
+                            _c(
+                              "ul",
+                              { staticClass: "alert alert-danger" },
+                              _vm._l(_vm.validationErrors, function(
+                                value,
+                                key,
+                                index
+                              ) {
+                                return _c("li", [_vm._v(_vm._s(value))])
+                              }),
+                              0
+                            )
+                          ])
+                        : _vm._e(),
                       _vm._v(" "),
                       _c(
                         "v-card-text",

@@ -11,6 +11,14 @@
                         <v-card-title>
                             <span class="headline">{{ formTitle }}</span>
                         </v-card-title>
+                        <v-card-title>
+                            <span >Insert 0 to auto create table</span>
+                        </v-card-title>
+                        <div v-if="hasValidationErrors">
+                            <ul class="alert alert-danger">
+                                <li v-for="(value, key, index) in validationErrors">{{ value }}</li>
+                            </ul>
+                        </div>
                         <v-card-text>
                             <v-container grid-list-md>
                                 <v-layout wrap>
@@ -56,12 +64,6 @@
                     <v-btn color="primary" @click="initialize">Reset</v-btn>
                 </template>
             </v-data-table>
-           <!--<v-snackbar v-model="snackbar" :color="color" :multi-line="mode === 'multi-line'"
-                        :timeout="timeout" :vertical="mode === 'vertical'">
-                {{ text }}
-                <v-btn dark flat @click="snackbar = false"> Close</v-btn>
-            </v-snackbar>-->
-
         </v-container>
         <items-menu></items-menu>
     </div>
@@ -75,13 +77,10 @@
             'items-menu':AdminItemMenu
         },
         data: () => ({
-            //snackbar: false,
-            //color: 'black',
-            //mode: '',
-            //timeout: 3000,
-            //text: '',
             dialog: false,
             noData: false,
+            hasValidationErrors: false,
+            validationErrors:[],
             loadingTableEffect: true,
             rows: 20,
             pagination:{
@@ -113,7 +112,6 @@
                 }).catch(error => {
                     this.noData = true;
                     this.loadingTableEffect=false;
-                    console.log(error);
                 });
             },
             editItem (item) {
@@ -123,8 +121,6 @@
                 if(confirm('Are you sure you want to delete table ' + item.table_number +' ?')){
                     axios.delete('tables/'+item.table_number).then(response => {
                         if(response.status === 204) {
-                            //this.text = 'Deleted Table Sucessfuly';
-                            //this.snackbar = true;
                             this.$toasted.show('Deleted table successfully', {
                                 icon: "check",
                                 position: "bottom-center",
@@ -133,6 +129,7 @@
                             this.initialize();
                         }
                     }).catch(error => {
+                        this.hasErrors(error.response.data.errors);
                         this.$toasted.show('Problem deleting table', {
                             icon: "check",
                             position: "bottom-center",
@@ -145,8 +142,6 @@
                 if(confirm('Are you sure you want to recover table ' + item.table_number +' ?')){
                     axios.put('table/restore/'+item.table_number).then(response => {
                         if(response.status === 200) {
-                            //this.text = 'Table Recovered Sucessfuly';
-                            //this.snackbar = true;
                             this.$toasted.show('Table recovered successfully', {
                                 icon: "check",
                                 position: "bottom-center",
@@ -155,6 +150,7 @@
                             this.initialize();
                         }
                     }).catch(error => {
+                        this.hasErrors(error.response.data.errors);
                         this.$toasted.show('Problem recovering table', {
                             icon: "check",
                             position: "bottom-center",
@@ -162,7 +158,6 @@
                         });
                     });
                 }
-
             },
             close () {
                 this.dialog = false
@@ -174,19 +169,17 @@
             save () {
                 if (this.editedIndex > -1) {
                 } else {
-                    axios.post('tables',
-                        {"table_number": this.editedItem.table_number,})
+                    axios.post('tables',{"table_number": this.editedItem.table_number,})
                     .then(response => {
-                        console.log(response);
-                        //this.text = 'Created Table Sucessfully';
-                        //this.snackbar = true;
                         this.$toasted.show('Created table successfully', {
                             icon: "check",
                             position: "bottom-center",
                             duration : 3000
                         });
+                        this.close();
                         this.initialize();
                     }).catch(error =>{
+                        this.hasErrors(error.response.data.errors);
                         this.$toasted.show('Problem creating table', {
                             icon: "check",
                             position: "bottom-center",
@@ -194,7 +187,12 @@
                         });
                     });
                 }
-                this.close()
+                //this.close()
+            },
+            hasErrors(errors){
+                this.validationErrors = errors;
+                this.hasValidationErrors = true;
+                setTimeout(() => (this.hasValidationErrors = false), 6000)
             },
         },
         created () {
@@ -202,7 +200,7 @@
         },
         computed: {
             formTitle () {
-                return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+                return this.editedIndex === -1 ? 'New Table' : 'Edit Table'
             }
         },
         watch: {
