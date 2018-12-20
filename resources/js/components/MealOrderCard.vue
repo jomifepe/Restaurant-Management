@@ -24,7 +24,7 @@
 			</v-list-tile>
 			<v-list-tile>
 				<v-list-tile-content>Order state:</v-list-tile-content>
-				<v-list-tile-content class="align-end"></v-list-tile-content>
+				<v-list-tile-content class="align-end">
 					<v-btn small :color="getStateColor(item.order_state)" round @click="showDeliverMealDialog(item.order_state)"
 						class="text-capitalize white--text btn-no-margin elevation-0" depressed="">
 						{{ item.order_state }}

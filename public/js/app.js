@@ -21359,83 +21359,94 @@ var render = function() {
             [
               _c("v-list-tile-content", [_vm._v("Order state:")]),
               _vm._v(" "),
-              _c("v-list-tile-content", { staticClass: "align-end" }),
-              _vm._v(" "),
               _c(
-                "v-btn",
-                {
-                  staticClass:
-                    "text-capitalize white--text btn-no-margin elevation-0",
-                  attrs: {
-                    small: "",
-                    color: _vm.getStateColor(_vm.item.order_state),
-                    round: "",
-                    depressed: ""
-                  },
-                  on: {
-                    click: function($event) {
-                      _vm.showDeliverMealDialog(_vm.item.order_state)
-                    }
-                  }
-                },
-                [
-                  _vm._v(
-                    "\n\t\t\t\t\t" + _vm._s(_vm.item.order_state) + "\n\t\t\t\t"
-                  )
-                ]
-              ),
-              _vm._v(" "),
-              _c(
-                "v-dialog",
-                {
-                  attrs: { "max-width": "380" },
-                  model: {
-                    value: _vm.deliverMealDialog,
-                    callback: function($$v) {
-                      _vm.deliverMealDialog = $$v
-                    },
-                    expression: "deliverMealDialog"
-                  }
-                },
+                "v-list-tile-content",
+                { staticClass: "align-end" },
                 [
                   _c(
-                    "v-card",
+                    "v-btn",
+                    {
+                      staticClass:
+                        "text-capitalize white--text btn-no-margin elevation-0",
+                      attrs: {
+                        small: "",
+                        color: _vm.getStateColor(_vm.item.order_state),
+                        round: "",
+                        depressed: ""
+                      },
+                      on: {
+                        click: function($event) {
+                          _vm.showDeliverMealDialog(_vm.item.order_state)
+                        }
+                      }
+                    },
                     [
-                      _c("v-card-text", { staticClass: "subheading" }, [
-                        _vm._v(
-                          "\n\t\t\t\t\t\t\tDo you want to change this order to delivered?\n\t\t\t\t\t\t"
-                        )
-                      ]),
-                      _vm._v(" "),
+                      _vm._v(
+                        "\n\t\t\t\t\t" +
+                          _vm._s(_vm.item.order_state) +
+                          "\n\t\t\t\t"
+                      )
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-dialog",
+                    {
+                      attrs: { "max-width": "380" },
+                      model: {
+                        value: _vm.deliverMealDialog,
+                        callback: function($$v) {
+                          _vm.deliverMealDialog = $$v
+                        },
+                        expression: "deliverMealDialog"
+                      }
+                    },
+                    [
                       _c(
-                        "v-card-actions",
+                        "v-card",
                         [
-                          _c("v-spacer"),
+                          _c("v-card-text", { staticClass: "subheading" }, [
+                            _vm._v(
+                              "\n\t\t\t\t\t\t\tDo you want to change this order to delivered?\n\t\t\t\t\t\t"
+                            )
+                          ]),
                           _vm._v(" "),
                           _c(
-                            "v-btn",
-                            {
-                              attrs: { flat: "" },
-                              on: {
-                                click: function($event) {
-                                  _vm.deliverMealDialog = false
-                                }
-                              }
-                            },
-                            [_vm._v("\n\t\t\t\t\t\t\t\tNo\n\t\t\t\t\t\t\t")]
-                          ),
-                          _vm._v(" "),
-                          _c(
-                            "v-btn",
-                            {
-                              attrs: { color: "teal", flat: "flat" },
-                              on: {
-                                click: function($event) {
-                                  _vm.deliverMeal()
-                                }
-                              }
-                            },
-                            [_vm._v("\n\t\t\t\t\t\t\t\tYes\n\t\t\t\t\t\t\t")]
+                            "v-card-actions",
+                            [
+                              _c("v-spacer"),
+                              _vm._v(" "),
+                              _c(
+                                "v-btn",
+                                {
+                                  attrs: { flat: "" },
+                                  on: {
+                                    click: function($event) {
+                                      _vm.deliverMealDialog = false
+                                    }
+                                  }
+                                },
+                                [_vm._v("\n\t\t\t\t\t\t\t\tNo\n\t\t\t\t\t\t\t")]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-btn",
+                                {
+                                  attrs: { color: "teal", flat: "flat" },
+                                  on: {
+                                    click: function($event) {
+                                      _vm.deliverMeal()
+                                    }
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n\t\t\t\t\t\t\t\tYes\n\t\t\t\t\t\t\t"
+                                  )
+                                ]
+                              )
+                            ],
+                            1
                           )
                         ],
                         1
