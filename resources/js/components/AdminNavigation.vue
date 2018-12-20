@@ -86,6 +86,7 @@
 </template>
 
 <script>
+
     import WorkerInfo from './WorkerInfo';
     import axios from 'axios';
 
@@ -100,6 +101,7 @@
                 clippedToolbar: false,
                 drawer: true,
                 items: [
+
                     {
                         title: 'Home',
                         icon: 'dashboard',
@@ -124,11 +126,27 @@
                         title: 'Management',
                         icon: 'build',
                         target: '/admin/restaurantManagement',
-                        visible: ['manager']}
+                        visible: ['manager']},
+                    {
+                        title: 'Orders',
+                        icon: 'restaurant',
+                        target: '/admin/orders',
+                        visible: ['cook']},
                 ],
                 mini: true,
                 right: null
             }
+        },
+        sockets: {
+            order_prepared(){
+              console.log("the order is prepared");
+            },
+            user_enter(data){
+               console.log('Data recieved from the server when started shift = '+data+')');
+            },
+            user_exit(data){
+                console.log('Data recieved from the server when ended shift = '+data+')');
+            },
         },
         methods: {
             logout() {

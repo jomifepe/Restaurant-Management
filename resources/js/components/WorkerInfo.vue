@@ -33,6 +33,12 @@
             }
         },
         methods: {
+            joinSockets(user){
+                this.$socket.emit('user_enter', user);
+            },
+            leaveSockets(user){
+                this.$socket.emit('user_exit', user);
+            },
             toggleShift() {
                 if (this.$store.getters.hasUserShiftStarted) {
                     this.endShift();
@@ -48,6 +54,7 @@
                 user.shift_active = 1;
 
                 this.updateUser(user, () => this.startShiftElapsedTimeUpdated());
+                this.joinSockets(user);
             },
             endShift() {
                 let user = this.$store.state.user;
@@ -55,6 +62,7 @@
                 user.shift_active = 0;
 
                 this.updateUser(user, () => this.showLastShiftTime())
+                this.leaveSockets(user);
             },
             updateUser(user, success) {
                 let photoPathParts = user.photo_url.split("/");
