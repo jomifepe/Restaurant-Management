@@ -14,6 +14,9 @@ export default new Vuex.Store({
         alertShown: false,
         alertMessage: "",
         alertType: "success",
+        progressBarShown: false,
+        progressBarValue: 0,
+        progressBarIndeterminate: false
     },  
     mutations: {
         clearUserAndToken: (state) => {
@@ -71,6 +74,23 @@ export default new Vuex.Store({
         setUserLastShiftEndTime: (state, time) => {
             state.user.last_shift_end = time;
         },
+        showProgressBar: (state, {indeterminate, value = 0}) => {
+            state.progressBarIndeterminate = indeterminate;
+            state.progressBarValue = value;
+            state.progressBarShown = true;
+        },
+        decreaseProgressBarValue: (state, value) => {
+            state.progressBarValue -= value;
+        },
+        increaseProgressBarValue: (state, value) => {
+            state.progressBarValue += value;
+        },
+        showProgressValue: (state, value) => {
+            state.progressBarValue = value;
+        },
+        hideProgressBar: state => {
+            state.progressBarShown = false;
+        }
     },
     getters: {
         userFirstName: state => {
@@ -86,5 +106,6 @@ export default new Vuex.Store({
         hasUserShiftStarted: state => {
             return !!state.user.shift_active;
         }
-    }
+    },
+    
 });

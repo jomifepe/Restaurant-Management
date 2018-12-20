@@ -1,11 +1,10 @@
 <?php
 
 namespace App\Http\Resources;
-
 use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Support\Facades\Storage;
 
-class Item extends Resource
+class ItemOrder extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -26,6 +25,12 @@ class Item extends Resource
             'deleted_at' => $this->deleted_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'order_id' => $this->order_id,
+            'order_state' => $this->order_state,
+            'order_created_at' => $this->order_created_at,
+            'order_updated_at' => $this->order_updated_at,
+            'order_start' => $this->order_start,
+            'order_end' => $this->order_end
         ];
     }
 }

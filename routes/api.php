@@ -35,7 +35,15 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
 
 Route::post('items/update/{id}', 'ItemControllerAPI@updatePost');
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
-Route::get('meals/{mealId}/items', 'OrderControllerAPI@mealItems')->name('meal.orders.items');
+Route::get('meals/table/${tableNumber}', 'MealControllerAPI@tableMeal')->name('meal.table');
+
+/* get all the orders for a specific meal */
+Route::get('orders/meal/{mealId}', 'OrderControllerAPI@mealOrders')->name('orders.meal');
+/* get all the items ordered for a specific meal */
+Route::get('orders/meal/{mealId}/items', 'OrderControllerAPI@mealItems')->name('orders.meal.items');
+Route::post('orders/multiple', 'OrderControllerAPI@storeMultiple')->name('orders.store.multiple');
+Route::delete('orders/multiple', 'OrderControllerAPI@destroyMultiple')->name('orders.destroy.multiple');
+
 Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type');
 
 

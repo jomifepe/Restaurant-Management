@@ -33,6 +33,14 @@ class MealControllerAPI extends Controller
             'start' => 'required|date',
             'responsible_waiter_id' => 'required|integer|exists:users,id'
         ]);
+        $activeMeal = Meal::where('table_number', $request->table_number)
+            ->where('state', 'active')->first();
+        if (!empty($activeMeal)) {
+            return response()->json([
+                'message' => 'Table already has an active meal associated',
+                'status' => 422
+            ], 422);
+        }
 
         $meal = new Meal();
         $meal->fill($request->all());
@@ -49,6 +57,10 @@ class MealControllerAPI extends Controller
     public function show($id)
     {
         return new MealResource(Meal::find($id));
+    }
+
+    public function tableMeal($tableNumber) {
+        return new MealResource(Meal::where('table_number', $tableNumber)->first());
     }
 
     /**
@@ -72,10 +84,10 @@ class MealControllerAPI extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'table_number' => 'required|exists:restaurant_tables',
-            'state' => 'required|in:active,terminated,paid,not paid',
-            'start' => 'required|date',
-            'responsible_waiter_id' => 'required|integer|exists:users,id'
+            'table_number' => 'exists:restaurant_tables',
+            'state' => 'in:active,terminated,paid,not paid',
+            'start' => 'date',
+            'responsible_waiter_id' => 'integer|exists:users,id'
         ]);
 
         $meal = Meal::findOrFail($id);

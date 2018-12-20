@@ -1966,6 +1966,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 /* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _NewItem__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./NewItem */ "./resources/js/components/NewItem.vue");
+/* harmony import */ var _mixin__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../mixin */ "./resources/js/mixin.js");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2042,20 +2067,29 @@ __webpack_require__.r(__webpack_exports__);
 
  // const moment = require('moment');
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "OrderItemMenu",
+  mixins: [_mixin__WEBPACK_IMPORTED_MODULE_5__["toasts"]],
   components: {
     NewItem: _NewItem__WEBPACK_IMPORTED_MODULE_4__["default"],
     MenuCard: _AdminItemMenuCard_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
   },
   data: function data() {
     return {
-      progressBar: true,
       meal: null,
       items: [],
       selectedItems: [],
-      submitedOrders: [],
+      selectedItemsQuantities: [],
+      submittedOrders: [],
+      totalItems: 0,
       selectedItemsSubtotal: 0,
+
+      /* ui & ux related attributes */
+      orderSummaryMenu: false,
+      progressBar: true,
+      progressValue: 0,
+      progressIndeterminate: true,
       tab: null,
       tabs: [{
         name: 'dish',
@@ -2070,13 +2104,19 @@ __webpack_require__.r(__webpack_exports__);
         rowsPerPage: 12
       },
       orderSubmitDialog: false,
-      toastButtonClicked: false
+      toastButtonClicked: false,
+      summaryPagination: {
+        rowsPerPage: 5
+      }
     };
   },
   methods: {
     getItems: function getItems() {
       var _this = this;
 
+      this.$store.commit('showProgressBar', {
+        indeterminate: true
+      });
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/items/type/dish").then(function (dishesResponse) {
         if (dishesResponse.status === 200) {
           _this.items = [];
@@ -2088,169 +2128,310 @@ __webpack_require__.r(__webpack_exports__);
               _this.items.push(drinksResponse.data.data);
             }
 
-            _this.progressBar = false;
+            _this.$store.commit('hideProgressBar');
           }).catch(function (error) {
+            _this.$store.commit('hideProgressBar');
+
             _this.progressBar = false;
             console.log(error);
 
-            _this.$toasted.show('Failed to load items of type drink', {
-              icon: 'error',
-              position: "bottom-center",
-              duration: 4000
-            });
+            _this.showErrorToast('Failed to load items of type drink');
           });
         }
       }).catch(function (error) {
-        _this.progressBar = false;
+        _this.$store.commit('hideProgressBar');
+
         console.log(error);
 
-        _this.$toasted.show('Failed to load items of type dish', {
-          icon: 'error',
-          position: "bottom-center",
-          duration: 4000
-        });
+        _this.showErrorToast('Failed to load items of type dish');
       });
     },
     selectItem: function selectItem(item) {
-      this.selectedItems.push(item);
+      var exists = this.incrementItemQuantity(item);
+
+      if (!exists) {
+        this.selectedItems.push(item);
+        this.selectedItemsQuantities.push(1);
+      }
+
+      this.totalItems += 1;
       this.selectedItemsSubtotal = currency_js__WEBPACK_IMPORTED_MODULE_2___default()(this.selectedItemsSubtotal).add(item.price).format();
     },
-    deselectItem: function deselectItem(itemToRemove) {
-      var _this2 = this;
-
-      this.selectedItems.forEach(function (item, i) {
-        if (item.id === itemToRemove.id) {
-          _this2.selectedItems.splice(i, 1);
+    incrementItemQuantity: function incrementItemQuantity(item) {
+      for (var i = 0; i < this.selectedItems.length; i++) {
+        if (this.selectedItems[i].id === item.id) {
+          this.selectedItemsQuantities[i] = this.selectedItemsQuantities[i] + 1;
+          return true;
         }
-      });
-      this.selectedItemsSubtotal = currency_js__WEBPACK_IMPORTED_MODULE_2___default()(this.selectedItemsSubtotal).subtract(itemToRemove.price).format();
-    },
-    undoOrders: function undoOrders() {
-      var _this3 = this;
+      }
 
-      this.submitedOrders.forEach(function (orderId, i) {
-        axios__WEBPACK_IMPORTED_MODULE_1___default.a.delete("/orders/".concat(orderId)).then(function (response) {
-          if (response.status === 204) {
-            if (i === _this3.submitedOrders.length - 1) {
-              _this3.$toasted.show('All previously submited orders were deleted', {
-                icon: "check",
-                position: "bottom-center",
-                duration: 3000
-              });
-            }
+      return false;
+    },
+    decrementItemQuantity: function decrementItemQuantity(item) {
+      this.totalItems -= 1;
+
+      for (var i = 0; i < this.selectedItems.length; i++) {
+        if (this.selectedItems[i].id === item.id) {
+          if (this.selectedItemsQuantities[i] === 1) {
+            this.selectedItemsQuantities.splice(i, 1);
+            this.selectedItems.splice(i, 1);
           } else {
-            _this3.$toasted.show("Failed to undo order #".concat(i + 1), {
-              icon: "error",
-              position: "bottom-center",
-              duration: 3000
-            });
+            this.selectedItemsQuantities[i]--;
           }
 
-          _this3.toastButtonClicked = false;
-        }).catch(function (error) {
-          console.log(error);
-
-          _this3.$toasted.show("Failed to undo order #".concat(i + 1), {
-            icon: "error",
-            position: "bottom-center",
-            duration: 3000
-          });
-
-          _this3.toastButtonClicked = false;
+          this.selectedItemsSubtotal = currency_js__WEBPACK_IMPORTED_MODULE_2___default()(this.selectedItemsSubtotal).subtract(item.price).format();
           return;
-        });
+        }
+      }
+    },
+    getItemQuantity: function getItemQuantity(itemId) {
+      for (var i = 0; i < this.selectedItems.length; i++) {
+        if (this.selectedItems[i].id === itemId) {
+          return this.selectedItemsQuantities[i];
+        }
+      }
+
+      return -1;
+    },
+    hasSelectedItem: function hasSelectedItem(itemId) {
+      for (var i = 0; i < this.selectedItems.length; i++) {
+        if (this.selectedItems[i].id === itemId) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    submitOrder: function submitOrder(itemsToSubmit, itemIndex, callback) {
+      var _this2 = this;
+
+      var item = itemsToSubmit[itemIndex];
+      var newOrder = {
+        state: 'pending',
+        item_id: item.id,
+        meal_id: this.meal.id,
+        responsible_cook_id: null,
+        start: moment__WEBPACK_IMPORTED_MODULE_3___default()().format('YYYY-MM-DD HH:mm:ss')
+      };
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('/orders', newOrder).then(function (response) {
+        if (response.status === 201) {
+          _this2.submittedOrders.push(response.data);
+
+          _this2.$store.commit('increaseProgressBarValue', 100 / itemsToSubmit.length);
+
+          if (++itemIndex !== itemsToSubmit.length) {
+            _this2.submitOrder(itemsToSubmit, itemIndex, callback);
+          } else {
+            callback();
+            return;
+          }
+        } else {
+          _this2.$store.commit('hideProgressBar');
+
+          console.log("Received status code ".concat(response.status, " while submitting order #").concat(itemIndex));
+
+          _this2.showErrorToast('Failed to submit orders');
+
+          return;
+        }
+      }).catch(function (error) {
+        _this2.$store.commit('hideProgressBar');
+
+        _this2.showErrorLog('Failed to submit orders', error);
+
+        return;
       });
     },
     submitOrders: function submitOrders() {
+      var _this3 = this;
+
+      var itemsToSubmit = [];
+      this.selectedItems.forEach(function (item, i) {
+        for (var j = 0; j < _this3.selectedItemsQuantities[i]; j++) {
+          itemsToSubmit.push(item);
+        }
+      });
+      this.submittedOrders = [];
+      this.orderSubmitDialog = false;
+      this.$store.commit('showProgressBar', {
+        indeterminate: false
+      });
+      /* enters recursion */
+
+      this.submitOrder(itemsToSubmit, 0, function () {
+        _this3.$store.commit('hideProgressBar');
+
+        _this3.showOrderSubmitSuccessToast();
+
+        _this3.resetMenuState();
+      });
+    },
+    undoOrder: function undoOrder(orderIndex, callback) {
       var _this4 = this;
 
-      this.orderSubmitDialog = false;
-      this.progressBar = true;
-      this.selectedItems.forEach(function (item, i) {
-        var newOrder = {
-          state: 'pending',
-          item_id: item.id,
-          meal_id: _this4.meal.id,
-          responsible_cook_id: null,
-          start: moment__WEBPACK_IMPORTED_MODULE_3___default()().format('YYYY-MM-DD HH:mm:ss')
-        };
-        axios__WEBPACK_IMPORTED_MODULE_1___default.a.post("/orders", newOrder).then(function (response) {
-          if (response.status === 201) {
-            _this4.submitedOrders.push(response.data.id);
+      var orderId = this.submittedOrders[orderIndex].id;
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.delete("/orders/".concat(orderId)).then(function (response) {
+        if (response.status === 204) {
+          _this4.$store.commit('decreaseProgressBarValue', 100 / _this4.submittedOrders.length);
 
-            if (i === _this4.selectedItems.length - 1) {
-              var toast = _this4.$toasted.show("Order(s) placed, redirecting to the meals page in 5 seconds", {
-                position: "bottom-center",
-                icon: "check",
-                duration: 5000,
-                onComplete: function onComplete() {
-                  if (!_this4.toastButtonClicked) {
-                    _this4.$router.push({
-                      name: 'meal.orders',
-                      params: {
-                        mealId: _this4.meal.id
-                      }
-                    });
-                  }
-                },
-                action: [{
-                  text: 'Skip',
-                  onClick: function onClick(e, toastObject) {
-                    _this4.toastButtonClicked = true;
-                    toastObject.goAway(1);
-
-                    _this4.$router.push({
-                      name: 'meal.orders',
-                      params: {
-                        mealId: _this4.meal.id
-                      }
-                    });
-                  }
-                }, {
-                  text: 'Undo',
-                  onClick: function onClick(e, toastObject) {
-                    _this4.toastButtonClicked = true;
-                    toastObject.goAway(1);
-
-                    _this4.undoOrders();
-                  }
-                }]
-              });
-            }
+          if (++orderIndex !== _this4.submittedOrders.length) {
+            _this4.undoOrder(orderIndex, callback);
+          } else {
+            callback();
+            return;
           }
+        } else {
+          _this4.$store.commit('hideProgressBar');
 
-          _this4.progressBar = false;
-        }).catch(function (error) {
-          _this4.progressBar = false;
-          console.log(error);
+          console.log("Received status code ".concat(response.status, " while deleting order #").concat(orderIndex));
 
-          _this4.$toasted.show("Failed to submit order #".concat(i + 1), {
-            icon: 'error',
-            position: "bottom-center",
-            duration: 3000
-          });
+          _this4.showErrorToast('Failed to undo placed orders');
 
           return;
+        }
+      }).catch(function (error) {
+        _this4.$store.commit('hideProgressBar');
+
+        _this4.showErrorLog('Failed to undo placed orders', error);
+
+        return;
+      });
+    },
+    undoOrders: function undoOrders() {
+      var _this5 = this;
+
+      this.$store.commit('showProgressBar', {
+        indeterminate: false,
+        value: 100
+      });
+      /* enters recursion */
+
+      this.undoOrder(0, function () {
+        _this5.$store.commit('hideProgressBar');
+
+        _this5.showSuccessToast('Successfully deleted all previously submitted orders');
+      });
+    },
+    confirmOrder: function confirmOrder(orderIndex, callback) {
+      var _this6 = this;
+
+      var order = this.submittedOrders[orderIndex];
+      order.state = 'confirmed';
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.put("/orders/".concat(order.id), order).then(function (response) {
+        if (response.status === 200) {
+          _this6.$store.commit('increaseProgressBarValue', 100 / _this6.submittedOrders.length);
+
+          if (++orderIndex !== _this6.submittedOrders.length) {
+            _this6.confirmOrder(orderIndex, callback);
+          } else {
+            callback();
+            return;
+          }
+        } else {
+          _this6.$store.commit('hideProgressBar');
+
+          console.log("Received status code ".concat(response.status, " while confirming order #").concat(orderIndex));
+
+          _this6.showErrorToast('Failed to confirm placed orders');
+
+          return;
+        }
+      }).catch(function (error) {
+        _this6.$store.commit('hideProgressBar');
+
+        _this6.showErrorLog('Failed to confirm placed orders', error);
+
+        return;
+      });
+    },
+    confirmOrders: function confirmOrders() {
+      var _this7 = this;
+
+      this.$store.commit('showProgressBar', {
+        indeterminate: false
+      });
+      return new Promise(function (resolve, reject) {
+        /* enters recursion */
+        _this7.confirmOrder(0, function () {
+          _this7.$store.commit('hideProgressBar');
+
+          _this7.showSuccessToast('All placed orders were successfully confirmed');
+
+          resolve('success');
         });
       });
+    },
+    showOrderSubmitSuccessToast: function showOrderSubmitSuccessToast() {
+      var _this8 = this;
+
+      var toast = this.$toasted.show("Order(s) placed, redirecting to the meals page in 5 seconds", {
+        position: "bottom-center",
+        icon: "check",
+        duration: 5000,
+        onComplete: function onComplete() {
+          if (!_this8.toastButtonClicked) {
+            _this8.confirmOrders().then(function () {
+              _this8.$router.push({
+                name: 'meal.orders',
+                params: {
+                  mealId: _this8.meal.id
+                }
+              });
+            });
+          }
+        },
+        action: [{
+          text: 'Stay',
+          onClick: function onClick(e, toastObject) {
+            _this8.toastButtonClicked = true;
+            toastObject.goAway(1);
+
+            _this8.confirmOrders();
+          }
+        }, {
+          text: 'Skip',
+          onClick: function onClick(e, toastObject) {
+            _this8.toastButtonClicked = true;
+            toastObject.goAway(1);
+
+            _this8.confirmOrders().then(function () {
+              _this8.$router.push({
+                name: 'meal.orders',
+                params: {
+                  mealId: _this8.meal.id
+                }
+              });
+            });
+          }
+        }, {
+          text: 'Undo',
+          onClick: function onClick(e, toastObject) {
+            _this8.toastButtonClicked = true;
+            toastObject.goAway(1);
+
+            _this8.undoOrders();
+          }
+        }]
+      });
+    },
+    resetMenuState: function resetMenuState() {
+      this.selectedItems = [];
+      this.selectedItemsQuantities = [];
+      this.selectedItemsSubtotal = 0;
+      this.totalItems = 0;
+      this.toastButtonClicked = false;
     }
   },
   mounted: function mounted() {
-    var _this5 = this;
+    var _this9 = this;
 
     if (this.$route.params.mealId) {
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/meals/".concat(this.$route.params.mealId)).then(function (response) {
-        _this5.meal = response.data.data;
+        _this9.meal = response.data.data;
 
-        _this5.$store.commit('setPanelTitle', "Ordering items for meal #".concat(_this5.meal.id));
+        _this9.$store.commit('setPanelTitle', "Ordering items for meal #".concat(_this9.meal.id));
       }).catch(function (error) {
-        console.log(error);
-
-        _this5.$toasted.show('Failed to get meal identified by the given id', {
-          icon: 'error',
-          position: "bottom-center",
-          duration: 4000
-        });
+        _this9.showErrorLog('Failed to get meal identified by the given id', error);
       });
     } else {
       this.$store.commit('setPanelTitle', 'Menu');
@@ -2272,13 +2453,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ItemForm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ItemForm */ "./resources/js/components/ItemForm.vue");
-//
-//
-//
-//
-//
-//
-//
+/* harmony import */ var _mixin__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mixin */ "./resources/js/mixin.js");
 //
 //
 //
@@ -2316,8 +2491,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ['item', 'meal'],
+  props: ['item', 'meal', 'exists'],
+  mixins: [_mixin__WEBPACK_IMPORTED_MODULE_1__["toasts"]],
   components: {
     ItemForm: _ItemForm__WEBPACK_IMPORTED_MODULE_0__["default"]
   },
@@ -2325,22 +2502,36 @@ __webpack_require__.r(__webpack_exports__);
     return {
       showForm: false,
       isSelected: false,
+      selectedQuantity: 0,
+      snackbar: false,
+      color: 'black',
+      mode: '',
+      timeout: 3000,
+      text: '',
       buttonColor: 'blue-grey',
       buttonIcon: 'fas fa-plus'
     };
   },
+  watch: {
+    exists: function exists() {
+      if (!this.exists) {
+        this.deselectItem();
+      }
+    }
+  },
   methods: {
-    toggleItem: function toggleItem() {
+    selectItem: function selectItem() {
+      this.$emit('onItemSelect', this.item);
+
+      if (!this.isSelected) {
+        this.isSelected = true;
+        this.buttonColor = 'teal lighten-1';
+      }
+    },
+    deselectItem: function deselectItem() {
       if (this.isSelected) {
         this.isSelected = false;
         this.buttonColor = 'blue-grey';
-        this.buttonIcon = 'fas fa-plus';
-        this.$emit('onItemDeselect', this.item);
-      } else {
-        this.isSelected = true;
-        this.buttonColor = 'teal lighten-1';
-        this.buttonIcon = 'fas fa-check';
-        this.$emit('onItemSelect', this.item);
       }
     },
     deleteItem: function deleteItem(item) {
@@ -2349,20 +2540,12 @@ __webpack_require__.r(__webpack_exports__);
       if (confirm('Are you sure you want to delete ' + item.name + ' ?')) {
         axios.delete('items/' + item.id).then(function (response) {
           if (response.status === 204) {
-            _this.$toasted.show('Deleted Item Sucessfully', {
-              icon: "check",
-              position: "bottom-center",
-              duration: 3000
-            });
+            _this.showSuccessToast('Deleted Item Sucessfully');
 
             _this.$emit('updateList');
           }
         }).catch(function (error) {
-          _this.$toasted.show('Problem occurred in deleting Item', {
-            icon: "error",
-            position: "bottom-center",
-            duration: 3000
-          });
+          _this.showErrorLog('Problem occurred in deleting Item', error);
         });
       }
     },
@@ -2389,7 +2572,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _WorkerInfo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./WorkerInfo */ "./resources/js/components/WorkerInfo.vue");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
-//
 //
 //
 //
@@ -2592,12 +2774,8 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-//
-//
-//
-//
-//
-//
+/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_1__);
 //
 //
 //
@@ -2622,8 +2800,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
-
-var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "CreateMeal",
@@ -2646,10 +2822,12 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         var meal = {
           table_number: this.tableNumber,
           state: 'active',
-          start: moment().format('YYYY-MM-DD HH:mm:ss'),
+          start: moment__WEBPACK_IMPORTED_MODULE_1___default()().format('YYYY-MM-DD HH:mm:ss'),
           responsible_waiter_id: this.$store.state.user.id
         };
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/meals', meal).then(function (response) {
+          console.log(response);
+
           if (response.status === 201) {
             _this.dialog = false;
 
@@ -3246,17 +3424,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 /***/ }),
 
-/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrders.vue?vue&type=script&lang=js&":
-/*!*********************************************************************************************************************************************************************!*\
-  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrders.vue?vue&type=script&lang=js& ***!
-  \*********************************************************************************************************************************************************************/
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=script&lang=js&":
+/*!************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrderCard.vue?vue&type=script&lang=js& ***!
+  \************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _mixin_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../mixin.js */ "./resources/js/mixin.js");
+//
+//
+//
+//
 //
 //
 //
@@ -3308,7 +3489,113 @@ __webpack_require__.r(__webpack_exports__);
 //
 
 /* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['item'],
+  mixin: [_mixin_js__WEBPACK_IMPORTED_MODULE_0__["toasts"]],
+  data: function data() {
+    return {
+      deliverMealDialog: false
+    };
+  },
+  methods: {
+    getStateColor: function getStateColor(state) {
+      switch (state) {
+        case 'pending':
+          return 'orange';
+
+        case 'confirmed':
+          return 'cyan';
+
+        case 'in preparation':
+          return 'blue darken-2';
+
+        case 'prepared':
+          return 'light-green';
+
+        case 'delivered':
+          return 'green';
+
+        case 'not delivered':
+          return 'red';
+      }
+    },
+    showDeliverMealDialog: function showDeliverMealDialog(state) {
+      if (state === 'prepared') {
+        this.deliverMealDialog = true;
+      }
+    },
+    deliverOrder: function deliverOrder() {
+      var _this = this;
+
+      axios.patch("/orders/".concat(this.item.order_id), {
+        state: 'delivered'
+      }).then(function (response) {
+        if (response.status === 200) {
+          _mixin_js__WEBPACK_IMPORTED_MODULE_0__["toasts"].showSuccessToast('Successfully changed the order to delivered');
+
+          _this.$emit('onOrderChange');
+        } else {
+          _mixin_js__WEBPACK_IMPORTED_MODULE_0__["toasts"].showErrorToast('Successfully changed the order to delivered');
+        }
+      }).catch(function (error) {
+        _mixin_js__WEBPACK_IMPORTED_MODULE_0__["toasts"].showErrorLog('Failed to changed the order to delivered', error);
+      });
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrders.vue?vue&type=script&lang=js&":
+/*!*********************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrders.vue?vue&type=script&lang=js& ***!
+  \*********************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _MealOrderCard_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./MealOrderCard.vue */ "./resources/js/components/MealOrderCard.vue");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var currency_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! currency.js */ "./node_modules/currency.js/dist/currency.min.js");
+/* harmony import */ var currency_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(currency_js__WEBPACK_IMPORTED_MODULE_2__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
   name: "MealOrders",
+  components: {
+    Card: _MealOrderCard_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
   data: function data() {
     return {
       meal: null,
@@ -3320,18 +3607,29 @@ __webpack_require__.r(__webpack_exports__);
       progressBar: true
     };
   },
+  computed: {
+    totalPrice: function totalPrice() {
+      var total = 0;
+      this.items.forEach(function (item) {
+        if (item.order_state === 'delivered') {
+          total = currency_js__WEBPACK_IMPORTED_MODULE_2___default()(total).add(item.price).format();
+        }
+      });
+      return total;
+    }
+  },
   watch: {
     $route: function $route(to, from) {
-      this.loadMealsOrdersFromRouteId();
+      this.loadMealOrdersFromRouteId();
     }
   },
   methods: {
-    loadMealsOrdersFromRouteId: function loadMealsOrdersFromRouteId() {
+    loadMealOrdersFromRouteId: function loadMealOrdersFromRouteId() {
       var _this = this;
 
       if (this.$route.params.mealId) {
         this.progressBar = true;
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get("/meals/".concat(this.$route.params.mealId)).then(function (response) {
+        axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/meals/".concat(this.$route.params.mealId)).then(function (response) {
           if (response.status === 200) {
             _this.meal = response.data.data;
 
@@ -3362,7 +3660,7 @@ __webpack_require__.r(__webpack_exports__);
     loadMealItems: function loadMealItems() {
       var _this2 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get("/meals/".concat(this.meal.id, "/items")).then(function (response) {
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get("/orders/meal/".concat(this.meal.id, "/items")).then(function (response) {
         if (response.status === 200) {
           _this2.items = response.data;
           _this2.progressBar = false;
@@ -3370,13 +3668,10 @@ __webpack_require__.r(__webpack_exports__);
       }).catch(function (error) {
         console.log(error);
       });
-    },
-    getItemPhotoUrl: function getItemPhotoUrl(filename) {
-      return "/storage/items/".concat(filename);
     }
   },
   mounted: function mounted() {
-    this.loadMealsOrdersFromRouteId();
+    this.loadMealOrdersFromRouteId();
   }
 });
 
@@ -3395,6 +3690,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _MealOrders__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./MealOrders */ "./resources/js/components/MealOrders.vue");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
+/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _mixin__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../mixin */ "./resources/js/mixin.js");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -3463,10 +3775,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Orders",
+  mixins: [_mixin__WEBPACK_IMPORTED_MODULE_4__["toasts"]],
   components: {
     CreateMeal: _CreateMeal__WEBPACK_IMPORTED_MODULE_0__["default"],
     MealOrders: _MealOrders__WEBPACK_IMPORTED_MODULE_1__["default"]
@@ -3501,7 +3813,11 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       },
       myMealsProgressBar: true,
       mealToTerminate: null,
-      terminateMealDialog: false
+      terminateMealDialog: false,
+      cancelOrdersDialog: false,
+
+      /* auxiliary attributes */
+      notDeliveredOrders: []
     };
   },
   methods: {
@@ -3517,14 +3833,10 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       });
     },
     formatDate: function formatDate(date) {
-      return moment(date).format("YYYY-MM-DD, HH:mm");
+      return moment__WEBPACK_IMPORTED_MODULE_3___default()(date).format("YYYY-MM-DD, HH:mm");
     },
     onMealCreated: function onMealCreated(tableNumber) {
-      this.$toasted.show("Meal successfuly started for table ".concat(tableNumber), {
-        icon: "check",
-        position: "bottom-center",
-        duration: 5000
-      });
+      this.showSuccessToast("Meal successfuly started for table ".concat(tableNumber));
       this.loadMeals();
     },
     getStateColor: function getStateColor(state) {
@@ -3538,7 +3850,7 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         }
       });
     },
-    terminateMeal: function terminateMeal(meal) {
+    askToConfirmMealTermination: function askToConfirmMealTermination(meal) {
       this.mealToTerminate = meal;
       this.terminateMealDialog = true;
     },
@@ -3547,33 +3859,118 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
 
       this.terminateMealDialog = false;
       var meal = this.mealToTerminate;
-      meal.state = 'terminated';
-      axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch("/meals/".concat(meal.id), meal).then(function (response) {
-        if (response.status === 200) {
-          _this2.$toasted.show('Meal successfully terminated', {
-            icon: 'check',
-            position: "bottom-center",
-            duration: 2000
-          });
+      this.$store.commit('showProgressBar', {
+        'indeterminate': true
+      });
+      /* get the orders for the selected meal */
 
-          _this2.loadMeals();
-        } else {
-          _this2.$toasted.show('Failed to terminated meal', {
-            icon: 'error',
-            position: "bottom-center",
-            duration: 3000
+      axios__WEBPACK_IMPORTED_MODULE_2___default.a.get("/orders/meal/".concat(meal.id)).then(function (response) {
+        if (response.status === 200) {
+          _this2.notDeliveredOrders = response.data.filter(function (order) {
+            return order.state !== 'delivered';
           });
+          /* if there are orders that were not delivered */
+
+          if (_this2.notDeliveredOrders.length > 0) {
+            _this2.$store.commit('hideProgressBar');
+
+            _this2.cancelOrdersDialog = true;
+          } else {
+            _this2.$store.commit('showProgressBar', {
+              'indeterminate': true
+            });
+            /* changes the meal to terminated */
+
+
+            _this2.terminateMeal(meal).then(function () {
+              _this2.showSuccessToast('Meal successfully terminated');
+
+              _this2.$store.commit('hideProgressBar');
+
+              _this2.loadMeals();
+            });
+          }
+        } else {
+          _this2.showErrorToast('Failed to cancel meal orders');
         }
       }).catch(function (error) {
-        console.log(error);
+        _this2.showErrorLog('Failed to cancel meal orders', error);
+      });
+    },
+    cancelOrder: function cancelOrder(orderIndex, callback) {
+      var _this3 = this;
 
-        _this2.$toasted.show('Failed to terminated meal', {
-          icon: 'error',
-          position: "bottom-center",
-          duration: 3000
+      var order = this.notDeliveredOrders[orderIndex];
+      order.state = 'not delivered';
+      axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch("/orders/".concat(order.id), order).then(function (response) {
+        if (response.status === 200) {
+          _this3.$store.commit('showProgressBar', {
+            'indeterminate': false,
+            'value': (orderIndex + 1) * (100 / _this3.notDeliveredOrders.length)
+          });
+
+          if (++orderIndex !== _this3.notDeliveredOrders.length) {
+            _this3.cancelOrder(orderIndex, callback);
+          } else {
+            callback();
+            return;
+          }
+        } else {
+          _this3.showErrorToast("Failed to cancel meal order #".concat(order.id));
+
+          _this3.$store.commit('hideProgressBar');
+
+          return;
+        }
+      }).catch(function (error) {
+        _this3.showErrorLog("Failed to cancel meal order #".concat(order.id), error);
+
+        _this3.$store.commit('hideProgressBar');
+      });
+    },
+    cancelOrders: function cancelOrders() {
+      var _this4 = this;
+
+      this.cancelOrdersDialog = false;
+      this.$store.commit('showProgressBar', {
+        'indeterminate': false,
+        'value': 0
+      });
+      /* enters recursion */
+
+      this.cancelOrder(0, function () {
+        _this4.$store.commit('showProgressBar', {
+          'indeterminate': true
+        });
+
+        _this4.terminateMeal(_this4.mealToTerminate).then(function () {
+          _this4.showSuccessToast('Meal successfully terminated');
+
+          _this4.loadMeals();
+
+          _this4.$store.commit('hideProgressBar');
         });
       });
-      this.mealToTerminate = null;
+    },
+    terminateMeal: function terminateMeal(meal) {
+      var _this5 = this;
+
+      return new Promise(function (resolve, reject) {
+        meal.state = 'terminated';
+        axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch("/meals/".concat(meal.id), meal).then(function (response) {
+          if (response.status === 200) {
+            resolve('Success');
+          } else {
+            _this5.showErrorToast("Failed to terminate meal #".concat(meal.id));
+
+            _this5.$store.commit('hideProgressBar');
+          }
+        }).catch(function (error) {
+          _this5.showErrorLog("Failed to terminate meal #".concat(meal.id), error);
+
+          _this5.$store.commit('hideProgressBar');
+        });
+      });
     }
   },
   mounted: function mounted() {
@@ -3667,8 +4064,13 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   mounted: function mounted() {
-    this.$store.commit('setPanelTitle', 'Profile');
-    this.getInformationFromLoggedUser();
+    var _this = this;
+
+    this.$store.commit('setPanelTitle', 'Profile'); //this.getInformationFromLoggedUser();
+
+    this.$store.watch(function () {
+      _this.profileUser = _this.$store.state.user;
+    });
   }
 });
 
@@ -8245,7 +8647,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8264,7 +8666,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n.button-select[data-v-ff8b0254] {\n\tfont-size: 20px;\n}\n", ""]);
 
 // exports
 
@@ -8283,7 +8685,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8321,7 +8723,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8442,6 +8844,25 @@ exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/index.js?!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css&":
+/*!********************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--6-1!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css& ***!
+  \********************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/index.js?!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrders.vue?vue&type=style&index=0&id=30806d33&scoped=true&lang=css&":
 /*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/css-loader??ref--6-1!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrders.vue?vue&type=style&index=0&id=30806d33&scoped=true&lang=css& ***!
@@ -8454,7 +8875,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8473,7 +8894,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -19170,12 +19591,6 @@ var render = function() {
               attrs: { light: "", tabs: "" }
             },
             [
-              _vm.progressBar
-                ? _c("v-progress-circular", {
-                    attrs: { indeterminate: "", color: "blue-grey" }
-                  })
-                : _vm._e(),
-              _vm._v(" "),
               _c("v-text-field", {
                 staticClass: "mx-3 rounded-text-field",
                 attrs: {
@@ -19205,41 +19620,145 @@ var render = function() {
               _vm.meal
                 ? [
                     _c(
-                      "v-chip",
-                      { attrs: { color: "teal", "text-color": "white" } },
+                      "v-menu",
+                      {
+                        attrs: {
+                          "close-on-content-click": false,
+                          left: "",
+                          "nudge-width": 200
+                        },
+                        model: {
+                          value: _vm.orderSummaryMenu,
+                          callback: function($$v) {
+                            _vm.orderSummaryMenu = $$v
+                          },
+                          expression: "orderSummaryMenu"
+                        }
+                      },
                       [
                         _c(
-                          "v-avatar",
-                          [_c("v-icon", [_vm._v("fas fa-euro-sign")])],
+                          "v-btn",
+                          {
+                            staticClass: "white--text",
+                            attrs: {
+                              slot: "activator",
+                              light: "",
+                              depressed: "",
+                              round: "",
+                              disabled: _vm.selectedItems.length === 0,
+                              color: "teal"
+                            },
+                            slot: "activator"
+                          },
+                          [
+                            _vm._v(
+                              "\n\t\t\t\t\t\t\t" +
+                                _vm._s(_vm.selectedItemsSubtotal) +
+                                "\n\t\t\t\t\t\t\t"
+                            ),
+                            _c("v-icon", { attrs: { right: "", dark: "" } }, [
+                              _vm._v("fas fa-euro-sign")
+                            ])
+                          ],
                           1
                         ),
-                        _vm._v(
-                          "\n\t\t\t\t\t\t" +
-                            _vm._s(_vm.selectedItemsSubtotal) +
-                            "\n\t\t\t\t\t"
+                        _vm._v(" "),
+                        _c(
+                          "v-card",
+                          [
+                            _c("v-data-table", {
+                              attrs: {
+                                items: _vm.selectedItems,
+                                "item-key": "id",
+                                "hide-headers": ""
+                              },
+                              scopedSlots: _vm._u([
+                                {
+                                  key: "items",
+                                  fn: function(props) {
+                                    return [
+                                      _c("td", [
+                                        _vm._v(
+                                          _vm._s(
+                                            _vm.getItemQuantity(props.item.id)
+                                          ) + "x"
+                                        )
+                                      ]),
+                                      _vm._v(" "),
+                                      _c("td", [
+                                        _vm._v(_vm._s(props.item.name))
+                                      ]),
+                                      _vm._v(" "),
+                                      _c(
+                                        "td",
+                                        { staticClass: "text-xs-center" },
+                                        [_vm._v(_vm._s(props.item.price) + "€")]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "td",
+                                        {
+                                          staticClass:
+                                            "justify-center layout px-0"
+                                        },
+                                        [
+                                          _c(
+                                            "v-icon",
+                                            {
+                                              attrs: {
+                                                small: "",
+                                                color: "blue-grey",
+                                                title: "Decrease quantity"
+                                              },
+                                              on: {
+                                                click: function($event) {
+                                                  _vm.decrementItemQuantity(
+                                                    props.item
+                                                  )
+                                                }
+                                              }
+                                            },
+                                            [
+                                              _vm._v(
+                                                "\n\t\t\t\t\t\t\t\t\t\t\tfas fa-minus-circle\n\t\t\t\t\t\t\t\t\t\t"
+                                              )
+                                            ]
+                                          )
+                                        ],
+                                        1
+                                      )
+                                    ]
+                                  }
+                                }
+                              ])
+                            }),
+                            _vm._v(" "),
+                            _c(
+                              "v-card-actions",
+                              [
+                                _c("v-spacer"),
+                                _vm._v(" "),
+                                _c(
+                                  "v-btn",
+                                  {
+                                    attrs: { color: "teal", flat: "" },
+                                    on: {
+                                      click: function($event) {
+                                        _vm.orderSummaryMenu = false
+                                        _vm.orderSubmitDialog = true
+                                      }
+                                    }
+                                  },
+                                  [_vm._v("Complete order")]
+                                )
+                              ],
+                              1
+                            )
+                          ],
+                          1
                         )
                       ],
                       1
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "v-btn",
-                      {
-                        staticClass: "chip-btn white--text",
-                        attrs: {
-                          color: "teal",
-                          depressed: "",
-                          light: "",
-                          round: "",
-                          disabled: _vm.selectedItems.length === 0
-                        },
-                        on: {
-                          click: function($event) {
-                            _vm.orderSubmitDialog = true
-                          }
-                        }
-                      },
-                      [_vm._v("\n\t\t\t\t\t\tComplete order\n\t\t\t\t\t")]
                     )
                   ]
                 : _vm._e(),
@@ -19273,9 +19792,9 @@ var render = function() {
                       { key: i },
                       [
                         _vm._v(
-                          "\n\t\t\t\t\t\t\t" +
+                          "\n\t\t\t\t\t\t" +
                             _vm._s(item.name) +
-                            "\n\t\t\t\t\t\t\t"
+                            "\n\t\t\t\t\t\t"
                         ),
                         _c("v-icon", [_vm._v(_vm._s(item.icon))])
                       ],
@@ -19346,11 +19865,13 @@ var render = function() {
                                       _c("MenuCard", {
                                         attrs: {
                                           item: props.item,
-                                          meal: _vm.meal
+                                          meal: _vm.meal,
+                                          exists: _vm.hasSelectedItem(
+                                            props.item.id
+                                          )
                                         },
                                         on: {
                                           onItemSelect: _vm.selectItem,
-                                          onItemDeselect: _vm.deselectItem,
                                           updateList: _vm.getItems,
                                           onGetItems: function($event) {
                                             _vm.getItems()
@@ -19397,7 +19918,7 @@ var render = function() {
                       _c("v-card-text", { staticClass: "subheading" }, [
                         _vm._v(
                           "\n\t\t\t\t\t\tDo you want to submit a total of " +
-                            _vm._s(_vm.selectedItems.length) +
+                            _vm._s(_vm.totalItems) +
                             " item orders for meal #" +
                             _vm._s(_vm.meal.id) +
                             " on table " +
@@ -19499,12 +20020,12 @@ var render = function() {
                     right: "",
                     top: ""
                   },
-                  on: { click: _vm.toggleItem }
+                  on: { click: _vm.selectItem }
                 },
                 [
                   _c(
                     "v-scroll-x-transition",
-                    [_c("v-icon", [_vm._v(_vm._s(_vm.buttonIcon))])],
+                    [_c("v-icon", [_vm._v("fas fa-plus")])],
                     1
                   )
                 ],
@@ -19547,8 +20068,8 @@ var render = function() {
             1
           ),
           _vm._v(" "),
-          this.$route.name == "restaurantManagement" &&
-          this.$store.state.user.type == "manager"
+          this.$route.name === "restaurantManagement" &&
+          this.$store.state.user.type === "manager"
             ? _c(
                 "div",
                 [
@@ -19556,7 +20077,7 @@ var render = function() {
                     "v-icon",
                     {
                       attrs: {
-                        arge: "",
+                        large: "",
                         color: "red darken-2",
                         dark: "",
                         right: ""
@@ -19575,7 +20096,7 @@ var render = function() {
                     "v-icon",
                     {
                       attrs: {
-                        arge: "",
+                        large: "",
                         color: "yellow darken-2",
                         dark: "",
                         right: ""
@@ -19649,6 +20170,7 @@ var render = function() {
           _c(
             "v-navigation-drawer",
             {
+              staticStyle: { "z-index": "50" },
               attrs: {
                 "mini-variant": _vm.mini,
                 clipped: _vm.clippedNavDrawer,
@@ -19786,6 +20308,7 @@ var render = function() {
           _c(
             "v-toolbar",
             {
+              staticStyle: { "z-index": "40" },
               attrs: {
                 "clipped-left": _vm.clippedToolbar,
                 color: "blue-grey darken-1",
@@ -19806,10 +20329,25 @@ var render = function() {
               }),
               _vm._v(" "),
               _c("v-toolbar-title", [
-                _vm._v(_vm._s(this.$store.state.panelTitle))
+                _vm._v(
+                  "\n            " +
+                    _vm._s(this.$store.state.panelTitle) +
+                    "\n        "
+                )
               ]),
               _vm._v(" "),
               _c("v-spacer"),
+              _vm._v(" "),
+              _vm.$store.state.progressBarShown
+                ? _c("v-progress-circular", {
+                    staticClass: "mr-3",
+                    attrs: {
+                      color: "white",
+                      value: _vm.$store.state.progressBarValue,
+                      indeterminate: _vm.$store.state.progressBarIndeterminate
+                    }
+                  })
+                : _vm._e(),
               _vm._v(" "),
               _c(
                 "v-toolbar-items",
@@ -19817,7 +20355,7 @@ var render = function() {
                 [
                   _c(
                     "v-menu",
-                    { attrs: { "nudge-width": 100 } },
+                    { attrs: { left: true, "nudge-width": 100 } },
                     [
                       _c(
                         "v-toolbar-title",
@@ -19979,6 +20517,7 @@ var render = function() {
                           label: "Table number",
                           type: "number",
                           name: "tableNumber",
+                          "error-messages": _vm.errorMessages,
                           rules: [
                             function() {
                               return (
@@ -19986,7 +20525,6 @@ var render = function() {
                               )
                             }
                           ],
-                          "error-messages": _vm.errorMessages,
                           required: ""
                         },
                         model: {
@@ -20738,6 +21276,193 @@ render._withStripped = true
 
 /***/ }),
 
+/***/ "./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true&":
+/*!*****************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true& ***!
+  \*****************************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "v-card",
+    [
+      _c("v-img", {
+        attrs: { src: _vm.item.photo_url, "aspect-ratio": "1.75" }
+      }),
+      _vm._v(" "),
+      _c("v-card-title", [_c("h4", [_vm._v(_vm._s(_vm.item.name))])]),
+      _vm._v(" "),
+      _c("v-divider"),
+      _vm._v(" "),
+      _c(
+        "v-list",
+        { attrs: { dense: "" } },
+        [
+          _c(
+            "v-list-tile",
+            [
+              _c("v-list-tile-content", [_vm._v("Type:")]),
+              _vm._v(" "),
+              _c("v-list-tile-content", { staticClass: "align-end" }, [
+                _vm._v(_vm._s(_vm.item.type))
+              ])
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "v-list-tile",
+            [
+              _c("v-list-tile-content", [_vm._v("Price:")]),
+              _vm._v(" "),
+              _c("v-list-tile-content", { staticClass: "align-end" }, [
+                _vm._v(_vm._s(_vm.item.price) + "€")
+              ])
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "v-list-tile",
+            [
+              _c("v-list-tile-content", [_vm._v("Order time:")]),
+              _vm._v(" "),
+              _c("v-list-tile-content", { staticClass: "align-end" }, [
+                _vm._v(_vm._s(_vm.item.order_created_at))
+              ])
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "v-list-tile",
+            [
+              _c("v-list-tile-content", [_vm._v("Order end:")]),
+              _vm._v(" "),
+              _c("v-list-tile-content", { staticClass: "align-end" }, [
+                _vm._v(_vm._s(_vm.item.order_end || "N/A"))
+              ])
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "v-list-tile",
+            [
+              _c("v-list-tile-content", [_vm._v("Order state:")]),
+              _vm._v(" "),
+              _c("v-list-tile-content", { staticClass: "align-end" }),
+              _vm._v(" "),
+              _c(
+                "v-btn",
+                {
+                  staticClass:
+                    "text-capitalize white--text btn-no-margin elevation-0",
+                  attrs: {
+                    small: "",
+                    color: _vm.getStateColor(_vm.item.order_state),
+                    round: "",
+                    depressed: ""
+                  },
+                  on: {
+                    click: function($event) {
+                      _vm.showDeliverMealDialog(_vm.item.order_state)
+                    }
+                  }
+                },
+                [
+                  _vm._v(
+                    "\n\t\t\t\t\t" + _vm._s(_vm.item.order_state) + "\n\t\t\t\t"
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "v-dialog",
+                {
+                  attrs: { "max-width": "380" },
+                  model: {
+                    value: _vm.deliverMealDialog,
+                    callback: function($$v) {
+                      _vm.deliverMealDialog = $$v
+                    },
+                    expression: "deliverMealDialog"
+                  }
+                },
+                [
+                  _c(
+                    "v-card",
+                    [
+                      _c("v-card-text", { staticClass: "subheading" }, [
+                        _vm._v(
+                          "\n\t\t\t\t\t\t\tDo you want to change this order to delivered?\n\t\t\t\t\t\t"
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "v-card-actions",
+                        [
+                          _c("v-spacer"),
+                          _vm._v(" "),
+                          _c(
+                            "v-btn",
+                            {
+                              attrs: { flat: "" },
+                              on: {
+                                click: function($event) {
+                                  _vm.deliverMealDialog = false
+                                }
+                              }
+                            },
+                            [_vm._v("\n\t\t\t\t\t\t\t\tNo\n\t\t\t\t\t\t\t")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "v-btn",
+                            {
+                              attrs: { color: "teal", flat: "flat" },
+                              on: {
+                                click: function($event) {
+                                  _vm.deliverMeal()
+                                }
+                              }
+                            },
+                            [_vm._v("\n\t\t\t\t\t\t\t\tYes\n\t\t\t\t\t\t\t")]
+                          )
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  )
+                ],
+                1
+              )
+            ],
+            1
+          )
+        ],
+        1
+      )
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
 /***/ "./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrders.vue?vue&type=template&id=30806d33&scoped=true&":
 /*!**************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrders.vue?vue&type=template&id=30806d33&scoped=true& ***!
@@ -20763,15 +21488,29 @@ var render = function() {
             [
               _c("v-toolbar-title", [
                 _vm._v(
-                  "Orders for table " +
+                  "\n            Orders for table " +
                     _vm._s(_vm.meal.table_number) +
                     " (meal #" +
                     _vm._s(_vm.meal.id) +
-                    ")"
+                    ")\n        "
                 )
               ]),
               _vm._v(" "),
               _c("v-spacer"),
+              _vm._v(" "),
+              _c(
+                "v-chip",
+                { attrs: { color: "teal", "text-color": "white" } },
+                [
+                  _vm._v(
+                    "\n            " + _vm._s(_vm.totalPrice) + "\n            "
+                  ),
+                  _c("v-icon", { attrs: { right: "" } }, [
+                    _vm._v("euro_symbol")
+                  ])
+                ],
+                1
+              ),
               _vm._v(" "),
               _vm.meal.state === "active"
                 ? _c(
@@ -20822,117 +21561,10 @@ var render = function() {
                         "v-flex",
                         { attrs: { xs12: "", sm6: "", md4: "", lg3: "" } },
                         [
-                          _c(
-                            "v-card",
-                            [
-                              _c("v-img", {
-                                attrs: {
-                                  src: _vm.getItemPhotoUrl(
-                                    props.item.photo_url
-                                  ),
-                                  "aspect-ratio": "1.75"
-                                }
-                              }),
-                              _vm._v(" "),
-                              _c("v-card-title", [
-                                _c("h4", [_vm._v(_vm._s(props.item.name))])
-                              ]),
-                              _vm._v(" "),
-                              _c("v-divider"),
-                              _vm._v(" "),
-                              _c(
-                                "v-list",
-                                { attrs: { dense: "" } },
-                                [
-                                  _c(
-                                    "v-list-tile",
-                                    [
-                                      _c("v-list-tile-content", [
-                                        _vm._v("Type:")
-                                      ]),
-                                      _vm._v(" "),
-                                      _c(
-                                        "v-list-tile-content",
-                                        { staticClass: "align-end" },
-                                        [_vm._v(_vm._s(props.item.type))]
-                                      )
-                                    ],
-                                    1
-                                  ),
-                                  _vm._v(" "),
-                                  _c(
-                                    "v-list-tile",
-                                    [
-                                      _c("v-list-tile-content", [
-                                        _vm._v("Price:")
-                                      ]),
-                                      _vm._v(" "),
-                                      _c(
-                                        "v-list-tile-content",
-                                        { staticClass: "align-end" },
-                                        [_vm._v(_vm._s(props.item.price) + "€")]
-                                      )
-                                    ],
-                                    1
-                                  ),
-                                  _vm._v(" "),
-                                  _c(
-                                    "v-list-tile",
-                                    [
-                                      _c("v-list-tile-content", [
-                                        _vm._v("Order time:")
-                                      ]),
-                                      _vm._v(" "),
-                                      _c(
-                                        "v-list-tile-content",
-                                        { staticClass: "align-end" },
-                                        [
-                                          _vm._v(
-                                            _vm._s(props.item.order_created_at)
-                                          )
-                                        ]
-                                      )
-                                    ],
-                                    1
-                                  ),
-                                  _vm._v(" "),
-                                  _c(
-                                    "v-list-tile",
-                                    [
-                                      _c("v-list-tile-content", [
-                                        _vm._v("Order end:")
-                                      ]),
-                                      _vm._v(" "),
-                                      _c(
-                                        "v-list-tile-content",
-                                        { staticClass: "align-end" },
-                                        [_vm._v(_vm._s(props.item.order_end))]
-                                      )
-                                    ],
-                                    1
-                                  ),
-                                  _vm._v(" "),
-                                  _c(
-                                    "v-list-tile",
-                                    [
-                                      _c("v-list-tile-content", [
-                                        _vm._v("Order state:")
-                                      ]),
-                                      _vm._v(" "),
-                                      _c(
-                                        "v-list-tile-content",
-                                        { staticClass: "align-end" },
-                                        [_vm._v(_vm._s(props.item.order_state))]
-                                      )
-                                    ],
-                                    1
-                                  )
-                                ],
-                                1
-                              )
-                            ],
-                            1
-                          )
+                          _c("Card", {
+                            attrs: { item: props.item },
+                            on: { onOrderChange: _vm.loadMealItems }
+                          })
                         ],
                         1
                       )
@@ -21113,7 +21745,9 @@ var render = function() {
                                               attrs: { small: "" },
                                               on: {
                                                 click: function($event) {
-                                                  _vm.terminateMeal(props.item)
+                                                  _vm.askToConfirmMealTermination(
+                                                    props.item
+                                                  )
                                                 }
                                               }
                                             },
@@ -21208,12 +21842,66 @@ var render = function() {
                       _c(
                         "v-btn",
                         {
-                          attrs: {
-                            color: "orange darken-1",
-                            flat: "flat",
-                            alt: "Terminate meal"
-                          },
+                          attrs: { color: "orange darken-1", flat: "flat" },
                           on: { click: _vm.performMealTermination }
+                        },
+                        [_vm._v("\n\t\t\t\t\t\t\tYes\n\t\t\t\t\t\t")]
+                      )
+                    ],
+                    1
+                  )
+                ],
+                1
+              )
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "v-dialog",
+            {
+              attrs: { "max-width": "450" },
+              model: {
+                value: _vm.cancelOrdersDialog,
+                callback: function($$v) {
+                  _vm.cancelOrdersDialog = $$v
+                },
+                expression: "cancelOrdersDialog"
+              }
+            },
+            [
+              _c(
+                "v-card",
+                [
+                  _c("v-card-text", { staticClass: "subheading" }, [
+                    _vm._v(
+                      "\n\t\t\t\t\t\tThis meal has orders that were not delivered. Do you want to cancel these orders?\n\t\t\t\t\t"
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "v-card-actions",
+                    [
+                      _c("v-spacer"),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { flat: "" },
+                          on: {
+                            click: function($event) {
+                              _vm.cancelOrdersDialog = false
+                            }
+                          }
+                        },
+                        [_vm._v("No")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "red accent-3", flat: "flat" },
+                          on: { click: _vm.cancelOrders }
                         },
                         [_vm._v("\n\t\t\t\t\t\t\tYes\n\t\t\t\t\t\t")]
                       )
@@ -59613,6 +60301,36 @@ if(false) {}
 
 
 var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!../../../node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./ItemMenuCard.vue?vue&type=style&index=0&id=1e315c2d&scoped=true&lang=css& */ "./node_modules/css-loader/index.js?!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/ItemMenuCard.vue?vue&type=style&index=0&id=1e315c2d&scoped=true&lang=css&");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css&":
+/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css& ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!../../../node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css& */ "./node_modules/css-loader/index.js?!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css&");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -114697,6 +115415,93 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/MealOrderCard.vue":
+/*!***************************************************!*\
+  !*** ./resources/js/components/MealOrderCard.vue ***!
+  \***************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _MealOrderCard_vue_vue_type_template_id_38eedd20_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true& */ "./resources/js/components/MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true&");
+/* harmony import */ var _MealOrderCard_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./MealOrderCard.vue?vue&type=script&lang=js& */ "./resources/js/components/MealOrderCard.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _MealOrderCard_vue_vue_type_style_index_0_id_38eedd20_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css& */ "./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__["default"])(
+  _MealOrderCard_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _MealOrderCard_vue_vue_type_template_id_38eedd20_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _MealOrderCard_vue_vue_type_template_id_38eedd20_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  "38eedd20",
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/MealOrderCard.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/MealOrderCard.vue?vue&type=script&lang=js&":
+/*!****************************************************************************!*\
+  !*** ./resources/js/components/MealOrderCard.vue?vue&type=script&lang=js& ***!
+  \****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./MealOrderCard.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css&":
+/*!************************************************************************************************************!*\
+  !*** ./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css& ***!
+  \************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_style_index_0_id_38eedd20_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/style-loader!../../../node_modules/css-loader??ref--6-1!../../../node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css& */ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=style&index=0&id=38eedd20&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_style_index_0_id_38eedd20_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_style_index_0_id_38eedd20_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_style_index_0_id_38eedd20_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_style_index_0_id_38eedd20_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_style_index_0_id_38eedd20_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
+/***/ }),
+
+/***/ "./resources/js/components/MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true&":
+/*!**********************************************************************************************!*\
+  !*** ./resources/js/components/MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true& ***!
+  \**********************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_template_id_38eedd20_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true& */ "./node_modules/laravel-mix/node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/MealOrderCard.vue?vue&type=template&id=38eedd20&scoped=true&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_template_id_38eedd20_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_laravel_mix_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_MealOrderCard_vue_vue_type_template_id_38eedd20_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/MealOrders.vue":
 /*!************************************************!*\
   !*** ./resources/js/components/MealOrders.vue ***!
@@ -115375,6 +116180,116 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/mixin.js":
+/*!*******************************!*\
+  !*** ./resources/js/mixin.js ***!
+  \*******************************/
+/*! exports provided: itemMixin, toasts */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "itemMixin", function() { return itemMixin; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toasts", function() { return toasts; });
+var itemMixin = {
+  data: function data() {
+    return {
+      active: false,
+      childActive: false
+    };
+  },
+  created: function created() {
+    this.active = this.item && this.item.href ? this.isLinkActive(this.item) : false;
+    this.childActive = this.item && this.item.child ? this.isChildActive(this.item.child) : false;
+    this.show = this.item && this.item.child ? this.isChildActive(this.item.child) : false;
+  },
+  methods: {
+    toggleDropdown: function toggleDropdown() {
+      this.show = !this.show;
+    },
+    isLinkActive: function isLinkActive(item) {
+      if (this.$route) {
+        return item.href == this.$route.path;
+      } else {
+        return item.href == window.location.pathname;
+      }
+    },
+    isChildActive: function isChildActive(child) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = child[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var item = _step.value;
+
+          if (this.isLinkActive(item)) {
+            return true;
+          }
+
+          if (item.child) {
+            if (this.isChildActive(item.child)) {
+              return true;
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      return false;
+    }
+  },
+  computed: {
+    isRouterLink: function isRouterLink() {
+      return this.$router && this.item && this.item.href !== undefined;
+    }
+  },
+  watch: {
+    $route: function $route() {
+      this.active = this.item && this.item.href ? this.isLinkActive(this.item) : false;
+      this.childActive = this.item && this.item.child ? this.isChildActive(this.item.child) : false;
+    }
+  }
+};
+var toasts = {
+  methods: {
+    showErrorLog: function showErrorLog(message, error) {
+      this.showErrorToast(message);
+      console.error(error);
+    },
+    showSuccessToast: function showSuccessToast(message) {
+      var time = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 3000;
+      this.$toasted.success(message, {
+        icon: 'check',
+        position: 'bottom-center',
+        duration: time
+      });
+    },
+    showErrorToast: function showErrorToast(message) {
+      var time = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 3000;
+      this.$toasted.error(message, {
+        icon: 'error',
+        position: 'bottom-center',
+        duration: time
+      });
+    }
+  }
+};
+
+/***/ }),
+
 /***/ "./resources/js/routes.js":
 /*!********************************!*\
   !*** ./resources/js/routes.js ***!
@@ -115485,7 +116400,10 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     panelTitle: "",
     alertShown: false,
     alertMessage: "",
-    alertType: "success"
+    alertType: "success",
+    progressBarShown: false,
+    progressBarValue: 0,
+    progressBarIndeterminate: false
   },
   mutations: {
     clearUserAndToken: function clearUserAndToken(state) {
@@ -115546,6 +116464,26 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     },
     setUserLastShiftEndTime: function setUserLastShiftEndTime(state, time) {
       state.user.last_shift_end = time;
+    },
+    showProgressBar: function showProgressBar(state, _ref2) {
+      var indeterminate = _ref2.indeterminate,
+          _ref2$value = _ref2.value,
+          value = _ref2$value === void 0 ? 0 : _ref2$value;
+      state.progressBarIndeterminate = indeterminate;
+      state.progressBarValue = value;
+      state.progressBarShown = true;
+    },
+    decreaseProgressBarValue: function decreaseProgressBarValue(state, value) {
+      state.progressBarValue -= value;
+    },
+    increaseProgressBarValue: function increaseProgressBarValue(state, value) {
+      state.progressBarValue += value;
+    },
+    showProgressValue: function showProgressValue(state, value) {
+      state.progressBarValue = value;
+    },
+    hideProgressBar: function hideProgressBar(state) {
+      state.progressBarShown = false;
     }
   },
   getters: {
@@ -115587,8 +116525,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/luisflores/MEGA/3_Ano/DAD/project/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /Users/luisflores/MEGA/3_Ano/DAD/project/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /home/jmfp/Laravel/Restaurant-Management/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /home/jmfp/Laravel/Restaurant-Management/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

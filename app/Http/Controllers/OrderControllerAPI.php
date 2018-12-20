@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\Item;
 use Illuminate\Http\Request;
-use App\Http\Resources\Order as OrderResource;
-use App\Http\Resources\Item as ItemResource;
-use App\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\Order as OrderResource;
+use App\Http\Resources\Item as ItemResource;
+use App\Http\Resources\ItemOrder as ItemOrderResource;
+use App\Order;
+use App\Meal;
+use App\Item;
+use Validator;
 
 class OrderControllerAPI extends Controller
 {
@@ -37,10 +40,40 @@ class OrderControllerAPI extends Controller
             'start' => 'required|date'
         ]);
 
+        $meal = Meal::findOrFail($request->meal_id);
+        $item = Item::findOrFail($request->item_id);
+        $meal->total_price_preview += $item->price;
+        $meal->save();
+
         $order = new Order();
         $order->fill($request->all());
         $order->save();
         return response()->json(new OrderResource($order), 201);
+    }
+
+    public function storeMultiple(Request $request)
+    {
+        $result = [];
+        foreach ($request->all() as &$order) {
+            $newOrder = new Order();
+            $newOrder->fill($order);
+            $newOrder->save();
+
+            $meal = Meal::findOrFail($order['meal_id']);
+            $item = Item::fifindOrFailnd($order['item_id']);
+            $meal->total_price_preview += $item->price;
+            $meal->save();
+
+            array_push($result, new OrderResource($newOrder));
+        }
+
+        return response()->json($result, 201);
+
+
+        // $order = new Order();
+        // $order->fill($request->all());
+        // $order->save();
+        // return response()->json(new OrderResource($order), 201);
     }
 
     /**
@@ -54,12 +87,11 @@ class OrderControllerAPI extends Controller
         return new OrderResource(Order::find($id));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param $mealId
-     * @return \Illuminate\Support\Collection
-     */
+
+    public function mealOrders($mealId) {
+        return Order::where('meal_id', $mealId)->get();
+    }
+
     public function mealItems($mealId)
     {
         $items = DB::table('items')
@@ -67,6 +99,7 @@ class OrderControllerAPI extends Controller
             ->join('meals', 'meals.id', '=', 'orders.meal_id')
             ->where('meals.id', $mealId)
             ->select('items.*',
+                'orders.id AS order_id',
                 'orders.state AS order_state',
                 'orders.created_at AS order_created_at',
                 'orders.updated_at AS order_updated_at',
@@ -74,7 +107,7 @@ class OrderControllerAPI extends Controller
                 'orders.end AS order_end')
             ->get();
 
-        return $items;
+        return response()->json(ItemOrderResource::collection($items), 200);
     }
 
     /**
@@ -87,10 +120,10 @@ class OrderControllerAPI extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'state' => 'required|in:pending,confirmed,in preparation,prepared,delivered,not delivered',
-            'item_id' => 'required|integer|exists:items,id',
-            'meal_id' => 'required|integer|exists:meals,id',
-            'start' => 'required|date'
+            'state' => 'in:pending,confirmed,in preparation,prepared,delivered,not delivered',
+            'item_id' => 'integer|exists:items,id',
+            'meal_id' => 'integer|exists:meals,id',
+            'start' => 'date'
         ]);
 
         $order = Order::findOrFail($id);
@@ -107,7 +140,22 @@ class OrderControllerAPI extends Controller
     public function destroy($id)
     {
         $order = Order::findOrFail($id);
+        
+        $meal = Meal::findOrFail($order->meal_id);
+        $item = Item::findOrFail($order->item_id);
+        $meal->total_price_preview -= $item->price;
+        $meal->save();
+
         $order->delete();
+        return response()->json(null, 204);
+    }
+
+    public function destroyMultiple(Request $request)
+    {
+        foreach ($request->all() as &$id) {
+            $order = Order::findOrFail($id);
+            $order->delete();
+        }
         return response()->json(null, 204);
     }
 }

@@ -29,7 +29,10 @@
         },
         mounted() {
             this.$store.commit('setPanelTitle', 'Profile');
-            this.getInformationFromLoggedUser();
+            //this.getInformationFromLoggedUser();
+            this.$store.watch(() => {
+                this.profileUser = this.$store.state.user;
+            })
         }
     }
 </script>

@@ -13,6 +13,6 @@ class Item extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'type', 'description', 'photo_url', 'price'
+        'name', 'type', 'description', 'price'
     ];
 }
