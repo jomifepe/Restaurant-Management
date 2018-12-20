@@ -14,8 +14,26 @@
 @import '~@fortawesome/fontawesome-free/scss/regular.scss';
 @import '~vuetify/dist/vuetify.min.css';
 
+.text-capitalize {
+  text-transform: capitalize;
+}
+.text-uppercase {
+  text-transform: uppercase;
+}
+.text-lowercase {
+  text-transform: lowercase;
+}
+
+.btn-no-margin {
+  margin: 0px !important;
+}
+
 .chip-btn {
   height: 34px;
+}
+
+.z-index-fix {
+  z-index: 1 !important;
 }
 
 .rounded-text-field {

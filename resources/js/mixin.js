@@ -47,3 +47,26 @@ export const itemMixin = {
         }
     },
 }
+
+export const toasts = {
+	methods: {
+		showErrorLog(message, error) {
+			this.showErrorToast(message);
+			console.error(error);
+		},
+		showSuccessToast(message, time = 3000) {
+			this.$toasted.success(message, {
+				icon : 'check',
+				position: 'bottom-center',
+				duration : time
+			});
+		},
+		showErrorToast(message, time = 3000) {
+			this.$toasted.error(message, {
+				icon : 'error',
+				position: 'bottom-center',
+				duration : time
+			});
+		}
+	}
+}

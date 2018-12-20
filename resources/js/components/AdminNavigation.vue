@@ -1,12 +1,7 @@
 <template>
     <v-app v-if="user">
-        <v-navigation-drawer
-                v-model="drawer"
-                :mini-variant="mini"
-                :clipped="clippedNavDrawer"
-                hide-overlay
-                stateless
-                app>
+        <v-navigation-drawer v-model="drawer" :mini-variant="mini" :clipped="clippedNavDrawer" hide-overlay
+                stateless app style="z-index: 50">
             <v-list class="pa-1">
                 <v-list-tile v-if="mini" @click.stop="mini = !mini" title="Expand menu">
                     <v-list-tile-action>
@@ -33,10 +28,7 @@
 
             <v-list class="pt-0" dense>
                 <v-divider light></v-divider>
-
-                <v-list-tile v-for="item in items"
-                    :key="item.title"
-                    :to="item.target"
+                <v-list-tile v-for="item in items" :key="item.title" :to="item.target"
                     v-if="item.visible === true ? true : item.visible.includes(userType)">
                         <v-list-tile-action>
                             <v-icon>{{ item.icon }}</v-icon>
@@ -48,12 +40,19 @@
                 </v-list-tile>
             </v-list>
         </v-navigation-drawer>
-        <v-toolbar :clipped-left="clippedToolbar" color="blue-grey darken-1" dark dense app>
+        <v-toolbar :clipped-left="clippedToolbar" color="blue-grey darken-1" dark dense app style="z-index: 40">
+
             <v-toolbar-side-icon @click.stop="drawer = !drawer" title="Toggle menu"></v-toolbar-side-icon>
-            <v-toolbar-title>{{ this.$store.state.panelTitle }}</v-toolbar-title>
+            <v-toolbar-title>
+                {{ this.$store.state.panelTitle }}
+            </v-toolbar-title>
             <v-spacer></v-spacer>
+            <v-progress-circular v-if="$store.state.progressBarShown" color="white"
+                class="mr-3" :value="$store.state.progressBarValue" 
+                :indeterminate="$store.state.progressBarIndeterminate"></v-progress-circular>
+
             <v-toolbar-items class="hidden-sm-and-down">
-                <v-menu :nudge-width="100">
+                <v-menu :left="true" :nudge-width="100">
                     <v-toolbar-title slot="activator">
                         <span>{{ userFirstName }}</span>
                         <v-icon>arrow_drop_down</v-icon>

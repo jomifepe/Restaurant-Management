@@ -29,7 +29,8 @@
                                     <strong>{{ props.item.state }}</strong>
                                 </td>
                                 <td class="justify-center layout px-0">
-                                    <v-icon small v-if="props.item.state === 'active'" @click="terminateMeal(props.item)">
+                                    <v-icon small v-if="props.item.state === 'active'" 
+                                        @click="askToConfirmMealTermination(props.item)">
                                         fas fa-user-check
                                     </v-icon>
                                 </td>
@@ -51,8 +52,21 @@
 						<v-btn flat @click="terminateMealDialog = false; mealToTerminate = null">
 							No
 						</v-btn>
-						<v-btn color="orange darken-1" flat="flat" @click="performMealTermination"
-                            alt="Terminate meal">
+						<v-btn color="orange darken-1" flat="flat" @click="performMealTermination">
+							Yes
+						</v-btn>
+					</v-card-actions>
+				</v-card>
+			</v-dialog>
+            <v-dialog v-model="cancelOrdersDialog" max-width="450">
+				<v-card>
+					<v-card-text class="subheading">
+						This meal has orders that were not delivered. Do you want to cancel these orders?
+					</v-card-text>
+					<v-card-actions>
+						<v-spacer></v-spacer>
+						<v-btn flat @click="cancelOrdersDialog = false">No</v-btn>
+						<v-btn color="red accent-3" flat="flat" @click="cancelOrders">
 							Yes
 						</v-btn>
 					</v-card-actions>
@@ -66,10 +80,12 @@
     import CreateMeal from './CreateMeal';
     import MealOrders from './MealOrders';
     import axios from 'axios';
-    const moment = require('moment');
+    import moment from 'moment';
+    import {toasts} from '../mixin';
 
     export default {
         name: "Orders",
+        mixins: [toasts],
         components: {
             CreateMeal,
             MealOrders
@@ -86,12 +102,14 @@
                     { text: 'Actions', value: '', align: 'center' }
                 ],
                 search: '',
-                pagination: {
-                    sortBy: 'state'
-                },
+                pagination: { sortBy: 'state' },
                 myMealsProgressBar: true,
                 mealToTerminate: null,
-                terminateMealDialog: false
+                terminateMealDialog: false,
+                cancelOrdersDialog: false,
+
+                /* auxiliary attributes */
+                notDeliveredOrders: []
             }
         },
         methods: {
@@ -107,11 +125,7 @@
             },
             formatDate: date => moment(date).format("YYYY-MM-DD, HH:mm"),
             onMealCreated(tableNumber) {
-                this.$toasted.show(`Meal successfuly started for table ${tableNumber}`, {
-                        icon : "check",
-                        position: "bottom-center",
-                        duration : 5000
-                    });
+                this.showSuccessToast(`Meal successfuly started for table ${tableNumber}`);
                 this.loadMeals();
             },
             getStateColor(state) {
@@ -122,42 +136,103 @@
             showMealItems(meal) {
                 this.$router.push({ name: 'meal.orders', params: { mealId: meal.id }});
             },
-            terminateMeal(meal) {
+            askToConfirmMealTermination(meal) {
                 this.mealToTerminate = meal;
                 this.terminateMealDialog = true;
             },
             performMealTermination() {
                 this.terminateMealDialog = false;
-
                 let meal = this.mealToTerminate;
-                meal.state = 'terminated';
-                axios.patch(`/meals/${meal.id}`, meal)
+
+                this.$store.commit('showProgressBar', {'indeterminate': true});
+                /* get the orders for the selected meal */
+                axios.get(`/orders/meal/${meal.id}`)
                     .then(response => {
                         if (response.status === 200) {
-                            this.$toasted.show('Meal successfully terminated', {
-                                icon : 'check',
-                                position: "bottom-center",
-                                duration : 2000
-                            });
-                            this.loadMeals();
+                            this.notDeliveredOrders = response.data
+                                .filter(order => order.state !== 'delivered');
+
+                            /* if there are orders that were not delivered */
+                            if (this.notDeliveredOrders.length > 0) {
+                                this.$store.commit('hideProgressBar');
+                                this.cancelOrdersDialog = true;
+                            } else {
+                                this.$store.commit('showProgressBar', {'indeterminate': true});
+                                /* changes the meal to terminated */
+                                this.terminateMeal(meal).then(() => {
+                                    this.showSuccessToast('Meal successfully terminated');
+                                    this.$store.commit('hideProgressBar');
+                                    this.loadMeals();
+                                });
+                            }
                         } else {
-                            this.$toasted.show('Failed to terminated meal', {
-                                icon : 'error',
-                                position: "bottom-center",
-                                duration : 3000
-                            });
+                            this.showErrorToast('Failed to cancel meal orders');
                         }
                     })
                     .catch(error => {
-                        console.log(error);
-                        this.$toasted.show('Failed to terminated meal', {
-                            icon : 'error',
-                            position: "bottom-center",
-                            duration : 3000
-                        });
+                        this.showErrorLog('Failed to cancel meal orders', error);
                     })
+                
+                
+            },
+            cancelOrder(orderIndex, callback) {
+                let order = this.notDeliveredOrders[orderIndex];
+                order.state = 'not delivered';
 
-                this.mealToTerminate = null;
+                axios.patch(`/orders/${order.id}`, order)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.$store.commit('showProgressBar', {'indeterminate': false, 
+                                'value': (orderIndex + 1) * (100 / this.notDeliveredOrders.length)
+                            });
+                            if (++orderIndex !== this.notDeliveredOrders.length) {
+                                this.cancelOrder(orderIndex, callback);
+                            } else {
+                                callback();
+                                return;
+                            }
+                        } else {
+                            this.showErrorToast(`Failed to cancel meal order #${order.id}`);
+                            this.$store.commit('hideProgressBar');
+                            return;
+                        }
+                    })
+                    .catch(error => {
+                        this.showErrorLog(`Failed to cancel meal order #${order.id}`, error);
+                        this.$store.commit('hideProgressBar');
+                    })
+                
+            },
+            cancelOrders() {
+                this.cancelOrdersDialog = false;
+                this.$store.commit('showProgressBar', {'indeterminate': false, 'value': 0});
+                /* enters recursion */
+                this.cancelOrder(0, () => {
+                    this.$store.commit('showProgressBar', {'indeterminate': true});
+                    this.terminateMeal(this.mealToTerminate).then(() => {
+                        this.showSuccessToast('Meal successfully terminated');
+                        this.loadMeals();
+                        this.$store.commit('hideProgressBar');
+                    });
+                })
+            },
+            terminateMeal(meal) {
+                return new Promise((resolve, reject) => {
+                    meal.state = 'terminated';
+                    axios.patch(`/meals/${meal.id}`, meal)
+                        .then(response => {
+                            if (response.status === 200) {
+                                resolve('Success');
+                            } else {
+                                this.showErrorToast(`Failed to terminate meal #${meal.id}`);
+                                this.$store.commit('hideProgressBar');
+                            }
+                        })
+                        .catch(error => {
+                            this.showErrorLog(`Failed to terminate meal #${meal.id}`, error);
+                            this.$store.commit('hideProgressBar');
+                        })
+                })
             }
         },
         mounted() {

@@ -1,8 +1,14 @@
 <template>
     <v-flex v-if="meal">
         <v-toolbar flat color="gray">
-            <v-toolbar-title>Orders for table {{ meal.table_number }} (meal #{{ meal.id }})</v-toolbar-title>
+            <v-toolbar-title>
+                Orders for table {{ meal.table_number }} (meal #{{ meal.id }})
+            </v-toolbar-title>
             <v-spacer></v-spacer>
+            <v-chip color="teal" text-color="white">
+                {{ totalPrice }}
+                <v-icon right>euro_symbol</v-icon>
+            </v-chip>
             <v-btn dark color="success" v-if="meal.state === 'active'" :to="'/admin/menu/meal/' + meal.id">
                 Order new item(s)
             </v-btn>
@@ -14,33 +20,7 @@
                             :pagination.sync="pagination"
                             content-tag="v-layout">
                 <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
-                    <v-card>
-                        <v-img :src="getItemPhotoUrl(props.item.photo_url)" aspect-ratio="1.75"></v-img>
-                        <v-card-title><h4>{{ props.item.name }}</h4></v-card-title>
-                        <v-divider></v-divider>
-                        <v-list dense>
-                            <v-list-tile>
-                                <v-list-tile-content>Type:</v-list-tile-content>
-                                <v-list-tile-content class="align-end">{{ props.item.type }}</v-list-tile-content>
-                            </v-list-tile>
-                            <v-list-tile>
-                                <v-list-tile-content>Price:</v-list-tile-content>
-                                <v-list-tile-content class="align-end">{{ props.item.price }}€</v-list-tile-content>
-                            </v-list-tile>
-                            <v-list-tile>
-                                <v-list-tile-content>Order time:</v-list-tile-content>
-                                <v-list-tile-content class="align-end">{{ props.item.order_created_at }}</v-list-tile-content>
-                            </v-list-tile>
-                            <v-list-tile>
-                                <v-list-tile-content>Order end:</v-list-tile-content>
-                                <v-list-tile-content class="align-end">{{ props.item.order_end }}</v-list-tile-content>
-                            </v-list-tile>
-                            <v-list-tile>
-                                <v-list-tile-content>Order state:</v-list-tile-content>
-                                <v-list-tile-content class="align-end">{{ props.item.order_state }}</v-list-tile-content>
-                            </v-list-tile>
-                        </v-list>
-                    </v-card>
+                    <Card :item="props.item" @onOrderChange="loadMealItems"></Card>
                 </v-flex>
             </v-data-iterator>
         </v-container>
@@ -48,26 +28,40 @@
 </template>
 
 <script>
+    import Card from './MealOrderCard.vue';
     import axios from 'axios';
+    import currency from 'currency.js';
 
     export default {
         name: "MealOrders",
+        components: {
+            Card
+        },
         data: () => ({
             meal: null,
             items: [],
             rowsPerPageItems: [4, 8, 12],
-            pagination: {
-                rowsPerPage: 4
-            },
+            pagination: { rowsPerPage: 4 },
             progressBar: true
         }),
+        computed: {
+            totalPrice() {
+                let total = 0;
+                this.items.forEach(item => {
+                    if (item.order_state === 'delivered') {
+                        total = currency(total).add(item.price).format();
+                    }
+                })
+                return total;
+            }
+        },
         watch: {
             $route(to, from) {
-                this.loadMealsOrdersFromRouteId();
+                this.loadMealOrdersFromRouteId();
             }
         },
         methods: {
-            loadMealsOrdersFromRouteId() {
+            loadMealOrdersFromRouteId() {
                 if (this.$route.params.mealId) {
                     this.progressBar = true;
                     axios.get(`/meals/${this.$route.params.mealId}`)
@@ -97,7 +91,7 @@
                 }
             },
             loadMealItems() {
-                axios.get(`/meals/${this.meal.id}/items`)
+                axios.get(`/orders/meal/${this.meal.id}/items`)
                     .then(response => {
                         if (response.status === 200) {
                             this.items = response.data;
@@ -107,13 +101,10 @@
                     .catch(error => {
                         console.log(error);
                     });
-            },
-            getItemPhotoUrl(filename) {
-                return `/storage/items/${filename}`;
             }
         },
         mounted() {
-            this.loadMealsOrdersFromRouteId();
+            this.loadMealOrdersFromRouteId();
         }
     }
 </script>

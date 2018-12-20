@@ -15155,8 +15155,28 @@ readers do not read off random characters that represent icons */
   font-weight: 400;
 }
 
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.text-lowercase {
+  text-transform: lowercase;
+}
+
+.btn-no-margin {
+  margin: 0px !important;
+}
+
 .chip-btn {
   height: 34px;
+}
+
+.z-index-fix {
+  z-index: 1 !important;
 }
 
 .rounded-text-field {

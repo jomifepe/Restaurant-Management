@@ -6,15 +6,9 @@
             <v-card-text>
                 <v-flex xs12>
                     <v-form ref="form">
-                        <v-text-field box
-                                      ref="tableNumber"
-                                      v-model="tableNumber"
-                                      label="Table number"
-                                      type="number"
-                                      name="tableNumber"
-                                      :rules="[() => !!tableNumber || 'This field is required']"
-                                      :error-messages="errorMessages"
-                                      required></v-text-field>
+                        <v-text-field v-model="tableNumber" box ref="tableNumber"  label="Table number" type="number" name="tableNumber" :error-messages="errorMessages"
+                            :rules="[() => !!tableNumber || 'This field is required']" required>
+                        </v-text-field>
                     </v-form>
                 </v-flex>
             </v-card-text>
@@ -29,7 +23,7 @@
 
 <script>
     import axios from 'axios';
-    const moment = require('moment');
+    import moment from 'moment';
 
     export default {
         name: "CreateMeal",
@@ -53,6 +47,7 @@
                     };
                     axios.post('/meals', meal)
                         .then(response => {
+                            console.log(response);
                             if (response.status === 201) {
                                 this.dialog = false;
                                 this.$emit('onCreate', this.tableNumber);
