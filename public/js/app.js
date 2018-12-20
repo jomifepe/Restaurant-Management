@@ -2693,7 +2693,7 @@ __webpack_require__.r(__webpack_exports__);
         visible: true
       }, {
         title: 'Management',
-        icon: 'build',
+        icon: 'fas fa-chair',
         target: '/admin/restaurantManagement',
         visible: ['manager']
       }],
@@ -4003,6 +4003,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewItem",
@@ -4087,8 +4090,6 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AdminItemMenu_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AdminItemMenu.vue */ "./resources/js/components/AdminItemMenu.vue");
 /* harmony import */ var _Errors_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Errors.vue */ "./resources/js/components/Errors.vue");
-//
-//
 //
 //
 //
@@ -8913,7 +8914,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -8932,7 +8933,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -20068,7 +20069,6 @@ var render = function() {
             1
           ),
           _vm._v(" "),
-          this.$route.name === "restaurantManagement" &&
           this.$store.state.user.type === "manager"
             ? _c(
                 "div",
@@ -21954,46 +21954,53 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { staticClass: "text-xs-center" },
-    [
-      _c(
-        "v-btn",
-        {
-          staticClass: "mb-2",
-          attrs: { dark: "", color: "primary" },
-          on: {
-            click: function($event) {
-              $event.preventDefault()
-              _vm.showForm = true
-            }
-          }
-        },
-        [_vm._v("\n        New Item\n    ")]
-      ),
-      _vm._v(" "),
-      _vm.showForm
-        ? _c(
-            "div",
-            [
-              _c("item-form", {
+  return _c("div", { staticClass: "text-xs-center" }, [
+    this.$store.state.user.type === "manager"
+      ? _c(
+          "div",
+          [
+            _c(
+              "v-btn",
+              {
+                staticClass: "mb-2",
+                attrs: { dark: "", color: "primary" },
                 on: {
-                  onGetItems: function($event) {
-                    _vm.onGetItems()
-                  },
-                  onCloseForm: function($event) {
-                    _vm.closeForm()
+                  click: function($event) {
+                    $event.preventDefault()
+                    _vm.showForm = true
                   }
                 }
-              })
-            ],
-            1
-          )
-        : _vm._e()
-    ],
-    1
-  )
+              },
+              [_vm._v("\n            New Item\n        ")]
+            )
+          ],
+          1
+        )
+      : _vm._e(),
+    _vm._v(" "),
+    this.$store.state.user.type === "manager"
+      ? _c("div", [
+          _vm.showForm
+            ? _c(
+                "div",
+                [
+                  _c("item-form", {
+                    on: {
+                      onGetItems: function($event) {
+                        _vm.onGetItems()
+                      },
+                      onCloseForm: function($event) {
+                        _vm.closeForm()
+                      }
+                    }
+                  })
+                ],
+                1
+              )
+            : _vm._e()
+        ])
+      : _vm._e()
+  ])
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -22400,9 +22407,7 @@ var render = function() {
           )
         ],
         1
-      ),
-      _vm._v(" "),
-      _c("items-menu")
+      )
     ],
     1
   )
@@ -116536,8 +116541,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/jmfp/Laravel/Restaurant-Management/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/jmfp/Laravel/Restaurant-Management/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /Users/luisflores/MEGA/3_Ano/DAD/project/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /Users/luisflores/MEGA/3_Ano/DAD/project/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

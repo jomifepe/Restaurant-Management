@@ -23,7 +23,7 @@
 					</v-list-tile-content>
 				</v-list-tile>
 			</v-list>
-			<div v-if="this.$route.name === 'restaurantManagement' && this.$store.state.user.type === 'manager'" >
+			<div v-if="this.$store.state.user.type === 'manager'" >
 				<v-icon large color="red darken-2" dark right @click.prevent="deleteItem(item)">delete</v-icon>
 				<v-icon large color="yellow darken-2" dark right @click.prevent="showForm = true">border_color</v-icon>
 				<div v-if="showForm">

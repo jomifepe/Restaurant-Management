@@ -1,11 +1,14 @@
 <template>
     <div class="text-xs-center">
-        <v-btn dark class="mb-2" color="primary" @click.prevent="showForm = true">
-            New Item
-        </v-btn>
-
-        <div v-if="showForm">
-            <item-form  @onGetItems="onGetItems()" @onCloseForm="closeForm()"></item-form>
+        <div v-if="this.$store.state.user.type === 'manager'" >
+            <v-btn dark class="mb-2" color="primary" @click.prevent="showForm = true">
+                New Item
+            </v-btn>
+        </div>
+        <div v-if="this.$store.state.user.type === 'manager'" >
+            <div v-if="showForm">
+                <item-form  @onGetItems="onGetItems()" @onCloseForm="closeForm()"></item-form>
+            </div>
         </div>
     </div>
 </template>

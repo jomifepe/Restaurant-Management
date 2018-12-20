@@ -122,7 +122,7 @@
                         visible: true },
                     {
                         title: 'Management',
-                        icon: 'build',
+                        icon: 'fas fa-chair',
                         target: '/admin/restaurantManagement',
                         visible: ['manager']}
                 ],

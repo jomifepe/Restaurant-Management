@@ -47,7 +47,6 @@
                     <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
                     <td v-else> N/A </td>
                     <td class="justify-center layout px-0">
-                        <!--<v-icon arge class="mr-2" @click="editItem()">edit</v-icon>-->
                         <div v-if="props.item.deleted_at != null">
                             <v-icon arge color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
                         </div>
@@ -66,7 +65,6 @@
                 </template>
             </v-data-table>
         </v-container>
-        <items-menu></items-menu>
     </div>
 </template>
 
