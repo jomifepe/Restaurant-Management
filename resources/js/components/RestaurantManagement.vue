@@ -42,7 +42,7 @@
                 <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                 <template slot="items" slot-scope="props">
                     <td class="text-xs-center">{{ props.item.table_number }}</td>
-                    <td class="text-xs-left">{{ props.item.created_at.date }}</td>
+                    <td class="text-xs-left">{{ props.item.created_at.date}}</td>
                     <td class="text-xs-left">{{ props.item.updated_at.date }}</td>
                     <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
                     <td v-else> N/A </td>

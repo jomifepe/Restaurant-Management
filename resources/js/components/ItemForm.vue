@@ -12,8 +12,8 @@
                         </div>
                         <v-container grid-list-md>
                             <v-layout wrap>
-                                <v-flex xs12 sm6 md4> <!--  ^[a-zA-Z0-9!@#$&()-`.+,/\"]*$   v-validate="{ required: true, regex: /\\.(js|ts)$/ }-->
-                                    <v-text-field v-model="item.name" v-validate="{ required: true, regex: /^[a-z\d\-_!,\wãçá.\s]+$/}" name="name" type="text" label="Item name*" required></v-text-field>
+                                <v-flex xs12 sm6 md4>
+                                    <v-text-field v-model="item.name"  v-validate="'required|alpha_spaces'" name="name" type="text" label="Item name*" required></v-text-field>
                                     <span style="color:red">{{ errors.first('name') }}</span>
                                 </v-flex>
                                 <v-flex xs12 sm6 md4>
@@ -24,7 +24,7 @@
                                     <input type="file" name="photo_url" @change="onFileSelected">
                                 </v-flex>
                                 <v-flex xs12>
-                                    <v-text-field v-model="item.description" v-validate="'required|alpha_spaces'" name="description" type="text" label="Description*" required></v-text-field>
+                                    <v-text-field v-model="item.description" v-validate="{ required: true, regex: /^[\-_!?':,\wãçá.\s]+$/ }" name="description" type="text" label="Description*" required></v-text-field>
                                     <span style="color:red">{{ errors.first('description') }}</span>
                                 </v-flex>
                                 <v-flex xs12 sm6>

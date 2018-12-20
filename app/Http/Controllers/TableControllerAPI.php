@@ -33,9 +33,8 @@ class TableControllerAPI extends Controller
         ]);
 
         $newTable = new Table();
-
         if($request->table_number != null && $request->table_number != 0){
-            $newTable->fill($request->all());
+            $newTable->table_number = $request->table_number;
         }else{
             $newTable->table_number = (DB::table('restaurant_tables')->max('table_number')+1);
         }

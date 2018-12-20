@@ -20205,12 +20205,8 @@ var render = function() {
                                       {
                                         name: "validate",
                                         rawName: "v-validate",
-                                        value: {
-                                          required: true,
-                                          regex: /^[a-z\d\-_!,\wãçá.\s]+$/
-                                        },
-                                        expression:
-                                          "{ required: true, regex: /^[a-z\\d\\-_!,\\wãçá.\\s]+$/}"
+                                        value: "required|alpha_spaces",
+                                        expression: "'required|alpha_spaces'"
                                       }
                                     ],
                                     attrs: {
@@ -20294,8 +20290,12 @@ var render = function() {
                                       {
                                         name: "validate",
                                         rawName: "v-validate",
-                                        value: "required|alpha_spaces",
-                                        expression: "'required|alpha_spaces'"
+                                        value: {
+                                          required: true,
+                                          regex: /^[\-_!?':,\wãçá.\s]+$/
+                                        },
+                                        expression:
+                                          "{ required: true, regex: /^[\\-_!?':,\\wãçá.\\s]+$/ }"
                                       }
                                     ],
                                     attrs: {
