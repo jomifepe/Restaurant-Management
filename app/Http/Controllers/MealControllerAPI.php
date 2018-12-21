@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Resources\Meal as MealResource;
 use App\Meal;
+use App\User;
 use Illuminate\Support\Facades\DB;
 
 class MealControllerAPI extends Controller
@@ -72,6 +73,15 @@ class MealControllerAPI extends Controller
     public function responsible($waiterId)
     {
         return MealResource::collection(Meal::where('responsible_waiter_id', $waiterId)->get());
+    }
+
+    public function getWaiter($mealId)
+    {
+        $meal = Meal::findOrFail($mealId);
+        $waiterId= $meal->responsible_waiter_id;
+
+        return User::findOrFail($waiterId);
+
     }
 
     /**

@@ -25,6 +25,28 @@ class OrderControllerAPI extends Controller
         return OrderResource::collection(Order::all());
     }
 
+    public function toPrepare($id)
+    {
+        $myinPrepOrders = DB::table('orders')
+            ->where([
+                ['responsible_cook_id','=', $id],
+                ['state', '=','in preparation'],
+            ])
+            ->orderBy('created_at','asc')
+            ->get();
+
+        $confirmedOrders = DB::table('orders')
+            ->where([
+                ['state', '=', 'confirmed'],
+            ])
+            ->orderBy('created_at','asc')
+            ->get();
+
+        return $myinPrepOrders->merge($confirmedOrders);
+
+    }
+
+
     /**
      * Store a newly created resource in storage.
      *
@@ -84,7 +106,7 @@ class OrderControllerAPI extends Controller
      */
     public function show($id)
     {
-        return new OrderResource(Order::find($id));
+        return OrderResource(Order::find($id));
     }
 
 
@@ -119,14 +141,17 @@ class OrderControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        //dd($request);
+        $validatedData= $request->validate([
             'state' => 'in:pending,confirmed,in preparation,prepared,delivered,not delivered',
+            'responsible_cook_id' => 'nullable|integer|exists:users,id',
             'item_id' => 'integer|exists:items,id',
             'meal_id' => 'integer|exists:meals,id',
             'start' => 'date'
         ]);
 
         $order = Order::findOrFail($id);
+        //$order->fill($validatedData);
         $order->update($request->all());
         return new OrderResource($order);
     }
@@ -140,7 +165,7 @@ class OrderControllerAPI extends Controller
     public function destroy($id)
     {
         $order = Order::findOrFail($id);
-        
+
         $meal = Meal::findOrFail($order->meal_id);
         $item = Item::findOrFail($order->item_id);
         $meal->total_price_preview -= $item->price;

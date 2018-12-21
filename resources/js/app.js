@@ -20,6 +20,8 @@ import Vuetify from 'vuetify'
 import Toasted from 'vue-toasted';
 
 Vue.use(VeeValidate);
+import VueSocketio from 'vue-socket.io';
+
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(store);
@@ -29,6 +31,11 @@ Vue.use(Vuelidate);
 Vue.use(VueMoment);
 Vue.use(Vuetify, {iconfont: 'fa'});
 Vue.use(Toasted);
+
+Vue.use(new VueSocketio({
+    debug: true,
+    connection: 'http://178.62.85.56:8080'
+}));
 
 axios.defaults.baseURL = 'http://project.dad/api';
 
@@ -50,5 +57,5 @@ new Vue({
     el: "#app",
     components: { App },
     router,
-    store
+    store,
 });

@@ -52,7 +52,7 @@ app/storage/
 Homestead.yaml
 Homestead.json
 /node_modules
-/public/hot
+#/public/hot
 /public/storage
 /storage/*.key
 /vendor
@@ -61,9 +61,9 @@ Homestead.json
 npm-debug.log
 yarn-error.log
 .env
-/public/js
-/public/css
-/public/mix-manifest.json
+#/public/js
+#/public/css
+#/public/mix-manifest.json
 phpunit.dusk.xml
 /app/Http/Controllers/LoginControllerAPI.php
 

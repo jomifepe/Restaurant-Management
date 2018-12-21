@@ -15,4 +15,15 @@ class Item extends Model
     protected $fillable = [
         'name', 'type', 'description', 'price'
     ];
+
+
+    public function orders()
+    {
+        return $this->hasMany('App\Order');
+    }
+
+
+
+
+
 }

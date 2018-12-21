@@ -61,7 +61,7 @@ class ItemControllerAPI extends Controller
      */
     public function show($id)
     {
-        return Item::findOrFail($id);
+        return ItemResource(Item::findOrFail($id));
     }
 
     /**

@@ -134,6 +134,14 @@
 			toastButtonClicked: false,
             summaryPagination: { rowsPerPage: 5 },
         }),
+        sockets:{
+            connect(){
+                console.log('socket connected (socket ID = '+this.$socket.id+')');
+            },
+            new_order(dataFromServer){
+                console.log(dataFromServer);
+            },
+        },
         methods: {
             getItems() {
 				this.$store.commit('showProgressBar', {indeterminate: true});
@@ -223,8 +231,9 @@
 					item_id: item.id,
 					meal_id: this.meal.id,
 					responsible_cook_id: null,
-					start: moment().format('YYYY-MM-DD HH:mm:ss')
-				}
+					start: moment().format('YYYY-MM-DD HH:mm:ss'),
+
+				};
 
 				axios.post('/orders', newOrder)
 					.then(response => {
@@ -339,10 +348,15 @@
 					this.confirmOrder(0, () => {
 						this.$store.commit('hideProgressBar');
 						this.showSuccessToast('All placed orders were successfully confirmed');
+                        this.sendNotificationToKitchen();
 						resolve('success');
+
 					});
 				});
 			},
+            sendNotificationToKitchen(){
+                this.$socket.emit('new_order', this.$store.state.user);
+            },
 			showOrderSubmitSuccessToast() {
 				let toast = this.$toasted.show("Order(s) placed, redirecting to the meals page in 5 seconds", {
 					position: "bottom-center",
