@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Resources\User as UserResource;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Input;
 
 use App\User;
 use App\StoreUserRequest;
 use Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserControllerAPI extends Controller
 {
@@ -56,17 +58,29 @@ class UserControllerAPI extends Controller
 
     public function store(Request $request)
     {
-//        $request->validate([
-//                'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
-//                'username' => 'required|string|max:30',
-//                'email' => 'required|email|unique:users'
-//            ]);
+        $request->validate([
+                'name' => 'required|String',
+                'username' => 'required|String|unique:users,username',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required',
+                'type' => 'required|in:manager,cook,waiter,cashier',
+                'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
 
-        $user = new User();
-        $user->fill($request->all());
-        $user->password = Hash::make(str_random(8));
-        $user->save();
-        return response()->json(new UserResource($user), 201);
+
+        $newUser = new User();
+        $newUser->fill($request->all());
+
+        if ($request->hasFile('photo_url'))
+        {
+            $fileName = Storage::disk('public')->putFile('profiles', Input::file('photo_url'));
+            $photoName = explode('/', $fileName)[1];
+            $newUser->photo_url = $photoName;
+        }
+
+        $newUser->password = bcrypt($newUser->password);
+        $newUser->save();
+        return response()->json(new UserResource($newUser), 201);
     }
 
     public function update(Request $request, $id)

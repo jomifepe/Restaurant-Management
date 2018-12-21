@@ -4,37 +4,71 @@
             <v-toolbar-title>Users List</v-toolbar-title>
             <v-divider class="mx-2" inset vertical> </v-divider>
             <v-spacer></v-spacer>
-            <!--<v-dialog v-model="dialog" max-width="500px">
+
+            <v-btn slot="activator" color="primary" dark class="mb-2">New User</v-btn>
+
+            <v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
+                          label="Search" prepend-inner-icon="search" solo-inverted>
+            </v-text-field>
+
+
+
+            <v-dialog v-model="dialog" max-width="500px">
                 <v-btn slot="activator" color="primary" dark class="mb-2">New User</v-btn>
                 <v-card>
                     <v-card-title>
                         <span class="headline">{{ formTitle }}</span>
                     </v-card-title>
-                    <v-card-text>
-                        <v-container grid-list-md>
-                            <v-layout wrap>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.name" label="Full Name"></v-text-field>
-                                </v-flex>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.username" label="Username"></v-text-field>
-                                </v-flex>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.email" label="Email"></v-text-field>
-                                </v-flex>
-                            </v-layout>
-                        </v-container>
-                    </v-card-text>
+                    <form id="form" @submit.prevent="validateBeforeSubmit">
+                        <v-card-text>
+                            <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
+                                <errors :msg="value"></errors>
+                            </div>
+                            <v-container grid-list-md>
+                                <v-layout wrap>
+                                    <v-flex xs12 sm6 md4>
+                                        <v-text-field v-model="editedItem.name" v-validate="'required|alpha_spaces'" name="name" type="text" label="Full Name"></v-text-field>
+                                        <span style="color:red">{{ errors.first('name') }}</span>
+                                    </v-flex>
+                                    <v-flex xs12 sm6 md4>
+                                        <v-text-field v-model="editedItem.username" v-validate="'required|alpha_spaces'" name="username" type="text" label="Username"></v-text-field>
+                                        <span style="color:red">{{ errors.first('username') }}</span>
+                                    </v-flex>
+                                    <v-flex xs12 sm6 md4>
+                                        <v-text-field v-model="editedItem.email" v-validate="'required|email'" name="email" type="text" label="Email"></v-text-field>
+                                        <span style="color:red">{{ errors.first('email') }}</span>
+                                    </v-flex>
+                                    <v-flex xs12 sm6 md4>
+                                        <v-select v-model="editedItem.type" v-validate="'required'" name="type" type="text"
+                                                  :items="['manager', 'cook', 'cashier', 'waiter']"
+                                                  label="Type"
+                                                  required>
+                                        </v-select>
+                                        <span style="color:red">{{ errors.first('type') }}</span>
+                                    </v-flex>
 
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                        <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
-                    </v-card-actions>
+                                    <v-flex xs12 sm6 md4>
+                                        <v-text-field v-model="editedItem.password" v-validate="'required'" name="password" type="password"  label="Password"></v-text-field>
+                                        <span style="color:red">{{ errors.first('password') }}</span>
+                                    </v-flex>
+                                    <v-flex xs12 sm6 md4>
+                                        <input type="file" name="photo_url" @change="onFileSelected">
+                                    </v-flex>
+                                </v-layout>
+                            </v-container>
+                        </v-card-text>
+
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                            <v-btn color="blue darken-1" flat type="submit" >Save</v-btn>
+                        </v-card-actions>
+                    </form>
                 </v-card>
-            </v-dialog>-->
+            </v-dialog>
+
         </v-toolbar>
-        <v-data-table :headers="headers" :items="users" :loading="loadingTableEffect" class="elevation-1">
+        <v-data-table :headers="headers" :items="users" :loading="loadingTableEffect" class="elevation-1" :search="filter">
             <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
             <template slot="items" slot-scope="props">
                 <td class="text-xs-left">
@@ -81,16 +115,21 @@
 
 <script>
     import {toasts} from '../mixin';
-    import {util} from '../mixin';
-    import UserEdit from "./UserEdit";
+    import UserEdit from './UserEdit';
+    import Errors from './Errors';
     export default {
         name: "UserList",
-        components: {UserEdit},
+        components: {
+            UserEdit,
+            Errors},
         mixins: [toasts],
         data: () => ({
             loadingTableEffect: true,
             dialog: false,
             showEdit: false,
+            filter:'',
+            hasValidationErrors: false,
+            validationErrors:[],
             userToEdit: null,
             headers: [
                 { text: 'Photo', value: 'photo_url '},
@@ -107,6 +146,9 @@
                 name: '',
                 username: '',
                 email: '',
+                type:'',
+                photo_url: null,
+
             },
             defaultItem: {
                 name: '',
@@ -149,7 +191,6 @@
             },
             editItem (item) {
                 this.showEdit = true;
-                this.dialog = true;
                 this.userToEdit = iterationCopy(item);
 
                 function iterationCopy(src) {
@@ -161,7 +202,6 @@
                     }
                     return target;
                 }
-
             },
             deleteItem (item) {
                 axios.delete('users/' + item.id).then(response => {
@@ -187,12 +227,42 @@
                 }, 300)
             },
             save () {
-                if (this.editedIndex > -1) {
-                    Object.assign(this.users[this.editedIndex], this.editedItem)
-                } else {
-                    this.users.push(this.editedItem)
+                let form = new FormData;
+                form.append('name', this.editedItem.name);
+                form.append('username', this.editedItem.username);
+                form.append('email', this.editedItem.email);
+                form.append('password', this.editedItem.password);
+                form.append('type', this.editedItem.type);
+                if(this.editedItem.photo_url != null) {
+                    form.append('photo_url', this.editedItem.photo_url);  /** HAS IMAGE ? -> ADD TO FORM**/
                 }
-                this.close()
+
+                console.log(this.editedItem);
+                axios.post('users', form).then(response => {
+                    console.log(response.data.data);
+                    this.getUsers();
+                    this.close()
+                }).catch(error => {
+                    this.hasErrors(error.response.data.errors);
+                });
+            },
+            onFileSelected(event){
+                this.editedItem.photo_url = event.target.files[0];
+            },
+            hasErrors(errors){
+                this.validationErrors = errors;
+                this.hasValidationErrors = true;
+                setTimeout(() => (this.hasValidationErrors = false), 6000)
+            },
+            validateBeforeSubmit() {
+                this.$validator.validateAll().then((result) => {
+                    if (!result) {
+                        alert('Correct the errors!');
+                    }else{
+                        this.save();
+                        return;
+                    }
+                });
             },
         },
         computed: {
