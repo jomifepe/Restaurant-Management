@@ -67,6 +67,6 @@ export const toasts = {
 				position: 'bottom-center',
 				duration : time
 			});
-		}
-	}
+		},
+	},
 }

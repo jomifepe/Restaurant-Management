@@ -1,11 +1,11 @@
 <template>
     <div>
         <v-toolbar flat color="white">
-            <v-toolbar-title>My CRUD</v-toolbar-title>
+            <v-toolbar-title>Users List</v-toolbar-title>
             <v-divider class="mx-2" inset vertical> </v-divider>
             <v-spacer></v-spacer>
-            <v-dialog v-model="dialog" max-width="500px">
-                <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn>
+            <!--<v-dialog v-model="dialog" max-width="500px">
+                <v-btn slot="activator" color="primary" dark class="mb-2">New User</v-btn>
                 <v-card>
                     <v-card-title>
                         <span class="headline">{{ formTitle }}</span>
@@ -14,19 +14,13 @@
                         <v-container grid-list-md>
                             <v-layout wrap>
                                 <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.name" label="Dessert name"></v-text-field>
+                                    <v-text-field v-model="editedItem.name" label="Full Name"></v-text-field>
                                 </v-flex>
                                 <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.calories" label="Calories"></v-text-field>
+                                    <v-text-field v-model="editedItem.username" label="Username"></v-text-field>
                                 </v-flex>
                                 <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.fat" label="Fat (g)"></v-text-field>
-                                </v-flex>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.carbs" label="Carbs (g)"></v-text-field>
-                                </v-flex>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="editedItem.protein" label="Protein (g)"></v-text-field>
+                                    <v-text-field v-model="editedItem.email" label="Email"></v-text-field>
                                 </v-flex>
                             </v-layout>
                         </v-container>
@@ -38,112 +32,176 @@
                         <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
                     </v-card-actions>
                 </v-card>
-            </v-dialog>
+            </v-dialog>-->
         </v-toolbar>
-        <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
-        <v-data-table :headers="headers" :items="desserts" class="elevation-1">
+        <v-data-table :headers="headers" :items="users" :loading="loadingTableEffect" class="elevation-1">
+            <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
             <template slot="items" slot-scope="props">
-                <td>{{ props.item.name }}</td>
-                <td class="text-xs-right">{{ props.item.calories }}</td>
-                <td class="text-xs-right">{{ props.item.fat }}</td>
-                <td class="text-xs-right">{{ props.item.carbs }}</td>
-                <td class="text-xs-right">{{ props.item.protein }}</td>
-                <td class="justify-center layout px-0">
-                    <v-icon small class="mr-2" @click="editItem(props.item)"> edit </v-icon>
-                    <v-icon small @click="deleteItem(props.item)"> delete </v-icon>
+                <td class="text-xs-left">
+                    <v-avatar class="ma-1"  slot="activator" size="100px" >
+                        <img :src="props.item.photo_url" alt="Avatar">
+                    </v-avatar>
+                </td>
+                <td class="text-xs-left">{{ props.item.name }}</td>
+                <td class="text-xs-left">{{ props.item.username }}</td>
+                <td class="text-xs-left">
+                    <v-chip :color="typeColor(props.item)" text-color="white">
+                        {{ props.item.type }}
+                    </v-chip>
+                </td>
+                <td class="text-xs-left">{{ props.item.email }}</td>
+                <td class="text-xs-left">{{ props.item.blockedStr }}</td>
+                <td class="justify-center layout px-0" v-if="user.id !== props.item.id">
+
+                    <div v-if="!props.item.blocked">
+                        <v-icon large color="red darken-2" dark right @click.prevent="blockUser(props.item)">lock</v-icon>
+                    </div>
+                    <div v-else>
+                        <v-icon large color="green darken-2" dark right @click.prevent="blockUser(props.item)">lock_open</v-icon>
+                    </div>
+
+                    <v-icon large color="yellow darken-2" @click.prevent="editItem(props.item)"> edit </v-icon>
+
+
+                    <div v-if="props.item.deleted_at != null">
+                        <v-icon large color="green darken-2" dark right @click.prevent="restoreUser(props.item)">undo</v-icon>
+                    </div>
+                    <div v-else>
+                        <v-icon large color="red darken-2" @click.prevent="deleteItem(props.item)"> delete </v-icon>
+                    </div>
                 </td>
             </template>
             <template slot="no-data">
                 <v-btn color="primary" @click="getUsers">Reset</v-btn>
             </template>
         </v-data-table>
+        <UserEdit v-if="showEdit" :user="userToEdit"></UserEdit>
     </div>
 </template>
 
 <script>
+    import {toasts} from '../mixin';
+    import {util} from '../mixin';
+    import UserEdit from "./UserEdit";
     export default {
-        name: "UserList.vue",
+        name: "UserList",
+        components: {UserEdit},
+        mixins: [toasts],
         data: () => ({
             loadingTableEffect: true,
             dialog: false,
+            showEdit: false,
+            userToEdit: null,
             headers: [
-                {
-                    text: 'Dessert (100g serving)',
-                    align: 'left',
-                    sortable: false,
-                    value: 'name'
-                },
-                { text: 'Calories', value: 'calories' },
-                { text: 'Fat (g)', value: 'fat' },
-                { text: 'Carbs (g)', value: 'carbs' },
-                { text: 'Protein (g)', value: 'protein' },
-                { text: 'Actions', value: 'name', sortable: false }
+                { text: 'Photo', value: 'photo_url '},
+                { text: 'Full Name', align: 'left', value: 'name'},
+                { text: 'Username', value: 'username' },
+                { text: 'Type', value: 'type' },
+                { text: 'Email', value: 'email' },
+                { text: 'Blocked', value: 'blocked'},
+                { text: 'Action', value: ''}
             ],
             users: [],
             editedIndex: -1,
             editedItem: {
                 name: '',
-                calories: 0,
-                fat: 0,
-                carbs: 0,
-                protein: 0
+                username: '',
+                email: '',
             },
             defaultItem: {
                 name: '',
-                calories: 0,
-                fat: 0,
-                carbs: 0,
-                protein: 0
+                username: '',
+                email: '',
             }
         }),
-
         methods: {
             getUsers () {
-                axio.get('users').then(response => {
-                    if (response.status === 200) {
-                        this.users = response.data.data;
-                        this.loadingTableEffect=false;
-                    }
+                this.loadingTableEffect = true;
+                axios.get('users/all').then(response => {
+                    console.log(response.data);
+                    this.users = response.data.data;
+                    this.loadingTableEffect = false;
                 }).catch(error => {
                     this.noData = true;
                     this.loadingTableEffect=false;
                 });
-
-
             },
-
+            blockUser(user){
+                axios.put('user/' + user.id).then(response => {
+                    console.log(response.data);
+                    this.showSuccessToast(`User ${response.data} successfuly`);
+                    this.getUsers();
+                }).catch(error => {
+                    this.showErrorToast(`Problem ${response.data} user`);
+                });
+            },
+            typeColor(item){
+                switch(item.type) {
+                    case 'manager': return 'red';
+                        break;
+                    case 'waiter': return 'primary';
+                        break;
+                    case 'cook': return 'orange';
+                        break;
+                    case 'cashier': return 'teal';
+                        break;
+                }
+            },
             editItem (item) {
-                this.editedIndex = this.desserts.indexOf(item)
-                this.editedItem = Object.assign({}, item)
-                this.dialog = true
-            },
+                this.showEdit = true;
+                this.dialog = true;
+                this.userToEdit = iterationCopy(item);
 
+                function iterationCopy(src) {
+                    let target = {};
+                    for (let prop in src) {
+                        if (src.hasOwnProperty(prop)) {
+                            target[prop] = src[prop];
+                        }
+                    }
+                    return target;
+                }
+
+            },
             deleteItem (item) {
-                const index = this.desserts.indexOf(item)
-                confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
+                axios.delete('users/' + item.id).then(response => {
+                    this.showSuccessToast('User deleted successfuly');
+                    this.getUsers();
+                }).catch(error =>{
+                    this.showErrorToast('Problem deleting user');
+                });
             },
-
+            restoreUser(item){
+                axios.put('user/restore/' + item.id).then(response => {
+                    this.showSuccessToast('User restored successfuly');
+                    this.getUsers();
+                }).catch(error =>{
+                    this.showErrorToast('Problem restoring user');
+                });
+            },
             close () {
-                this.dialog = false
+                this.dialog = false;
                 setTimeout(() => {
-                    this.editedItem = Object.assign({}, this.defaultItem)
+                    this.editedItem = Object.assign({}, this.defaultItem);
                     this.editedIndex = -1
                 }, 300)
             },
-
             save () {
                 if (this.editedIndex > -1) {
-                    Object.assign(this.desserts[this.editedIndex], this.editedItem)
+                    Object.assign(this.users[this.editedIndex], this.editedItem)
                 } else {
-                    this.desserts.push(this.editedItem)
+                    this.users.push(this.editedItem)
                 }
                 this.close()
-            }
+            },
         },
         computed: {
             formTitle () {
                 return this.editedIndex === -1 ? 'New User' : 'Edit User'
-            }
+            },
+            user(){
+                return this.$store.state.user;
+            },
         },
 
         watch: {
@@ -161,3 +219,9 @@
 <style scoped>
 
 </style>
+
+
+switch(1)
+
+case 1:
+case 0:

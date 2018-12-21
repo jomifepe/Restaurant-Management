@@ -26,6 +26,13 @@ class User extends Resource
             'shift_active' => $this->shift_active,
             'last_shift_start' => $this->last_shift_start,
             'last_shift_end' => $this->last_shift_end,
+            'blocked' => $this->blocked,
+            'deleted_at' => $this->deleted_at,
+            'blockedStr' => $this->blocked ? 'Yes' : 'No',
         ];
     }
+
+
+
+
 }

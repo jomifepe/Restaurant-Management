@@ -111,6 +111,11 @@
                         target: '/admin/profile',
                         visible: true },
                     {
+                        title: 'Users',
+                        icon: 'people',
+                        target: '/admin/users',
+                        visible: ['manager']},
+                    {
                         title: 'Meals',
                         icon: 'restaurant',
                         target: '/admin/meals',

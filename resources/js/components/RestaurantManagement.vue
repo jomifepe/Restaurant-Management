@@ -48,10 +48,10 @@
                     <td v-else> N/A </td>
                     <td class="justify-center layout px-0">
                         <div v-if="props.item.deleted_at != null">
-                            <v-icon arge color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
+                            <v-icon large color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
                         </div>
                         <div v-else>
-                            <v-icon arge color="red darken-2" dark right @click.prevent="deleteTable(props.item)">delete</v-icon>
+                            <v-icon large color="red darken-2" dark right @click.prevent="deleteTable(props.item)">delete</v-icon>
                         </div>
                     </td>
                 </template>

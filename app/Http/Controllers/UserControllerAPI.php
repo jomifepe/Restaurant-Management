@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Contracts\Support\Jsonable;
-
 use App\Http\Resources\User as UserResource;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +27,27 @@ class UserControllerAPI extends Controller
             return User::with('department')->get();;
         }*/
     }
+
+    public function indexManager()
+    {
+        return UserResource::collection(User::withTrashed()->get());
+    }
+
+    public function toggleBlockUser($id)
+    {
+        $user = User::findOrFail($id);
+        if($user->blocked == 1) {
+            $action = 'unblocked';
+            $user->blocked = 0;
+        }else{
+            $user->blocked = 1;
+            $action = 'blocked';
+        }
+        $user->save();
+
+        return $action;
+    }
+
 
     public function show($id)
     {
@@ -66,12 +85,7 @@ class UserControllerAPI extends Controller
         return new UserResource($user);
     }
 
-    public function destroy($id)
-    {
-        $user = User::findOrFail($id);
-        $user->delete();
-        return response()->json(null, 204);
-    }
+
 
     public function emailAvailable(Request $request)
     {
@@ -88,4 +102,32 @@ class UserControllerAPI extends Controller
     {
         return new UserResource($request->user());
     }
+
+
+    public function restore($id)
+    {
+        $user = User::onlyTrashed()->where('id', $id)->firstOrFail();
+        $user->restore();
+        return response()->json(new UserResource($user), 200);
+    }
+
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        try
+        {
+            $user->forceDelete();
+        }
+        catch(Exception $ex)
+        {
+            $user->softDelete = true;
+            $user->delete();
+        }
+
+        return response()->json(null, 204);
+    }
+
+
+
+
 }
