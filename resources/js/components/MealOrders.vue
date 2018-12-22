@@ -15,10 +15,8 @@
             <v-progress-circular v-if="progressBar" indeterminate color="blue-grey"></v-progress-circular>
         </v-toolbar>
         <v-container fluid class="white elevation-1">
-            <v-data-iterator row wrap :items="items"
-                            :rows-per-page-items="rowsPerPageItems"
-                            :pagination.sync="pagination"
-                            content-tag="v-layout">
+            <v-data-iterator row wrap :items="items" :rows-per-page-items="rowsPerPageItems"
+                            :pagination.sync="pagination" content-tag="v-layout">
                 <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
                     <Card :item="props.item" @onOrderChange="loadMealItems"></Card>
                 </v-flex>
@@ -31,9 +29,11 @@
     import Card from './MealOrderCard.vue';
     import axios from 'axios';
     import currency from 'currency.js';
+    import {toasts} from '../mixin.js';
 
     export default {
         name: "MealOrders",
+        mixin: [toasts],
         components: {
             Card
         },

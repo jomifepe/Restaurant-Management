@@ -15,7 +15,7 @@
                     </v-list-tile-avatar>
 
                     <v-list-tile-content>
-                        <v-list-tile-title>{{ userFirstAndLastName }}</v-list-tile-title>
+                        <v-list-tile-title>{{ userFirstAndLastName(user) }}</v-list-tile-title>
                     </v-list-tile-content>
 
                     <v-list-tile-action>
@@ -29,7 +29,7 @@
             <v-list class="pt-0" dense>
                 <v-divider light></v-divider>
                 <v-list-tile v-for="item in items" :key="item.title" :to="item.target"
-                    v-if="item.visible === true ? true : item.visible.includes(userType)">
+                    v-if="item.visible === true ? true : item.visible.includes(user.type)">
                         <v-list-tile-action>
                             <v-icon>{{ item.icon }}</v-icon>
                         </v-list-tile-action>
@@ -40,8 +40,19 @@
                 </v-list-tile>
             </v-list>
         </v-navigation-drawer>
+        <v-navigation-drawer v-model="rightDrawer" temporary right app style="z-index: 50">
+            <v-toolbar flat>
+                <v-list>
+                    <v-list-tile>
+                        <v-list-tile-title class="title">
+                            Notifications
+                        </v-list-tile-title>
+                    </v-list-tile>
+                </v-list>
+            </v-toolbar>
+            <v-divider></v-divider>
+        </v-navigation-drawer>
         <v-toolbar :clipped-left="clippedToolbar" color="blue-grey darken-1" dark dense app style="z-index: 40">
-
             <v-toolbar-side-icon @click.stop="drawer = !drawer" title="Toggle menu"></v-toolbar-side-icon>
             <v-toolbar-title>
                 {{ this.$store.state.panelTitle }}
@@ -54,7 +65,7 @@
             <v-toolbar-items class="hidden-sm-and-down">
                 <v-menu :left="true" :nudge-width="100">
                     <v-toolbar-title slot="activator">
-                        <span>{{ userFirstName }}</span>
+                        <span>{{ userFirstName(user) }}</span>
                         <v-icon>arrow_drop_down</v-icon>
                     </v-toolbar-title>
                     <v-list>
@@ -69,6 +80,7 @@
                     </v-list>
                 </v-menu>
             </v-toolbar-items>
+            <v-toolbar-side-icon @click.stop="rightDrawer = !rightDrawer" title="Toggle right menu"></v-toolbar-side-icon>
         </v-toolbar>
         <v-content>
             <v-container fluid>
@@ -78,65 +90,62 @@
             </v-container>
         </v-content>
         <v-footer height="auto" app>
-            <WorkerInfo></WorkerInfo>
+            <WorkerInfo :user="user"></WorkerInfo>
         </v-footer>
     </v-app>
-
-
 </template>
 
 <script>
-
     import WorkerInfo from './WorkerInfo';
     import axios from 'axios';
+    import {helper} from '../mixin.js';
 
     export default {
         name: "AdminNavigation",
+        mixins: [helper],
         components: {
             WorkerInfo
         },
-        data() {
-            return {
-                clippedNavDrawer: false,
-                clippedToolbar: false,
-                drawer: true,
-                items: [
-
-                    {
-                        title: 'Home',
-                        icon: 'dashboard',
-                        target: '/admin',
-                        visible: true },
-                    {
-                        title: 'Profile',
-                        icon: 'person',
-                        target: '/admin/profile',
-                        visible: true },
-                    {
-                        title: 'Meals',
-                        icon: 'restaurant',
-                        target: '/admin/meals',
-                        visible: ['waiter', 'manager'] },
-                    {
-                        title: 'Menu',
-                        icon: 'fas fa-list-ul',
-                        target: '/admin/menu',
-                        visible: true },
-                    {
-                        title: 'Management',
-                        icon: 'build',
-                        target: '/admin/restaurantManagement',
-                        visible: ['manager']},
-                    {
-                        title: 'Orders',
-                        icon: 'restaurant',
-                        target: '/admin/orders',
-                        visible: ['cook']},
-                ],
-                mini: true,
-                right: null
-            }
-        },
+        data: () => ({
+            clippedNavDrawer: false,
+            clippedToolbar: false,
+            drawer: true,
+            rightDrawer: false,
+            items: [
+                {
+                    title: 'Home',
+                    icon: 'dashboard',
+                    target: '/admin',
+                    visible: true },
+                {
+                    title: 'Profile',
+                    icon: 'person',
+                    target: '/admin/profile',
+                    visible: true },
+                {
+                    title: 'Meals',
+                    icon: 'restaurant',
+                    target: '/admin/meals',
+                    visible: ['waiter', 'manager'] },
+                {
+                    title: 'Menu',
+                    icon: 'fas fa-list-ul',
+                    target: '/admin/menu',
+                    visible: true },
+                {
+                    title: 'Management',
+                    icon: 'build',
+                    target: '/admin/restaurantManagement',
+                    visible: ['manager']},
+                {
+                    title: 'Orders',
+                    icon: 'restaurant',
+                    target: '/admin/orders',
+                    visible: ['cook']},
+            ],
+            mini: true,
+            right: null
+        }),
         sockets: {
             order_prepared(){
               console.log("the order is prepared");
@@ -147,6 +156,11 @@
             user_exit(data){
                 console.log('Data recieved from the server when ended shift = '+data+')');
             },
+        },
+        computed: {
+            user() {
+                return this.$store.state.user;
+            }
         },
         methods: {
             logout() {
@@ -160,26 +174,6 @@
                         console.log(`Failed to logout, But local credentials were discarded: \n${error}`);
                     })
             },
-        },
-        computed: {
-            user() {
-                return this.$store.state.user;
-            },
-            userFirstName() {
-                return this.$store.state.user.name.split(" ")[0];
-            },
-            userFirstAndLastName() {
-                let parts = this.$store.state.user.name.split(" ");
-                if (parts.length > 1) {
-                    return `${parts[0]} ${parts[parts.length - 1]}`;
-                }
-                return this.$store.state.user.name;
-            },
-            userType() {
-                return this.$store.state.user.type;
-            }
-        },
-        mounted() {
         }
     }
 </script>

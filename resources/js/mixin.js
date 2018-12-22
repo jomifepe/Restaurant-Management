@@ -70,3 +70,49 @@ export const toasts = {
 		}
 	}
 }
+
+export const helper = {
+    methods: {
+        userFirstName(user) {
+            return user.name.split(" ")[0];
+        },
+        userFirstAndLastName(user) {
+            let parts = user.name.split(" ");
+            if (parts.length > 1) {
+                return `${parts[0]} ${parts[parts.length - 1]}`;
+            }
+            return user.name;
+        },
+        getImage(obj) {
+            if (!obj) {
+                return 'https://via.placeholder.com/150';
+            } else {
+                return obj.photo_url;
+            }
+        },
+        getUserAppearence(user) {
+            switch (user.type) {
+                case 'manager':
+                    return {
+                        icon: 'supervisor_account',
+                        color: 'red'
+                    };
+                case 'waiter':
+                    return {
+                        icon: 'sentiment_satisfied_alt',
+                        color: 'blue'
+                    }
+                case 'cook':
+                    return {
+                        icon: 'restaurant',
+                        color: 'orange'
+                    }
+                case 'cashier':
+                    return {
+                        icon: 'attach_money',
+                        color: 'teal'
+                    }
+            }
+        }
+    }
+}

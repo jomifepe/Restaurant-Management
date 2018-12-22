@@ -39,7 +39,7 @@
 								<v-btn flat @click="deliverMealDialog = false">
 									No
 								</v-btn>
-								<v-btn color="teal" flat="flat" @click="deliverMeal()">
+								<v-btn color="teal" flat="flat" @click="deliverMealDialog = false; deliverOrder()">
 									Yes
 								</v-btn>
 							</v-card-actions>
@@ -56,7 +56,7 @@
 
 	export default {
 		props: ['item'],
-		mixin: [toasts],
+		mixins: [toasts],
 		data: () => ({
 			deliverMealDialog: false
 		}),
@@ -77,17 +77,21 @@
 				}
 			},
             deliverOrder() {
+				this.$store.commit('showProgressBar', {indeterminate: true});
 				axios.patch(`/orders/${this.item.order_id}`, {state: 'delivered'})
 					.then(response => {
 						if (response.status === 200) {
-							toasts.showSuccessToast('Successfully changed the order to delivered');
 							this.$emit('onOrderChange');
+							this.showSuccessToast('Successfully changed the order to delivered');
+							this.$store.commit('hideProgressBar');
 						} else {
-							toasts.showErrorToast('Successfully changed the order to delivered')
+							this.showErrorToast('Successfully changed the order to delivered')
+							this.$store.commit('hideProgressBar');
 						}
 					})
 					.catch(error => {
-						toasts.showErrorLog('Failed to changed the order to delivered', error);
+						this.showErrorLog('Failed to changed the order to delivered', error);
+						this.$store.commit('hideProgressBar');
 					})
             }
 		}

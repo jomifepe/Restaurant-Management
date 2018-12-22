@@ -1,16 +1,15 @@
 <template>
     <v-layout align-end justify-end>
         <div class="text-xs-center">
-            <v-chip small :color="userType.color" text-color="white">
+            <v-chip small :color="getUserAppearence(user).color" text-color="white">
                 <v-avatar>
-                    <v-icon>{{ userType.icon }}</v-icon>
+                    <v-icon>{{ getUserAppearence(user).icon }}</v-icon>
                 </v-avatar>
-                {{ this.$store.state.user.type }}
+                {{ user.type }}
             </v-chip>
             <v-chip small>{{ shiftElapsedTime }}</v-chip>
-            <v-btn small depressed
-                   :color="this.$store.getters.hasUserShiftStarted ? 'error' : 'success'" @click="toggleShift">
-                {{ this.$store.getters.hasUserShiftStarted ? 'End' : 'Start' }} shift
+            <v-btn small depressed :color="!!user.shift_active ? 'error' : 'success'" @click="toggleShift">
+                {{ !!user.shift_active ? 'End' : 'Start' }} shift
             </v-btn>
         </div>
     </v-layout>
@@ -18,77 +17,59 @@
 
 <script>
     import axios from 'axios';
-    const moment = require('moment');
+    import moment from 'moment';
+    import {toasts, helper} from '../mixin';
 
     export default {
         name: "WorkerInfo",
-        data() {
-            return {
-                shiftElapsedTimeIntervalId: null,
-                shiftElapsedTime: "",
-                userType: {
-                    icon: '',
-                    color: ''
-                },
-            }
-        },
+        mixins: [toasts, helper],
+        props: ['user'],
+        data: () => ({
+            shiftElapsedTimeIntervalId: null,
+            shiftElapsedTime: ''
+        }),
         methods: {
-            joinSockets(user){
-                this.$socket.emit('user_enter', user);
-            },
-            leaveSockets(user){
-                this.$socket.emit('user_exit', user);
-            },
             toggleShift() {
-                if (this.$store.getters.hasUserShiftStarted) {
+                if (this.user.shift_active) {
                     this.endShift();
-                    this.showLastShiftTime();
                 } else {
                     this.startShift();
-                    this.startShiftElapsedTimeUpdated();
                 }
             },
             startShift() {
-                let user = this.$store.state.user;
-                user.last_shift_start = moment().format("YYYY-MM-DD HH:mm:ss");
-                user.shift_active = 1;
-
-                this.updateUser(user, () => this.startShiftElapsedTimeUpdated());
-                this.joinSockets(user);
+                this.updateUser(true).then((updatedUser) => {
+                    this.$store.commit('setUser', updatedUser);
+                    this.startShiftElapsedTimeUpdated();
+                    this.joinSockets(updatedUser);
+                });
             },
             endShift() {
-                let user = this.$store.state.user;
-                user.last_shift_end = moment().format("YYYY-MM-DD HH:mm:ss");
-                user.shift_active = 0;
-
-                this.updateUser(user, () => this.showLastShiftTime())
-                this.leaveSockets(user);
+                this.updateUser(false).then((updatedUser) => {
+                    this.$store.commit('setUser', updatedUser);
+                    this.showLastShiftTime();
+                    this.leaveSockets(updatedUser);
+                });
             },
-            updateUser(user, success) {
-                let photoPathParts = user.photo_url.split("/");
-                user.photo_url = photoPathParts[photoPathParts.length - 1];
-
-                axios.put(`/users/${user.id}`, user)
-                    .then(response => {
-                        if (response.status === 200) {
-                            this.$store.commit('setUser', response.data.data);
-                            success();
-                        } else {
-                            this.$toasted.show('Failed update shift state', {
-                                icon : 'error',
-                                position: "bottom-center",
-                                duration : 5000
-                            });
-                        }
+            updateUser(startShift) {
+                return new Promise(resolve => {
+                    axios.patch(`/users/${this.user.id}`, {
+                        [startShift ? 
+                            'last_shift_start' : 
+                            'last_shift_end'
+                        ]: moment().format("YYYY-MM-DD HH:mm:ss"),
+                        shift_active: +startShift
                     })
-                    .catch(error => {
-                        console.log(error);
-                        this.$toasted.show('Failed to update shift state', {
-                            icon : 'error',
-                            position: "bottom-center",
-                            duration : 5000
-                        });
-                    })
+                        .then(response => {
+                            if (response.status === 200) {
+                                resolve(response.data.data);
+                            } else {
+                                this.showErrorToast('Failed update shift state');
+                            }
+                        })
+                        .catch(error => {
+                            this.showErrorLog('Failed update shift state', error);
+                        })
+                })
             },
             startShiftElapsedTimeUpdated() {
                 this.clearShiftTimer();
@@ -113,34 +94,25 @@
                     clearInterval(this.shiftElapsedTimeIntervalId);
                 }
             },
-            getUserTypeIcon() {
-                switch (this.$store.state.user.type) {
-                    case 'manager':
-                        this.userType.icon = 'supervisor_account';
-                        this.userType.color = 'red';
-                        break;
-                    case 'waiter':
-                        this.userType.icon = 'sentiment_satisfied_alt';
-                        this.userType.color = 'primary';
-                        break;
-                    case 'cook':
-                        this.userType.icon = 'restaurant';
-                        this.userType.color = 'orange';
-                        break;
-                    case 'cashier':
-                        this.userType.icon = 'attach_money';
-                        this.userType.color = 'teal';
-                        break;
-                }
+            joinSockets(user) {
+                this.$socket.emit('user_enter', user);
+            },
+            leaveSockets(user) {
+                this.$socket.emit('user_exit', user);
             }
         },
         mounted() {
-            this.getUserTypeIcon();
-            if (this.$store.getters.hasUserShiftStarted) {
+            if (this.user.shift_active) {
                 this.startShiftElapsedTimeUpdated();
             } else {
                 this.showLastShiftTime();
             }
+            this.$store.watch(() => {
+                if (!this.$store.state.user) {
+                    console.info("Cleared shift timer");
+                    this.clearShiftTimer();
+                }
+            });
         }
     }
 </script>

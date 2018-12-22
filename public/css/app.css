@@ -15155,6 +15155,14 @@ readers do not read off random characters that represent icons */
   font-weight: 400;
 }
 
+.v-chip.no-margin-left {
+  margin-left: 0px !important;
+}
+
+.v-avatar .bordered {
+  border: 3px solid white;
+}
+
 .text-capitalize {
   text-transform: capitalize;
 }
@@ -15185,6 +15193,14 @@ readers do not read off random characters that represent icons */
 
 .rounded {
   border-radius: 10px;
+}
+
+.rounded-1 {
+  border-radius: 15px;
+}
+
+.rounded-2 {
+  border-radius: 20px;
 }
 
 .v-card--reveal {

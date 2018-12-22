@@ -2,12 +2,10 @@
     <v-container class="blue-grey lighten-5 pa-5 rounded" fluid>
         <v-layout wrap>
             <v-flex xs12>
-                <v-form v-model="valid">
-                    <v-text-field box
-                        v-model="usernameOrEmail"
-                        :rules="usernameOrEmailRules"
+                <v-form v-model="valid" @keyup.enter.native="login">
+                    <v-text-field box v-model="usernameOrEmail" :rules="usernameOrEmailRules"
                         label="Username or email"
-                        required></v-text-field>
+                        required autofocus></v-text-field>
                     <v-text-field box
                         v-model="password"
                         :rules="passwordRules"
@@ -22,12 +20,6 @@
             </v-flex>
         </v-layout>
     </v-container>
-        <!-- <form class="jumbotron  text-center border border-light p-5">
-            <p class="h4 mb-4">Login</p>
-            <input type="email" id="defaultLoginFormEmail" class="form-control mb-4" placeholder="E-mail" v-model.trim="user.email">
-            <input type="password" id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password" v-model="user.password">
-            <button class="btn btn-info btn-block my-4" type="submit" v-on:click.prevent="login">Login</button>
-        </form> -->
 </template>
 
 <script type="text/javascript">

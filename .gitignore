@@ -52,8 +52,11 @@ app/storage/
 Homestead.yaml
 Homestead.json
 /node_modules
-#/public/hot
+/public/hot
 /public/storage
+/public/js
+/public/css
+/public/mix-manifest.json
 /storage/*.key
 /vendor
 /.idea
@@ -65,7 +68,6 @@ yarn-error.log
 #/public/css
 #/public/mix-manifest.json
 phpunit.dusk.xml
-/app/Http/Controllers/LoginControllerAPI.php
 
 
 # Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer

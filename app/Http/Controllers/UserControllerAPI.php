@@ -22,12 +22,14 @@ class UserControllerAPI extends Controller
             return UserResource::collection(User::all());
         }
 
-        /*Caso não se pretenda fazer uso de Eloquent API Resources (https://laravel.com/docs/5.5/eloquent-resources), é possível implementar com esta abordagem:
-        if ($request->has('page')) {
-            return User::with('department')->paginate(5);;
-        } else {
-            return User::with('department')->get();;
-        }*/
+        /*
+            Caso não se pretenda fazer uso de Eloquent API Resources (https://laravel.com/docs/5.5/eloquent-resources), é possível implementar com esta abordagem:
+            if ($request->has('page')) {
+                return User::with('department')->paginate(5);;
+            } else {
+                return User::with('department')->get();;
+            }
+        */
     }
 
     public function show($id)
@@ -37,11 +39,11 @@ class UserControllerAPI extends Controller
 
     public function store(Request $request)
     {
-//        $request->validate([
-//                'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
-//                'username' => 'required|string|max:30',
-//                'email' => 'required|email|unique:users'
-//            ]);
+        $request->validate([
+            'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
+            'username' => 'required|string|max:30',
+            'email' => 'required|email|unique:users'
+        ]);
 
         $user = new User();
         $user->fill($request->all());
@@ -50,19 +52,29 @@ class UserControllerAPI extends Controller
         return response()->json(new UserResource($user), 201);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) 
     {
         $request->validate([
-            'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
-            'username' => 'required|string|max:30',
-            'email' => 'required|email|unique:users,email,'.$id
+            'name' => 'min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
+            'username' => 'string|max:30',
+            'email' => 'email|unique:users,email,'.$id,
         ]);
 
-
         $user = User::findOrFail($id);
-//        $user->photo_url = end(explode("/", $user->photo_url));
-        $user->password = bcrypt($user->password);
-        $user->update($request->all());
+        if ($request->current_password) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'message' => 'Incorrect current password',
+                    'status' => 401
+                ], 401);
+            }
+
+            $user->password = bcrypt($request->password);
+        } else {
+            $user->fill($request->all());
+        }
+
+        $user->save();
         return new UserResource($user);
     }
 

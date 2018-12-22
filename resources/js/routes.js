@@ -23,7 +23,6 @@ export default [
         children: [
             { path: '', component: Dashboard, name: 'dashboard' },
             { path: 'profile', component: Profile, name: 'profile' },
-            { path: 'meals', component: Meals, name: 'meals' },
             { path: 'orders', component: Orders, name: 'orders' },
             { path: 'meals', component: Meals, name: 'meals',
                 children: [
