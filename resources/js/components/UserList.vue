@@ -109,7 +109,17 @@
                 <v-btn color="primary" @click="getUsers">Reset</v-btn>
             </template>
         </v-data-table>
-        <UserEdit v-if="showEdit" :user="userToEdit"></UserEdit>
+
+        <v-dialog v-model="showEdit" max-width="2000px">
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Edit User</span>
+                </v-card-title>
+                <UserEdit :user="Object.assign({}, userToEdit)" v-if="showEdit" @onUpdateUserList="close(), getUsers()"></UserEdit>
+                <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+            </v-card>
+        </v-dialog>
+
     </div>
 </template>
 
@@ -123,39 +133,41 @@
             UserEdit,
             Errors},
         mixins: [toasts],
-        data: () => ({
-            loadingTableEffect: true,
-            dialog: false,
-            showEdit: false,
-            filter:'',
-            hasValidationErrors: false,
-            validationErrors:[],
-            userToEdit: null,
-            headers: [
-                { text: 'Photo', value: 'photo_url '},
-                { text: 'Full Name', align: 'left', value: 'name'},
-                { text: 'Username', value: 'username' },
-                { text: 'Type', value: 'type' },
-                { text: 'Email', value: 'email' },
-                { text: 'Blocked', value: 'blocked'},
-                { text: 'Action', value: ''}
-            ],
-            users: [],
-            editedIndex: -1,
-            editedItem: {
-                name: '',
-                username: '',
-                email: '',
-                type:'',
-                photo_url: null,
+        data: function() {
+            return {
+                loadingTableEffect: true,
+                dialog: false,
+                showEdit: false,
+                filter: '',
+                hasValidationErrors: false,
+                validationErrors: [],
+                userToEdit: null,
+                headers: [
+                    {text: 'Photo', value: 'photo_url '},
+                    {text: 'Full Name', align: 'left', value: 'name'},
+                    {text: 'Username', value: 'username'},
+                    {text: 'Type', value: 'type'},
+                    {text: 'Email', value: 'email'},
+                    {text: 'Blocked', value: 'blocked'},
+                    {text: 'Action', value: ''}
+                ],
+                users: [],
+                editedIndex: -1,
+                editedItem: {
+                    name: '',
+                    username: '',
+                    email: '',
+                    type: '',
+                    photo_url: null,
 
-            },
-            defaultItem: {
-                name: '',
-                username: '',
-                email: '',
+                },
+                defaultItem: {
+                    name: '',
+                    username: '',
+                    email: '',
+                }
             }
-        }),
+        },
         methods: {
             getUsers () {
                 this.loadingTableEffect = true;
@@ -190,18 +202,10 @@
                 }
             },
             editItem (item) {
+                this.userToEdit = item;
+                console.log(this.userToEdit);
                 this.showEdit = true;
-                this.userToEdit = iterationCopy(item);
 
-                function iterationCopy(src) {
-                    let target = {};
-                    for (let prop in src) {
-                        if (src.hasOwnProperty(prop)) {
-                            target[prop] = src[prop];
-                        }
-                    }
-                    return target;
-                }
             },
             deleteItem (item) {
                 axios.delete('users/' + item.id).then(response => {
@@ -220,7 +224,8 @@
                 });
             },
             close () {
-                this.dialog = false;
+                //this.dialog = false;
+                this.showEdit = false;
                 setTimeout(() => {
                     this.editedItem = Object.assign({}, this.defaultItem);
                     this.editedIndex = -1

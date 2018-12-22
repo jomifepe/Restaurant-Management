@@ -1,17 +1,17 @@
 <template>
 		<v-form ref="form" v-model="valid" lazy-validation>
-			<v-text-field solo v-model="user.email"
+			<v-text-field solo v-model="currentUser.email"
 						  label="E-mail"
 						  :validate-on-blur="validateOnBlur"
 						  :clearable="false"
-						  disabled readonly></v-text-field>
+						  this.disabled this.readonly></v-text-field>
 			<v-text-field name="Name"
-						  v-model="user.name"
+						  v-model="currentUser.name"
 						  :rules="nameRules"
 						  :validate-on-blur="validateOnBlur"
 						  label="Name"></v-text-field>
 			<v-text-field name="username"
-						  v-model="user.username"
+						  v-model="currentUser.username"
 						  :rules="usernameRules"
 						  :validate-on-blur="validateOnBlur"
 						  label="Username"></v-text-field>
@@ -54,6 +54,7 @@
 		props: ['user'],
 		data() {
             return {
+                currentUser: this.user,
                 currentPassword: "",
                 newPassword: "",
                 repeatPassword: "",
@@ -100,17 +101,29 @@
 	    methods: {
             submit () {
                 if (this.$refs.form.validate()) {
-                    axios.put(`/users/${this.user.id}`, this.user)
+                    axios.put(`/users/${this.currentUser.id}`, this.currentUser)
                         .then(response => {
                             if (response.status === 200) {
-                                this.user = response.data.data;
+                                this.currentUser = response.data.data;
                                 // Object.assign(this.user, response.data.data);
-                                this.$store.commit("setUser", this.user);
+								if(this.currentUser.id === this.$store.state.user.id) {
+                                    this.$store.commit("setUser", this.currentUser);
+                                }else{
+									this.$emit('onUpdateUserList');
+								}
                             }
                         });
                 }
             }
-        }
+        },
+		computed:{
+		    disabled(){
+		        this.$store.state.user.type === 'manager' ? '':'disabled';
+			},
+            readonly(){
+                this.$store.state.user.type === 'manager' ? '':'readonly';
+			}
+		}
 	}
 </script>
 
