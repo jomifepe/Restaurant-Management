@@ -46,6 +46,9 @@ Route::post('items/update/{id}', 'ItemControllerAPI@updatePost');
 Route::get('meals/{id}/tableNumber', 'MealControllerAPI@tableNumber')->name('meal.tableNumber');
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
 Route::get('meals/table/${tableNumber}', 'MealControllerAPI@tableMeal')->name('meal.table');
+Route::get('manager/meals', 'MealControllerAPI@managerIndex');
+
+
 //get waiter id from a meal
 Route::get('meals/{mealId}/waiter', 'MealControllerAPI@getWaiter')->name('meal.waiter');
 /* get all the orders for a specific meal */

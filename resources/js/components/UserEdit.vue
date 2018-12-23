@@ -108,7 +108,6 @@
 
 
                     if(this.hasNewPhoto){
-                        console.log('with photo');
                         let form = new FormData;
                         if (this.isManager()) {
                             form.append('email', user.email);
@@ -125,7 +124,6 @@
 
                         axios.post('users/update/'+user.id, form).then(response =>{
                             this.userToEdit = response.data.data;
-                            console.log(this.userToEdit);
                             if (this.userToEdit.id === this.$store.state.user.id) {
                                 this.$store.commit("setUser", this.userToEdit);
                             }
@@ -139,7 +137,6 @@
                             }
                         });
                     }else {
-                        console.log('without photo');
                         axios.put(`/users/${user.id}`, user)
                             .then(response => {
                                 if (response.status === 200) {
@@ -179,9 +176,7 @@
             },
         },
 		mounted() {
-		    console.log('Mounted');
 		    this.userToEdit = Object.assign({}, this.user);
-		    console.log(this.userToEdit);
 			this.fillUser();
 		},
         computed: {

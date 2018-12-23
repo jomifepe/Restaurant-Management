@@ -1,10 +1,19 @@
 <template>
-    <span> HELLO FROM DASHBOARD</span>
+    <div>
+        <span> HELLO FROM DASHBOARD</span>
+
+        <Invoices></Invoices>
+        <Meals></Meals>
+
+    </div>
 </template>
 
 <script>
+    import Invoices from "./Invoices";
+    import Meals from "./Meals"
     export default {
-        name: "Dashboard"
+        name: "Dashboard",
+        components: {Invoices, Meals}
     }
 </script>
 

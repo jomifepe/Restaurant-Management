@@ -4,7 +4,7 @@
             <v-flex xs12>
                 <v-toolbar flat color="gray">
                     <v-toolbar-title>
-                        My Meals 
+                        My Meals
                         <span class="body-1">(click to display a meal's orders)</span>
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
@@ -13,11 +13,11 @@
                 <v-card>
                     <v-card-title>
                         <v-spacer></v-spacer>
-                        <v-text-field v-model="search" append-icon="search" 
-                            label="Search" single-line hide-details></v-text-field>
+                        <v-text-field v-model="search" append-icon="search"
+                                      label="Search" single-line hide-details></v-text-field>
                     </v-card-title>
                     <v-data-table :headers="myMealsHeaders" :items="meals" class="elevation-1"
-                            :search="search" :pagination.sync="pagination" :loading="myMealsProgressBar">
+                                  :search="search" :pagination.sync="pagination" :loading="myMealsProgressBar">
                         <v-progress-linear slot="progress" color="blue-grey" indeterminate></v-progress-linear>
                         <template slot="items" slot-scope="props">
                             <tr class="clickable" @click="showMealItems(props.item)">
@@ -29,8 +29,8 @@
                                     <strong>{{ props.item.state }}</strong>
                                 </td>
                                 <td class="justify-center layout px-0">
-                                    <v-icon small v-if="props.item.state === 'active'" 
-                                        @click="askToConfirmMealTermination(props.item)">
+                                    <v-icon small v-if="props.item.state === 'active'"
+                                            @click="askToConfirmMealTermination(props.item)">
                                         fas fa-user-check
                                     </v-icon>
                                 </td>
@@ -43,35 +43,35 @@
                 <router-view></router-view>
             </v-flex>
             <v-dialog v-model="terminateMealDialog" max-width="450">
-				<v-card>
-					<v-card-text class="subheading">
-						Are you sure you want to declare this meal as <span class="orange--text darken-1">terminated</span> ?
-					</v-card-text>
-					<v-card-actions>
-						<v-spacer></v-spacer>
-						<v-btn flat @click="terminateMealDialog = false; mealToTerminate = null">
-							No
-						</v-btn>
-						<v-btn color="orange darken-1" flat="flat" @click="performMealTermination">
-							Yes
-						</v-btn>
-					</v-card-actions>
-				</v-card>
-			</v-dialog>
+                <v-card>
+                    <v-card-text class="subheading">
+                        Are you sure you want to declare this meal as <span class="orange--text darken-1">terminated</span> ?
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn flat @click="terminateMealDialog = false; mealToTerminate = null">
+                            No
+                        </v-btn>
+                        <v-btn color="orange darken-1" flat="flat" @click="performMealTermination">
+                            Yes
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
             <v-dialog v-model="cancelOrdersDialog" max-width="450">
-				<v-card>
-					<v-card-text class="subheading">
-						This meal has orders that were not delivered. Do you want to cancel these orders?
-					</v-card-text>
-					<v-card-actions>
-						<v-spacer></v-spacer>
-						<v-btn flat @click="cancelOrdersDialog = false">No</v-btn>
-						<v-btn color="red accent-3" flat="flat" @click="cancelOrders">
-							Yes
-						</v-btn>
-					</v-card-actions>
-				</v-card>
-			</v-dialog>
+                <v-card>
+                    <v-card-text class="subheading">
+                        This meal has orders that were not delivered. Do you want to cancel these orders?
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn flat @click="cancelOrdersDialog = false">No</v-btn>
+                        <v-btn color="red accent-3" flat="flat" @click="cancelOrders">
+                            Yes
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-layout>
     </v-container>
 </template>
@@ -81,11 +81,11 @@
     import MealOrders from './MealOrders';
     import axios from 'axios';
     import moment from 'moment';
-    import {toasts} from '../mixin';
+    import {toasts, util} from '../mixin';
 
     export default {
         name: "Orders",
-        mixins: [toasts],
+        mixins: [toasts, util],
         components: {
             CreateMeal,
             MealOrders
@@ -115,13 +115,21 @@
         methods: {
             loadMeals() {
                 this.myMealsProgressBar = true;
-                axios.get(`/meals/waiter/${this.$store.state.user.id}`)
-                    .then(response => {
-                        if (response.status === 200) {
+                if(this.isManager()){
+                    axios.get('manager/meals')
+                        .then(response => {
                             this.meals = response.data.data;
                             this.myMealsProgressBar = false;
-                        }
-                    });
+                        });
+                }else {
+                    axios.get(`/meals/waiter/${this.$store.state.user.id}`)
+                        .then(response => {
+                            if (response.status === 200) {
+                                this.meals = response.data.data;
+                                this.myMealsProgressBar = false;
+                            }
+                        });
+                }
             },
             formatDate: date => moment(date).format("YYYY-MM-DD, HH:mm"),
             onMealCreated(tableNumber) {
@@ -172,8 +180,8 @@
                     .catch(error => {
                         this.showErrorLog('Failed to cancel meal orders', error);
                     })
-                
-                
+
+
             },
             cancelOrder(orderIndex, callback) {
                 let order = this.notDeliveredOrders[orderIndex];
@@ -182,7 +190,7 @@
                 axios.patch(`/orders/${order.id}`, order)
                     .then(response => {
                         if (response.status === 200) {
-                            this.$store.commit('showProgressBar', {'indeterminate': false, 
+                            this.$store.commit('showProgressBar', {'indeterminate': false,
                                 'value': (orderIndex + 1) * (100 / this.notDeliveredOrders.length)
                             });
                             if (++orderIndex !== this.notDeliveredOrders.length) {
@@ -201,7 +209,7 @@
                         this.showErrorLog(`Failed to cancel meal order #${order.id}`, error);
                         this.$store.commit('hideProgressBar');
                     })
-                
+
             },
             cancelOrders() {
                 this.cancelOrdersDialog = false;

@@ -20,6 +20,13 @@ class MealControllerAPI extends Controller
         return MealResource::collection(Meal::all());
     }
 
+    public function managerIndex()
+    {
+        return MealResource::collection(Meal::whereIn('state', ['active', 'terminated'])->get());
+    }
+
+
+
     /**
      * Store a newly created resource in storage.
      *

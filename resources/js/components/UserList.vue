@@ -176,7 +176,6 @@
             getUsers () {
                 this.loadingTableEffect = true;
                 axios.get('users/all').then(response => {
-                    console.log(response.data);
                     this.users = response.data.data;
                     this.loadingTableEffect = false;
                 }).catch(error => {
@@ -186,7 +185,6 @@
             },
             blockUser(user){
                 axios.put('user/' + user.id).then(response => {
-                    console.log(response.data);
                     this.showSuccessToast(`User ${response.data} successfuly`);
                     this.getUsers();
                 }).catch(error => {
@@ -207,7 +205,6 @@
             },
             editItem (item) {
                 this.userToEdit = item;
-                console.log(this.userToEdit);
                 this.showEdit = true;
 
             },
@@ -246,9 +243,7 @@
                     form.append('photo_url', this.editedItem.photo_url);  /** HAS IMAGE ? -> ADD TO FORM**/
                 }
 
-                console.log(this.editedItem);
                 axios.post('users', form).then(response => {
-                    console.log(response.data.data);
                     this.getUsers();
                     this.close()
                 }).catch(error => {
@@ -291,7 +286,6 @@
         },
 
         created () {
-            console.log(this.$route.name);
             this.getUsers()
         },
     }
