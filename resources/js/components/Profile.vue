@@ -22,7 +22,7 @@
             </v-list>
             <v-flex xs12 class="white elevation-2 rounded mt-3">
                 <v-container>
-                    <UserEdit :user="Object.assign({}, user)"></UserEdit>
+                    <UserEdit :user="user"></UserEdit>
                 </v-container>
             </v-flex>
         </v-layout>

@@ -88,16 +88,11 @@ class UserControllerAPI extends Controller
         $data = $request->validate([
             'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
             'username' => 'required|string|max:30',
-            'email' => 'required|email|unique:users,email,'.$id
+            'email' => 'required|email|unique:users,email,'.$id,
+            'password' => 'nullable|numeric',
+            'current_password' => 'nullable|numeric',
         ]);
-
         $user = User::findOrFail($id);
-//        $user->photo_url = end(explode("/", $user->photo_url));
-        $user->password = bcrypt($user->password);
-        $user->name = $data["name"];
-        $user->username = $data["username"];
-        $user->email = $data["email"];
-        $user->update();
 
         if ($request->current_password) {
             if (!Hash::check($request->current_password, $user->password)) {
@@ -108,11 +103,13 @@ class UserControllerAPI extends Controller
             }
 
             $user->password = bcrypt($request->password);
-        } else {
-            $user->fill($request->all());
         }
 
-        $user->save();
+        $user->name = $data["name"];
+        $user->username = $data["username"];
+        $user->email = $data["email"];
+
+        $user->update();
         return new UserResource($user);
     }
 
@@ -122,13 +119,17 @@ class UserControllerAPI extends Controller
          $request->validate([
             'name' => 'required|String',
             'username' => 'required|String|unique:users,username,'.$id.',id',
-            'email' => 'required|email|unique:users,email,'.$id.',id',
+            'email' => 'nullable|email|unique:users,email,'.$id.',id',
             //'type' => 'required|in:manager,cook,waiter,cashier',
-            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'password' => 'nullable|numeric',
+            'current_password' => 'nullable|numeric',
         ]);
 
 
         $user = User::findOrFail($id);
+
+
 
         $user->fill($request->all());
 
@@ -139,7 +140,21 @@ class UserControllerAPI extends Controller
             $user->photo_url = $photoName;
         }
 
-        $user->password = bcrypt($user->password);
+
+
+        if ($request->current_password) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'message' => 'Incorrect current password',
+                    'status' => 401
+                ], 401);
+            }
+
+            $user->password = bcrypt($request->password);
+        }
+
+
+
         $user->update();
         return new UserResource($user);
     }
