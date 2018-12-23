@@ -116,7 +116,7 @@ class UserControllerAPI extends Controller
 
 
     public function postUpdate(Request $request, $id){
-         $request->validate([
+         $data = $request->validate([
             'name' => 'required|String',
             'username' => 'required|String|unique:users,username,'.$id.',id',
             'email' => 'nullable|email|unique:users,email,'.$id.',id',
@@ -128,10 +128,7 @@ class UserControllerAPI extends Controller
 
 
         $user = User::findOrFail($id);
-
-
-
-        $user->fill($request->all());
+        //$user->fill($request->all());
 
         if ($request->hasFile('photo_url'))
         {
@@ -139,8 +136,6 @@ class UserControllerAPI extends Controller
             $photoName = explode('/', $fileName)[1];
             $user->photo_url = $photoName;
         }
-
-
 
         if ($request->current_password) {
             if (!Hash::check($request->current_password, $user->password)) {
@@ -153,8 +148,9 @@ class UserControllerAPI extends Controller
             $user->password = bcrypt($request->password);
         }
 
-
-
+        $user->name = $data["name"];
+        $user->username = $data["username"];
+        $user->email = $data["email"];
         $user->update();
         return new UserResource($user);
     }

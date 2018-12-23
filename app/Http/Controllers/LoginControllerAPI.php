@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\User;
+use Illuminate\Support\Facades\DB;
 
 define('YOUR_SERVER_URL', 'http://project.dad');
 // Check "oauth_clients" table for next 2 values:
@@ -14,6 +15,20 @@ class LoginControllerAPI extends Controller
 {
     public function login(Request $request)
     {
+        if($request->input("username")){
+            $isBlocked = DB::table('users')->select('blocked')->where('username', '=', $request->username)->get();
+        }else{
+            $isBlocked = DB::table('users')->select('blocked')->where('email', '=', $request->email)->get();
+        }
+
+        if($isBlocked["0"]->blocked==1){
+            /*return response()->json(
+                ['msg' => 'Unauthorized user is blocked'],
+                401
+            );*/
+            return response()->json("Unauthorized user is blocked", 401);
+        }
+
         $userEmail = $request->email;
         if (empty($userEmail)) {
             $user = User::where('username', $request->username)->first();
@@ -37,10 +52,11 @@ class LoginControllerAPI extends Controller
         if ($errorCode == '200') {
             return json_decode((string)$response->getBody(), true);
         } else {
-            return response()->json(
+            return response()->json("User credentials are invalid", $errorCode);
+           /* return response()->json(
                 ['msg' => 'User credentials are invalid'],
                 $errorCode
-            );
+            );*/
         }
     }
 

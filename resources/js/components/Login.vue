@@ -73,11 +73,16 @@
                         toast.goAway(1);
                     })
                     .catch(error => {
-                        // console.log(error);
+                        console.log(error.response.data);
                         this.$store.commit('clearUserAndToken');
-                        this.$toasted.show(`Failed to sign in due to invalid credentials`, { 
+                        /*this.$toasted.show(`Failed to sign in due to invalid credentials`, {
                             icon: "error",
                             position: "bottom-center", 
+                            duration : 4000
+                        });*/
+                        this.$toasted.show(error.response.data, {
+                            icon: "error",
+                            position: "bottom-center",
                             duration : 4000
                         });
                     })

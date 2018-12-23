@@ -37,7 +37,6 @@ export default [
             { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'},
             { path: 'invoices', component: Invoices, name: 'pending.invoices'},
             { path: 'invoices/print', component: PrintInvoices, name: 'print.invoices'},
-            { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'},
             { path: 'users', component: UserList, name:'users'}
         ]
     }
