@@ -106,6 +106,7 @@
                         user.current_password = this.currentPassword;
                     }
 
+
                     if(this.hasNewPhoto){
                         console.log('with photo');
                         let form = new FormData;
