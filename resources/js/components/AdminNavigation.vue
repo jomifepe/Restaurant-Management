@@ -40,19 +40,69 @@
                 </v-list-tile>
             </v-list>
         </v-navigation-drawer>
-        <v-navigation-drawer v-model="rightDrawer" temporary right app style="z-index: 50">
-            <v-toolbar flat>
-                <v-list>
-                    <v-list-tile>
-                        <v-list-tile-title class="title">
-                            Notifications
-                        </v-list-tile-title>
-                    </v-list-tile>
-                </v-list>
+        <v-navigation-drawer
+                v-if="user.shift_active"
+                v-model="rightDrawer"
+                temporary
+                right
+                app
+                style="z-index: 50"
+        >
+            <v-toolbar flat>Notifications
+                <v-dialog v-if="user.type !== 'manager'" v-model="dialog" width="500">
+                    <v-btn icon slot="activator">
+                        <v-icon>warning</v-icon>
+                    </v-btn>
+                    <v-card>
+                        <v-card-title class="headline grey lighten-2" primary-title>
+                            <v-flex xs12 sm6>
+                                <v-text-field v-model="titleNotManager" single-line label="Small description"></v-text-field>
+                            </v-flex>
+                        </v-card-title>
+                        <v-card-text>
+                            <v-flex xs6>
+                                <v-textarea v-model="textNotManager" box auto-grow name="input-7-1" label="Description"></v-textarea>
+                            </v-flex>
+                        </v-card-text>
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="primary" flat @click="cancelDialog()">Cancel</v-btn>
+                            <v-btn color="primary" flat @click="sendNotificationToManagers()">Send</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
             </v-toolbar>
             <v-divider></v-divider>
+            <v-card>
+                <v-list three-line>
+                    <template v-for="(item, index) in notifications">
+                        <v-list-tile>
+                            <v-list-tile-content>
+                                <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                                <v-list-tile-sub-title>{{ item.text }}</v-list-tile-sub-title>
+                            </v-list-tile-content>
+
+                            <v-list-tile-action>
+                                <v-list-tile-action-text>{{ item.action }}</v-list-tile-action-text>
+                            </v-list-tile-action>
+
+                            <v-btn @click="dismissNotification(index)" icon>
+                                <v-icon>check_circle</v-icon>
+                            </v-btn>
+                            <v-btn :to="item.forward" v-if="item.forward" icon>
+                                <v-icon>forward</v-icon>
+                            </v-btn>
+                        </v-list-tile>
+                        <v-divider v-if="index + 1 < items.length" :key="index"></v-divider>
+                    </template>
+                </v-list>
+            </v-card>
         </v-navigation-drawer>
+
         <v-toolbar :clipped-left="clippedToolbar" color="blue-grey darken-1" dark dense app style="z-index: 40">
+
             <v-toolbar-side-icon @click.stop="drawer = !drawer" title="Toggle menu"></v-toolbar-side-icon>
             <v-toolbar-title>
                 {{ this.$store.state.panelTitle }}
@@ -90,15 +140,16 @@
             </v-container>
         </v-content>
         <v-footer height="auto" app>
-            <WorkerInfo :user="user"></WorkerInfo>
+            <WorkerInfo :user="user"  @onClearNotifications="clearNotifications()"></WorkerInfo>
         </v-footer>
     </v-app>
 </template>
 
 <script>
-    import WorkerInfo from './WorkerInfo';
-    import axios from 'axios';
-    import {helper} from '../mixin.js';
+import WorkerInfo from "./WorkerInfo";
+import axios from "axios";
+const moment = require("moment");
+import {helper} from '../mixin.js';
 
     export default {
         name: "AdminNavigation",
@@ -107,6 +158,10 @@
             WorkerInfo
         },
         data: () => ({
+            notifications: [],
+            dialog: false,
+            titleNotManager: '',
+            textNotManager: '',
             clippedNavDrawer: false,
             clippedToolbar: false,
             drawer: true,
@@ -142,20 +197,54 @@
                     icon: 'restaurant',
                     target: '/admin/orders',
                     visible: ['cook']},
+                {
+                    title: "Invoices",
+                    icon: "monetization_on",
+                    target: "/admin/invoices",
+                    visible: ["cashier", "manager"]
+                },
+                {
+                    title: "Print Invoices",
+                    icon: "print",
+                    target: "/admin/invoices/print",
+                    visible: ["cashier", "manager"]
+                }
             ],
             mini: true,
             right: null
         }),
         sockets: {
-            order_prepared(){
-              console.log("the order is prepared");
+            confirmation_sent_to_manager(data){
+                this.addNotification('Message sent', 'Good luck', false);
             },
-            user_enter(data){
-               console.log('Data recieved from the server when started shift = '+data+')');
+            message_from_worker(data){
+                this.addNotification(data[0].title, data[0].text, false);
             },
-            user_exit(data){
-                console.log('Data recieved from the server when ended shift = '+data+')');
+            order_prepared_cook(data) {
+                this.addNotification("Order send confirmation", data, false);
             },
+            order_received() {
+                this.addNotification("New Order", "New order arrived!", "/admin/orders");
+            },
+            order_prepared_waiter(mealId) {
+                this.addNotification(
+                    "My order is ready",
+                    "Meal '" + mealId + "' is ready",
+                    "/admin/meals/" + mealId + "/orders"
+                );
+            },
+            user_enter(data) {
+                this.addNotification("Welcome!", data, false);
+                console.log(
+                    "Data recieved from the server when started shift = " + data + ")"
+                );
+            },
+            user_exit(data) {
+                //this.addNotification('goodbye',data, false);
+                console.log(
+                    "Data recieved from the server when ended shift = " + data + ")"
+                );
+            }
         },
         computed: {
             user() {
@@ -163,6 +252,39 @@
             }
         },
         methods: {
+            cancelDialog(){
+                this.dialog = false;
+                this.titleNotManager='';
+                this.textNotManager='';
+
+            },
+            sendNotificationToManagers(){
+                let message =
+                    [
+                        {
+                            'title': this.titleNotManager,
+                            'text': this.textNotManager
+                        }
+                    ]
+                this.$socket.emit('to_all_managers', message);
+                this.titleNotManager='';
+                this.textNotManager='';
+            },
+            clearNotifications() {
+                this.notifications = [];
+            },
+            dismissNotification(index) {
+                this.notifications.splice(index, 1);
+            },
+            addNotification(title, data, forward = true) {
+                let object = {
+                    title: title,
+                    text: data,
+                    action: moment().format("HH:mm"),
+                    forward: forward
+                };
+                this.notifications.push(object);
+            },
             logout() {
                 axios.post('logout')
                     .then(response => {

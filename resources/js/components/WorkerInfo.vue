@@ -29,6 +29,15 @@
             shiftElapsedTime: ''
         }),
         methods: {
+            clearNotifications(){
+                this.$emit('onClearNotifications');
+            },
+            joinSockets(user){
+                this.$socket.emit('user_enter', user);
+            },
+            leaveSockets(user){
+                this.$socket.emit('user_exit', user);
+            },
             toggleShift() {
                 if (this.user.shift_active) {
                     this.endShift();
@@ -48,13 +57,15 @@
                     this.$store.commit('setUser', updatedUser);
                     this.showLastShiftTime();
                     this.leaveSockets(updatedUser);
+                    this.clearNotifications();
+                   
                 });
             },
             updateUser(startShift) {
                 return new Promise(resolve => {
                     axios.patch(`/users/${this.user.id}`, {
-                        [startShift ? 
-                            'last_shift_start' : 
+                        [startShift ?
+                            'last_shift_start' :
                             'last_shift_end'
                         ]: moment().format("YYYY-MM-DD HH:mm:ss"),
                         shift_active: +startShift

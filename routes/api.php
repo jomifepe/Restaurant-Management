@@ -25,6 +25,8 @@ Route::middleware('auth:api')->get('users/me', 'UserControllerAPI@myProfile');
 Route::post('register', 'UserControllerAPI@store')->name('register');
 
 Route::get('items', 'ItemControllerAPI@index');
+Route::get('invoices/pending', 'InvoiceControllerAPI@pendingOrders')->name('invoices.pending');
+Route::get('invoices/paid', 'InvoiceControllerAPI@paidOrders')->name('invoices.paid');
 
 Route::apiResources(['meals'    => 'MealControllerAPI',
                      'invoices' => 'InvoiceControllerAPI',
@@ -33,7 +35,9 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
                      'users'    => 'UserControllerAPI',
                      'tables'    => 'TableControllerAPI']);
 
+
 Route::post('items/update/{id}', 'ItemControllerAPI@updatePost');
+Route::get('meals/{id}/tableNumber', 'MealControllerAPI@tableNumber')->name('meal.tableNumber');
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
 Route::get('meals/table/${tableNumber}', 'MealControllerAPI@tableMeal')->name('meal.table');
 //get waiter id from a meal
@@ -52,7 +56,5 @@ Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type'
 Route::put('table/restore/{id}', 'TableControllerAPI@restore');
 
 
-
-
-
 Route::get('orders/{id}/toprepare', 'OrderControllerAPI@toPrepare')->name('orders.toPrepare');
+
