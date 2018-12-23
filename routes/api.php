@@ -30,6 +30,7 @@ Route::get('items', 'ItemControllerAPI@index');
 Route::get('users/all', 'UserControllerAPI@indexManager');
 Route::put('user/{id}', 'UserControllerAPI@toggleBlockUser');
 Route::put('user/restore/{id}', 'UserControllerAPI@restore');
+Route::post('users/update/{id}', 'UserControllerAPI@postUpdate');
 
 Route::apiResources(['meals'    => 'MealControllerAPI',
                      'invoices' => 'InvoiceControllerAPI',
@@ -50,6 +51,8 @@ Route::get('orders/meal/{mealId}', 'OrderControllerAPI@mealOrders')->name('order
 Route::get('orders/meal/{mealId}/items', 'OrderControllerAPI@mealItems')->name('orders.meal.items');
 Route::post('orders/multiple', 'OrderControllerAPI@storeMultiple')->name('orders.store.multiple');
 Route::delete('orders/multiple', 'OrderControllerAPI@destroyMultiple')->name('orders.destroy.multiple');
+
+
 
 Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type');
 

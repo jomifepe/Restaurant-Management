@@ -1,13 +1,10 @@
 <template>
-    <h5 class="mt-4">Hello from Dashboard</h5>
+    <span> HELLO FROM DASHBOARD</span>
 </template>
 
 <script>
     export default {
-        name: "Dashboard",
-        mounted() {
-            this.$store.commit('setPanelTitle', 'Dashboard');
-        }
+        name: "Dashboard"
     }
 </script>
 

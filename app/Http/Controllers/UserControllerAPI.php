@@ -85,7 +85,7 @@ class UserControllerAPI extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
             'username' => 'required|string|max:30',
             'email' => 'required|email|unique:users,email,'.$id
@@ -95,7 +95,38 @@ class UserControllerAPI extends Controller
         $user = User::findOrFail($id);
 //        $user->photo_url = end(explode("/", $user->photo_url));
         $user->password = bcrypt($user->password);
-        $user->update($request->all());
+        $user->name = $data["name"];
+        $user->username = $data["username"];
+        $user->email = $data["email"];
+        $user->update();
+        return new UserResource($user);
+    }
+
+
+
+    public function postUpdate(Request $request, $id){
+         $request->validate([
+            'name' => 'required|String',
+            'username' => 'required|String|unique:users,username,'.$id.',id',
+            'email' => 'required|email|unique:users,email,'.$id.',id',
+            //'type' => 'required|in:manager,cook,waiter,cashier',
+            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
+
+
+        $user = User::findOrFail($id);
+
+        $user->fill($request->all());
+
+        if ($request->hasFile('photo_url'))
+        {
+            $fileName = Storage::disk('public')->putFile('profiles', Input::file('photo_url'));
+            $photoName = explode('/', $fileName)[1];
+            $user->photo_url = $photoName;
+        }
+
+        $user->password = bcrypt($user->password);
+        $user->update();
         return new UserResource($user);
     }
 

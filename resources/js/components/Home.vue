@@ -1,16 +1,12 @@
 <template>
-    <!--<navigation>-->
-        <h5 class="mt-4">Home page</h5>
-    <!--</navigation>-->
+    <h5 class="mt-4">Hello from Home</h5>
 </template>
 
 <script>
-    // import UserNavigation from './UserNavigation.vue';
-
     export default {
         name: "Home",
-        components: {
-            // 'navigation': UserNavigation
+        mounted() {
+            this.$store.commit('setPanelTitle', 'Home');
         }
     }
 </script>

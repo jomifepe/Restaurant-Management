@@ -104,9 +104,14 @@
 
                     {
                         title: 'Home',
-                        icon: 'dashboard',
+                        icon: 'fas fa-home',
                         target: '/admin',
                         visible: true },
+                    {
+                        title: 'Dashboard',
+                        icon: 'dashboard',
+                        target: '/admin/dashboard',
+                        visible: ['manager']},
                     {
                         title: 'Profile',
                         icon: 'person',

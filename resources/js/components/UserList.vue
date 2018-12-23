@@ -110,13 +110,17 @@
             </template>
         </v-data-table>
 
-        <v-dialog v-model="showEdit" max-width="2000px">
+        <v-dialog v-model="showEdit" v-if="showEdit">
             <v-card>
                 <v-card-title>
                     <span class="headline">Edit User</span>
                 </v-card-title>
-                <UserEdit :user="Object.assign({}, userToEdit)" v-if="showEdit" @onUpdateUserList="close(), getUsers()"></UserEdit>
-                <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                <v-card-text>
+                    <v-avatar class="ma-1" slot="activator" size="100px" >
+                        <img :src="this.userToEdit.photo_url" alt="Avatar">
+                    </v-avatar>
+                </v-card-text>
+                <UserEdit class="ma-3" :user="Object.assign({}, this.userToEdit)" @onUpdateUserList="close(), getUsers()" @onClose="close()"></UserEdit>
             </v-card>
         </v-dialog>
 
@@ -224,7 +228,7 @@
                 });
             },
             close () {
-                //this.dialog = false;
+                this.dialog = false;
                 this.showEdit = false;
                 setTimeout(() => {
                     this.editedItem = Object.assign({}, this.defaultItem);
@@ -268,6 +272,7 @@
                         return;
                     }
                 });
+                this.close();
             },
         },
         computed: {
@@ -286,6 +291,7 @@
         },
 
         created () {
+            console.log(this.$route.name);
             this.getUsers()
         },
     }

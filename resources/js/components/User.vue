@@ -24,7 +24,7 @@
 		        title: 'List Users',
 		        showSuccess: false,
 		        successMessage: '',
-		        currentUser: null,
+		        userToEdit: null,
 		        users: [],
 			}
 		},

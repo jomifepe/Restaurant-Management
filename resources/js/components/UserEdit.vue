@@ -1,60 +1,69 @@
 <template>
-		<v-form ref="form" v-model="valid" lazy-validation>
-			<v-text-field solo v-model="currentUser.email"
-						  label="E-mail"
-						  :validate-on-blur="validateOnBlur"
-						  :clearable="false"
-						  this.disabled this.readonly></v-text-field>
-			<v-text-field name="Name"
-						  v-model="currentUser.name"
-						  :rules="nameRules"
-						  :validate-on-blur="validateOnBlur"
-						  label="Name"></v-text-field>
-			<v-text-field name="username"
-						  v-model="currentUser.username"
-						  :rules="usernameRules"
-						  :validate-on-blur="validateOnBlur"
-						  label="Username"></v-text-field>
-			<v-text-field name="currentPassword"
-						  v-model="currentPassword"
-						  label="Current password"
-						  :validate-on-blur="validateOnBlur"
-						  :append-icon="showCurrentPassword ? 'visibility_off' : 'visibility'"
-						  :type="showCurrentPassword ? 'text' : 'password'"
-						  @click:append="showCurrentPassword = !showCurrentPassword"></v-text-field>
-			<v-text-field name="newPassword"
-						  v-model="newPassword"
-						  :rules="newPasswordRules"
-						  label="New password"
-						  :validate-on-blur="validateOnBlur"
-						  :append-icon="showNewPassword ? 'visibility_off' : 'visibility'"
-						  :type="showNewPassword ? 'text' : 'password'"
-						  @click:append="showNewPassword = !showNewPassword"
-						  counter></v-text-field>
-			<v-text-field name="repeatPassword"
-						  v-model="repeatPassword"
-						  :rules="repeatPasswordRules"
-						  label="Repeat password"
-						  :validate-on-blur="validateOnBlur"
-						  :append-icon="showRepeatPassword ? 'visibility_off' : 'visibility'"
-						  :type="showRepeatPassword ? 'text' : 'password'"
-						  @click:append="showRepeatPassword = !showRepeatPassword"
-						  counter></v-text-field>
-
+	<v-form ref="form" v-model="valid" lazy-validation>
+		<input class="mt-3 mb-3" v-if="this.isManager()" type="file" name="photo_url" @change="onFileSelected">
+		<v-text-field solo v-model="userToEdit.email"
+					  label="E-mail"
+					  :validate-on-blur="validateOnBlur"
+					  :clearable="false"
+					  :disabled="!this.isManager()"
+					  :readonly="!this.isManager()">
+		</v-text-field>
+		<v-text-field name="Name"
+					  v-model="userToEdit.name"
+					  :rules="nameRules"
+					  :validate-on-blur="validateOnBlur"
+					  label="Name"></v-text-field>
+		<v-text-field name="username"
+					  v-model="userToEdit.username"
+					  :rules="usernameRules"
+					  :validate-on-blur="validateOnBlur"
+					  label="Username"></v-text-field>
+		<v-text-field name="currentPassword"
+					  v-model="currentPassword"
+					  label="Current password"
+					  :validate-on-blur="validateOnBlur"
+					  :append-icon="showCurrentPassword ? 'visibility_off' : 'visibility'"
+					  :type="showCurrentPassword ? 'text' : 'password'"
+					  @click:append="showCurrentPassword = !showCurrentPassword"></v-text-field>
+		<v-text-field name="newPassword"
+					  v-model="newPassword"
+					  :rules="newPasswordRules"
+					  label="New password"
+					  :validate-on-blur="validateOnBlur"
+					  :append-icon="showNewPassword ? 'visibility_off' : 'visibility'"
+					  :type="showNewPassword ? 'text' : 'password'"
+					  @click:append="showNewPassword = !showNewPassword"
+					  counter></v-text-field>
+		<v-text-field name="repeatPassword"
+					  v-model="repeatPassword"
+					  :rules="repeatPasswordRules"
+					  label="Repeat password"
+					  :validate-on-blur="validateOnBlur"
+					  :append-icon="showRepeatPassword ? 'visibility_off' : 'visibility'"
+					  :type="showRepeatPassword ? 'text' : 'password'"
+					  @click:append="showRepeatPassword = !showRepeatPassword"
+					  counter></v-text-field>
+		<v-card-actions>
 			<v-btn :disabled="!valid" color="primary" @click="submit" large>Submit</v-btn>
-		</v-form>
+			<v-btn color="blue darken-1" v-if="this.$route.name === 'users'" flat @click="close">Cancel</v-btn>
+		</v-card-actions>
+	</v-form>
 </template>
 
 <script type="text/javascript">
 
     import { requiredIf, minLength, sameAs } from 'vuelidate/lib/validators'
     import axios from 'axios'
+    import {util} from '../mixin';
+    import {toasts} from '../mixin';
 
     export default {
-		props: ['user'],
-		data() {
+        props: ['user'],
+        mixins: [util, toasts],
+        data() {
             return {
-                currentUser: this.user,
+                userToEdit: this.user,
+				hasNewPhoto: false,
                 currentPassword: "",
                 newPassword: "",
                 repeatPassword: "",
@@ -77,14 +86,14 @@
                 repeatPasswordRules: [
                     v => (this.newPassword.length === 0 && v.length === 0) ||
                         (this.newPassword.length > 0 && v.length > 0) || 'This field is required',
-					v => v === this.newPassword || 'Passwords don\'t match',
+                    v => v === this.newPassword || 'Passwords don\'t match',
                 ]
             }
         },
         // validations: {
-		//     // name: {
+        //     // name: {
         //     //     isNameValid
-		// 	// },
+        // 	// },
         //     password: {
         //         required: requiredIf(function() {
         //             return this.currentPassword.length > 0
@@ -98,35 +107,66 @@
         //         sameAsPassword: sameAs('password')
         //     }
         // },
-	    methods: {
+        methods: {
             submit () {
                 if (this.$refs.form.validate()) {
-                    axios.put(`/users/${this.currentUser.id}`, this.currentUser)
-                        .then(response => {
-                            if (response.status === 200) {
-                                this.currentUser = response.data.data;
-                                // Object.assign(this.user, response.data.data);
-								if(this.currentUser.id === this.$store.state.user.id) {
-                                    this.$store.commit("setUser", this.currentUser);
-                                }else{
-									this.$emit('onUpdateUserList');
-								}
-                            }
-                        });
+                    if(typeof this.userToEdit.photo_url  === 'string' || this.hasNewPhoto){
+                        console.log('with photo');
+                        let form = new FormData;
+                        form.append('email', this.userToEdit.email);
+                        form.append('name', this.userToEdit.name);
+                        form.append('username', this.userToEdit.username);
+                        form.append('newPassword', this.newPassword);
+                        form.append('photo_url', this.userToEdit.photo_url);  /** HAS IMAGE ? -> ADD TO FORM**/
+
+                        console.log(this.userToEdit.photo_url);
+                        axios.post('users/update/'+this.userToEdit.id, form).then(response =>{
+							this.showSuccessToast('User edited');
+                            this.userToEdit = response.data.data;
+                            this.$store.commit("setUser", this.userToEdit);
+							//this.$store.state.user = response.data.data;
+                            //this.$store.commit("setUser", this.userToEdit);
+						}).catch(error => {
+                            this.showErrorToast('Problem editing user');
+						});
+
+
+                    }else {
+                        console.log('without photo');
+                        axios.put(`/users/${this.userToEdit.id}`, this.userToEdit)
+                            .then(response => {
+                                if (response.status === 200) {
+                                    this.userToEdit = response.data.data;
+                                    this.showSuccessToast('User edited');
+                                    // Object.assign(this.user, response.data.data);
+                                    if (this.userToEdit.id === this.$store.state.user.id) {
+                                        this.$store.commit("setUser", this.userToEdit);
+                                    } else {
+                                        this.$emit('onUpdateUserList');
+                                    }
+                                }
+                            }).catch(error => {
+                            this.showErrorToast('Problem editing user');
+						});
+                    }
                 }
-            }
-        },
-		computed:{
-		    disabled(){
-		        this.$store.state.user.type === 'manager' ? '':'disabled';
+                this.clear();
+            },
+            onFileSelected(event){
+                this.userToEdit.photo_url = event.target.files[0];
+                this.hasNewPhoto = true;
+            },
+            close(){
+                this.$emit('onClose');
+            },
+            clear(){
+                this.hasNewPhoto = false;
+                this.userToEdit.photo_url;
 			},
-            readonly(){
-                this.$store.state.user.type === 'manager' ? '':'readonly';
-			}
-		}
-	}
+        },
+    }
 </script>
 
-<style scoped>	
+<style scoped>
 
 </style>

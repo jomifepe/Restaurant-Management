@@ -3,7 +3,7 @@ import AdminNavigation from './components/AdminNavigation.vue';
 import Home from './components/Home.vue';
 import ItemMenu from './components/ItemMenu.vue';
 import Login from './components/Login.vue';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/Dashboard.vue';
 import Profile from './components/Profile.vue';
 import Meals from './components/Meals.vue';
 import Orders from './components/Orders.vue';
@@ -22,9 +22,9 @@ export default [
     },
     { path: '/admin', component: AdminNavigation,
         children: [
-            { path: '', component: Dashboard, name: 'dashboard' },
+            { path: '', component: Home, name: 'home' },
+            { path: 'dashboard', component: Dashboard, name: 'dashboard' },
             { path: 'profile', component: Profile, name: 'profile' },
-            { path: 'meals', component: Meals, name: 'meals' },
             { path: 'orders', component: Orders, name: 'orders' },
             { path: 'meals', component: Meals, name: 'meals',
                 children: [

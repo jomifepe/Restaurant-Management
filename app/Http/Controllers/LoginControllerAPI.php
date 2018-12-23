@@ -8,7 +8,7 @@ use App\User;
 define('YOUR_SERVER_URL', 'http://project.dad');
 // Check "oauth_clients" table for next 2 values:
 define('CLIENT_ID', '2');
-define('CLIENT_SECRET','yYWivaI99cw07rjtEpfwTPzD50kjWiPMeVLplMGh');
+define('CLIENT_SECRET','MUYYehLCu3VCG4acyDMPZaHeXcQJTPDROARuCYFq');
 
 class LoginControllerAPI extends Controller
 {
