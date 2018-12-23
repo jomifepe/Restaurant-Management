@@ -8,11 +8,11 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: { 
-        token: "",
+        token: '',
         user: null,
-        panelTitle: "",
+        panelTitle: '',
         alertShown: false,
-        alertMessage: "",
+        alertMessage: '',
         alertType: "success",
         progressBarShown: false,
         progressBarValue: 0,
@@ -21,7 +21,7 @@ export default new Vuex.Store({
     mutations: {
         clearUserAndToken: (state) => {
             state.user = null;
-            state.token = "";
+            state.token = '';
             sessionStorage.removeItem('user');
             sessionStorage.removeItem('token');
             axios.defaults.headers.common.Authorization = undefined;
@@ -31,7 +31,7 @@ export default new Vuex.Store({
             sessionStorage.removeItem('user');
         },
         clearToken: (state) => {
-            state.token = "";
+            state.token = '';
             sessionStorage.removeItem('token');
             axios.defaults.headers.common.Authorization = undefined;
         },
@@ -42,10 +42,10 @@ export default new Vuex.Store({
         setToken: (state, token) => {
             state.token= token;
             sessionStorage.setItem('token', token);
-            axios.defaults.headers.common.Authorization = "Bearer " + token;
+            axios.defaults.headers.common.Authorization = 'Bearer ' + token;
         },
         loadTokenAndUserFromSession: (state) => {
-            state.token = "";
+            state.token = '';
             state.user = null;
             let token = sessionStorage.getItem('token');
             let user = sessionStorage.getItem('user');

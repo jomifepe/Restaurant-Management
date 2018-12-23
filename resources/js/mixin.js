@@ -46,29 +46,75 @@ export const itemMixin = {
             this.childActive = this.item && this.item.child ? this.isChildActive(this.item.child) : false
         }
     },
-}
+};
 
 export const toasts = {
+	methods: {
+		showErrorLog(message, error) {
+			this.showErrorToast(message);
+			console.error(error);
+		},
+		showSuccessToast(message, time = 3000) {
+			this.$toasted.success(message, {
+				icon : 'check',
+				position: 'bottom-center',
+				duration : time
+			});
+		},
+		showErrorToast(message, time = 3000) {
+			this.$toasted.error(message, {
+				icon : 'error',
+				position: 'bottom-center',
+				duration : time
+			});
+		}
+	}
+};
+
+export const helper = {
     methods: {
-        showErrorLog(message, error) {
-            this.showErrorToast(message);
-            console.error(error);
+        userFirstName(user) {
+            return user.name.split(" ")[0];
         },
-        showSuccessToast(message, time = 3000) {
-            this.$toasted.success(message, {
-                icon : 'check',
-                position: 'bottom-center',
-                duration : time
-            });
+        userFirstAndLastName(user) {
+            let parts = user.name.split(" ");
+            if (parts.length > 1) {
+                return `${parts[0]} ${parts[parts.length - 1]}`;
+            }
+            return user.name;
         },
-        showErrorToast(message, time = 3000) {
-            this.$toasted.error(message, {
-                icon : 'error',
-                position: 'bottom-center',
-                duration : time
-            });
+        getImage(obj) {
+            if (!obj) {
+                return 'https://via.placeholder.com/150';
+            } else {
+                return obj.photo_url;
+            }
         },
-    },
+        getUserAppearence(user) {
+            switch (user.type) {
+                case 'manager':
+                    return {
+                        icon: 'supervisor_account',
+                        color: 'red'
+                    };
+                case 'waiter':
+                    return {
+                        icon: 'sentiment_satisfied_alt',
+                        color: 'blue'
+                    }
+                case 'cook':
+                    return {
+                        icon: 'restaurant',
+                        color: 'orange'
+                    }
+                case 'cashier':
+                    return {
+                        icon: 'attach_money',
+                        color: 'teal'
+                    }
+            }
+        }
+    }
 };
 
 export const util = {

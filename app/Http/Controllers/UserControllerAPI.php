@@ -91,7 +91,6 @@ class UserControllerAPI extends Controller
             'email' => 'required|email|unique:users,email,'.$id
         ]);
 
-
         $user = User::findOrFail($id);
 //        $user->photo_url = end(explode("/", $user->photo_url));
         $user->password = bcrypt($user->password);
@@ -99,6 +98,21 @@ class UserControllerAPI extends Controller
         $user->username = $data["username"];
         $user->email = $data["email"];
         $user->update();
+
+        if ($request->current_password) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'message' => 'Incorrect current password',
+                    'status' => 401
+                ], 401);
+            }
+
+            $user->password = bcrypt($request->password);
+        } else {
+            $user->fill($request->all());
+        }
+
+        $user->save();
         return new UserResource($user);
     }
 

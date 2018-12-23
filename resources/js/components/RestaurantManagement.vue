@@ -189,7 +189,7 @@
                     });
                 }
             },
-            hasErrors(errors){
+            hasErrors(errors) {
                 this.validationErrors = errors;
                 this.hasValidationErrors = true;
                 setTimeout(() => (this.hasValidationErrors = false), 6000)

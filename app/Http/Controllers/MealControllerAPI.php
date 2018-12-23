@@ -64,6 +64,10 @@ class MealControllerAPI extends Controller
         return new MealResource(Meal::where('table_number', $tableNumber)->first());
     }
 
+    public function tableNumber($id){
+        $meal = Meal::findOrFail($id);
+        return $meal->table_number;
+    }
     /**
      * Display the specified resource.
      *

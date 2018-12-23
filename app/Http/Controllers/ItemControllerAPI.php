@@ -84,11 +84,10 @@ class ItemControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-
+        
     }
 
-
-   public function updatePost(Request $request, $id)
+    public function updatePost(Request $request, $id)
     {
         $data = $request->validate([
             'name' => 'required|String|unique:items,name,'.$id.',id',
@@ -100,11 +99,10 @@ class ItemControllerAPI extends Controller
 
         $oldItem = Item::findOrFail($id);
 
-        if ($request->hasFile('photo_url'))
-        {
+        if ($request->hasFile('photo_url')) {
             $fileName = Storage::disk('public')->putFile('items', Input::file('photo_url'));
             $newPhoto_url = explode('/', $fileName)[1];
-            if($newPhoto_url != $oldItem->photo_url){
+            if ($newPhoto_url != $oldItem->photo_url) {
                 $oldItem->photo_url = $newPhoto_url;
             }
         }
@@ -117,9 +115,6 @@ class ItemControllerAPI extends Controller
         $oldItem->save();
         return response()->json(new ItemResource($oldItem), 201);
     }
-
-
-
 
     /**
      * Remove the specified resource from storage.

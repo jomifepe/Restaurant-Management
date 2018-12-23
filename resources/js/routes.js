@@ -11,6 +11,8 @@ import RestaurantManagement from './components/RestaurantManagement.vue';
 import AdminItemMenu from './components/AdminItemMenu.vue';
 import MealOrders from './components/MealOrders.vue';
 import UserList from './components/UserList.vue';
+import Invoices from './components/Invoices.vue';
+import PrintInvoices from './components/PrintInvoices.vue';
 
 export default [
     { path: '/', component: UserNavigation,
@@ -32,6 +34,9 @@ export default [
                 ]},
             { path: 'menu', component: AdminItemMenu, name: 'worker.menu' },
             { path: 'menu/meal/:mealId', component: AdminItemMenu, name: 'menu.meal.orders' },
+            { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'},
+            { path: 'invoices', component: Invoices, name: 'pending.invoices'},
+            { path: 'invoices/print', component: PrintInvoices, name: 'print.invoices'}
             { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'},
             { path: 'users', component: UserList, name:'users'}
         ]

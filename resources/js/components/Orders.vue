@@ -83,17 +83,16 @@
             connect(){
                 console.log('socket connected (socket ID = '+this.$socket.id+')');
             },
-            order_received(){
+            order_received_list(){
+                console.log("chegou");
                 this.getDataFromApi()
                     .then(data => {
-                        console.log(data);
+                        //console.log(data);
                         this.orders = data.items;
                         this.totalOrders = data.total;
                     })
             },
-            order_prepared(){
 
-            },
         },
         methods: {
             getWaiter(order){
@@ -118,7 +117,8 @@
                 this.getWaiter(order)
                     .then(userDest => {
                         console.log(userDest);
-                        this.$socket.emit('order_prepared', 'order prepared', this.$store.state.user, userDest);
+                        console.log(order);
+                        this.$socket.emit('order_prepared', this.$store.state.user, userDest, order);
                     })
 
             },
@@ -126,6 +126,12 @@
                 order.state= "prepared";
                 this.saveOrder(order);
                 this.sendNotificationToWaiter(order);
+                this.getDataFromApi()
+                    .then(data => {
+                        //console.log(data);
+                        this.orders = data.items;
+                        this.totalOrders = data.total;
+                    })
             },
             saveOrder(order){
                 //console.log(order.state);
