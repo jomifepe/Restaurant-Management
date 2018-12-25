@@ -1,10 +1,9 @@
 <template>
 	<v-card>
-		<v-img :src="item.photo_url" :alt="item.name"
-			   aspect-ratio="2"></v-img>
+		<v-img :src="item.photo_url" :alt="item.name" aspect-ratio="2"></v-img>
 		<v-card-text class="pt-4"
 					 style="position: relative;">
-			<v-btn v-if="meal" @click="selectItem" absolute style="z-index: 0"
+			<v-btn v-if="isUserLoggedIn && meal" @click="selectItem" absolute style="z-index: 0"
 					:color="buttonColor" class="white--text" fab right top>
 				<v-scroll-x-transition>
 					<v-icon>fas fa-plus</v-icon>
@@ -56,6 +55,11 @@
             buttonColor: 'blue-grey',
             buttonIcon: 'fas fa-plus',
 		}),
+		computed: {
+			isUserLoggedIn() {
+				return !!this.$store.state.user
+			}
+		},
 		watch: {
 			exists() {
 				if (!this.exists) {

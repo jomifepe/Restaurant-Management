@@ -4,7 +4,7 @@
             <v-list id="user-card" class="blue-grey darken-3 rounded elevation-2" two-line>
                 <v-list-tile avatar>
                     <v-list-tile-avatar size="100" color="grey lighten-4">
-                        <img class="bordered" :src="user.photo_url" alt="Worker photo">
+                        <img class="bordered" :src="user.photo_src" alt="Worker photo">
                     </v-list-tile-avatar>
 
                     <v-list-tile-content class="ml-4">

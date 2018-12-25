@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\Meal as MealResource;
+use App\Http\Resources\MealHR as MealHRResource;
 use App\Meal;
 use App\User;
 use Illuminate\Support\Facades\DB;
@@ -17,15 +18,12 @@ class MealControllerAPI extends Controller
      */
     public function index()
     {
-        return MealResource::collection(Meal::all());
+        $items = Meal::select('meals.*', 'users.name AS responsible_waiter_name')
+            ->join('users', 'users.id', '=', 'meals.responsible_waiter_id')
+            ->get();
+
+        return MealHRResource::collection($items);
     }
-
-    public function managerIndex()
-    {
-        return MealResource::collection(Meal::whereIn('state', ['active', 'terminated'])->get());
-    }
-
-
 
     /**
      * Store a newly created resource in storage.

@@ -1,48 +1,51 @@
 <template>
     <v-container grid-list-md>
-		<v-flex zs12 class="elevation-1">
+		<v-flex xs12 class="elevation-1">
 			<v-toolbar class="pb-3 grey lighten-3 elevation-0" light tabs>
 				<v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
 							label="Search" prepend-inner-icon="search" solo-inverted>
 				</v-text-field>
 
-				<NewItem @onGetItems="getItems()"> </NewItem>
+				<NewItem v-if="isUserLoggedIn" @onGetItems="getItems"></NewItem>
 
-				<template v-if="meal">
-					<v-menu v-model="orderSummaryMenu" :close-on-content-click="false" left
-						:nudge-width="200">
+				<template v-if="isUserLoggedIn && meal">
+					<v-menu v-model="orderSummaryMenu" :close-on-content-click="false" left :nudge-width="200" :min-width="450">
 						<v-btn slot="activator" light depressed round :disabled="selectedItems.length === 0"
 							color="teal" class="white--text">
 							{{ selectedItemsSubtotal }}
 							<v-icon right dark>fas fa-euro-sign</v-icon>
 						</v-btn>
 
+						<v-toolbar flat light color="white">
+							<v-toolbar-title>
+								Order summary 
+							</v-toolbar-title>
+							<v-spacer></v-spacer>
+							<v-toolbar-title>
+								Total: <strong class="teal--text">{{ selectedItemsSubtotal }}€</strong>
+							</v-toolbar-title>
+						</v-toolbar>
 						<v-card>
-							<!-- <v-list>
-								<v-list-tile>
-									<v-list-tile-content>
-										<v-list-tile-sub-title>Your order summary</v-list-tile-sub-title>
-									</v-list-tile-content>
-								</v-list-tile>
-							</v-list> -->
-							<!-- <v-divider></v-divider> -->
-							<v-data-table :items="selectedItems" item-key="id" hide-headers>
+							<v-data-table :items="selectedItems" item-key="id" 
+								:rows-per-page-items="summaryRowsPerPageItems" hide-headers>
 								<template slot="items" slot-scope="props">
 									<td>{{ getItemQuantity(props.item.id) }}x</td>
 									<td>{{ props.item.name }}</td>
 									<td class="text-xs-center">{{ props.item.price }}€</td>
-									<td class="justify-center layout px-0">
-										<v-icon small color="blue-grey" @click="decrementItemQuantity(props.item)"
-											title="Decrease quantity">
-											fas fa-minus-circle
-										</v-icon>
+									<td class="justify-center text-md-center">
+										<v-tooltip top>
+											<v-icon class="dt-action" slot="activator" 
+												@click="decrementItemQuantity(props.item)">
+												fas fa-minus-circle
+											</v-icon>
+											Remove item
+										</v-tooltip>
 									</td>
 								</template>
 							</v-data-table>
 							<v-card-actions>
 								<v-spacer></v-spacer>
-								<v-btn @click="orderSummaryMenu = false; orderSubmitDialog = true"
-									color="teal" flat>Complete order</v-btn>
+								<v-btn @click="askForOrderConfirmation" color="teal" flat>Complete order</v-btn>
 							</v-card-actions>
 						</v-card>
 					</v-menu>
@@ -72,7 +75,7 @@
 					</v-card>
 				</v-tab-item>
 			</v-tabs-items>
-			<v-dialog v-model="orderSubmitDialog" v-if="meal" max-width="350">
+			<v-dialog v-if="isUserLoggedIn && meal" v-model="orderSubmitDialog" max-width="450">
 				<v-card>
 					<v-card-text class="subheading">
 						Do you want to submit a total of {{ totalItems }} item orders for meal #{{ meal.id }} on table {{ meal.table_number }}?
@@ -132,8 +135,14 @@
 			pagination: { rowsPerPage: 12 },
 			orderSubmitDialog: false,
 			toastButtonClicked: false,
+			summaryRowsPerPageItems: [],
             summaryPagination: { rowsPerPage: 5 },
-        }),
+		}),
+		computed: {
+			isUserLoggedIn() {
+				return !!this.$store.state.user;
+			}
+		},
         sockets:{
             connect(){
                 console.log('socket connected (socket ID = '+this.$socket.id+')');
@@ -223,6 +232,12 @@
 					}
 				}
 				return false;
+			},
+			askForOrderConfirmation() {
+				if (this.selectedItems.length > 0) {
+					this.orderSummaryMenu = false; 
+					this.orderSubmitDialog = true
+				}
 			},
 			submitOrder(itemsToSubmit, itemIndex, callback) {
 				let item = itemsToSubmit[itemIndex];

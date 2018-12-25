@@ -9,30 +9,22 @@ use Illuminate\Support\Facades\DB;
 define('YOUR_SERVER_URL', 'http://project.dad');
 // Check "oauth_clients" table for next 2 values:
 define('CLIENT_ID', '2');
-define('CLIENT_SECRET','qA3Np1a30fRvje3YpvPlyeOQbrgLYhe9Lt5rlv91');
+define('CLIENT_SECRET','6RfbSQYHfjoG0ok4OPakZeY7bigDFNUSiipKaxDA');
 
 class LoginControllerAPI extends Controller
 {
     public function login(Request $request)
     {
-        if($request->input("username")){
-            $isBlocked = DB::table('users')->select('blocked')->where('username', '=', $request->username)->get();
-        }else{
-            $isBlocked = DB::table('users')->select('blocked')->where('email', '=', $request->email)->get();
+        $userCredLabel = 'email';
+        $userCred = $request->email;
+        if (empty($userCred)) {
+            $userCredLabel = 'username';
+            $userCred = $request->username;
         }
+        $user = User::where($userCredLabel, $userCred)->first();
 
-        if($isBlocked["0"]->blocked==1){
-            /*return response()->json(
-                ['msg' => 'Unauthorized user is blocked'],
-                401
-            );*/
+        if($user->blocked == 1) {
             return response()->json("Unauthorized user is blocked", 401);
-        }
-
-        $userEmail = $request->email;
-        if (empty($userEmail)) {
-            $user = User::where('username', $request->username)->first();
-            $userEmail = $user->email;
         }
 
         $http = new \GuzzleHttp\Client;
@@ -41,7 +33,7 @@ class LoginControllerAPI extends Controller
                 'grant_type' => 'password',
                 'client_id' => CLIENT_ID,
                 'client_secret' => CLIENT_SECRET,
-                'username' => $userEmail,
+                'username' => $user->email,
                 'password' => $request->password,
                 'scope' => ''
             ],

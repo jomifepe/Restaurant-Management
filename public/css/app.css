@@ -15155,6 +15155,11 @@ readers do not read off random characters that represent icons */
   font-weight: 400;
 }
 
+.dt-actions .v-btn {
+  margin-right: 0;
+  margin-left: 0;
+}
+
 .v-chip.no-margin-left {
   margin-left: 0px !important;
 }
@@ -15227,34 +15232,6 @@ readers do not read off random characters that represent icons */
 
 .navbar {
   border-radius: 0 0 5px 5px;
-}
-
-@media (min-width: 1200px) {
-  .card-columns {
-    -webkit-column-count: 5;
-            column-count: 5;
-  }
-}
-
-@media (min-width: 992px) and (max-width: 1199.98px) {
-  .card-columns {
-    -webkit-column-count: 4;
-            column-count: 4;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 991.98px) {
-  .card-columns {
-    -webkit-column-count: 3;
-            column-count: 3;
-  }
-}
-
-@media (min-width: 576px) and (max-width: 767.98px) {
-  .card-columns {
-    -webkit-column-count: 2;
-            column-count: 2;
-  }
 }
 
 .navbar-link {

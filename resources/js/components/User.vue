@@ -3,14 +3,12 @@
 		<div class="jumbotron">
 			<h1>{{ title }}</h1>
 		</div>
-
 		<user-list :users="users" @edit-click="editUser" @delete-click="deleteUser" @message="childMessage" ref="usersListRef"></user-list>
-
 		<div class="alert alert-success" v-if="showSuccess">			 
 			<button type="button" class="close-btn" v-on:click="showSuccess=false">&times;</button>
 			<strong>{{ successMessage }}</strong>
 		</div>
-		<user-edit :user="currentUser" :departments="this.$store.state.departments"  @user-saved="savedUser" @user-canceled="cancelEdit" v-if="currentUser"></user-edit>				
+		<user-edit :user="currentUser" @user-saved="savedUser" @user-canceled="cancelEdit" v-if="currentUser"></user-edit>				
 	</div>				
 </template>
 
@@ -19,6 +17,10 @@
 	import UserEdit from './UserEdit.vue';
 	
 	export default {
+		components: {
+	    	'user-list': UserList,
+	    	'user-edit': UserEdit
+	    },
 		data: function(){
 			return { 
 		        title: 'List Users',
@@ -34,7 +36,7 @@
 	            this.showSuccess = false;
 	        },
 	        deleteUser: function(user) {
-	            axios.delete('api/users/'+User.id)
+	            axios.delete('api/users/'+ user.id)
 	                .then(response => {
 	                    this.showSuccess = true;
 	                    this.successMessage = 'User Deleted';
@@ -60,10 +62,6 @@
 				this.showSuccess = true;
 	            this.successMessage = message;
 			}
-	    },
-	    components: {
-	    	'user-list': UserList,
-	    	'user-edit': UserEdit
 	    },
 	    mounted() {
 			this.getUsers();

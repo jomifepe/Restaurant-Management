@@ -21,13 +21,6 @@ class UserControllerAPI extends Controller
         } else {
             return UserResource::collection(User::all());
         }
-
-        /*Caso não se pretenda fazer uso de Eloquent API Resources (https://laravel.com/docs/5.5/eloquent-resources), é possível implementar com esta abordagem:
-        if ($request->has('page')) {
-            return User::with('department')->paginate(5);;
-        } else {
-            return User::with('department')->get();;
-        }*/
     }
 
     public function indexManager()
@@ -85,15 +78,13 @@ class UserControllerAPI extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = $request->validate([
-            'name' => 'required|min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
-            'username' => 'required|string|max:30',
-            'email' => 'required|email|unique:users,email,'.$id,
-            'password' => 'nullable|numeric',
-            'current_password' => 'nullable|numeric',
+        $request->validate([
+            'name' => 'min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
+            'username' => 'string|max:30',
+            'email' => 'email|unique:users,email,'.$id
         ]);
-        $user = User::findOrFail($id);
 
+        $user = User::findOrFail($id);
         if ($request->current_password) {
             if (!Hash::check($request->current_password, $user->password)) {
                 return response()->json([
@@ -103,13 +94,11 @@ class UserControllerAPI extends Controller
             }
 
             $user->password = bcrypt($request->password);
+        } else {
+            $user->fill($request->all());
         }
 
-        $user->name = $data["name"];
-        $user->username = $data["username"];
-        $user->email = $data["email"];
-
-        $user->update();
+        $user->save();
         return new UserResource($user);
     }
 
@@ -196,8 +185,4 @@ class UserControllerAPI extends Controller
 
         return response()->json(null, 204);
     }
-
-
-
-
 }

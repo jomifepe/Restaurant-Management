@@ -15,29 +15,135 @@ import Invoices from './components/Invoices.vue';
 import PrintInvoices from './components/PrintInvoices.vue';
 
 export default [
-    { path: '/', component: UserNavigation,
+    {
+        path: '/',
+        component: UserNavigation,
         children: [
-            { path: '', component: Home, name: 'home' },
-            { path: 'menu', component: ItemMenu, name: 'menu' },
-            { path: 'login', component: Login, name: 'login'},
+            {
+                path: '',
+                component: Home,
+                name: 'home'
+            },
+            {
+                path: 'menu',
+                component: ItemMenu,
+                name: 'menu'
+            },
+            {
+                path: 'login',
+                component: Login,
+                name: 'login'
+            },
         ]
     },
-    { path: '/admin', component: AdminNavigation,
+    {
+        path: '/admin',
+        component: AdminNavigation,
+        meta: {
+            requiresAuth: true,
+            allowed: true
+        },
         children: [
-            { path: '', component: Home, name: 'home' },
-            { path: 'dashboard', component: Dashboard, name: 'dashboard' },
-            { path: 'profile', component: Profile, name: 'profile' },
-            { path: 'orders', component: Orders, name: 'orders' },
-            { path: 'meals', component: Meals, name: 'meals',
-                children: [
-                    { path: ':mealId/orders', component: MealOrders, name: 'meal.orders' },
-                ]},
-            { path: 'menu', component: AdminItemMenu, name: 'worker.menu' },
-            { path: 'menu/meal/:mealId', component: AdminItemMenu, name: 'menu.meal.orders' },
-            { path: 'restaurantManagement', component: RestaurantManagement, name: 'restaurantManagement'},
-            { path: 'invoices', component: Invoices, name: 'pending.invoices'},
-            { path: 'invoices/print', component: PrintInvoices, name: 'print.invoices'},
-            { path: 'users', component: UserList, name:'users'}
+            {
+                path: '',
+                component: Dashboard,
+                name: 'dashboard',
+                meta: {
+                    allowed: true
+                }
+            },
+            {
+                path: 'profile',
+                component: Profile,
+                name: 'profile',
+                meta: {
+                    allowed: true
+                }
+            },
+            {
+                path: 'meals',
+                component: Meals,
+                name: 'meals',
+                meta: {
+                    allowed: ['waiter', 'cook', 'manager']
+                },
+                children: [{
+                    path: ':mealId/orders',
+                    component: MealOrders,
+                    name: 'meal.orders',
+                    meta: {
+                        allowed: ['waiter', 'cook', 'manager']
+                    }
+                }]
+            },
+            {
+                path: 'menu',
+                component: AdminItemMenu,
+                name: 'worker.menu',
+                meta: {
+                    allowed: true
+                }
+            },
+            {
+                path: 'menu/meal/:mealId',
+                component: AdminItemMenu,
+                name: 'menu.meal.orders',
+                meta: {
+                    allowed: ['waiter', 'manager']
+                }
+            },
+            {
+                path: 'orders',
+                component: Orders,
+                name: 'orders',
+                meta: {
+                    allowed: ['cook', 'manager']
+                }
+            },
+            {
+                path: 'restaurantManagement',
+                component: RestaurantManagement,
+                name: 'restaurantManagement',
+                meta: {
+                    allowed: ['manager']
+                }
+            },
+            {
+                path: 'invoices',
+                component: Invoices,
+                name: 'pending.invoices',
+                meta: {
+                    allowed: ['cashier', 'manager']
+                }
+            },
+            {
+                path: 'invoices/print',
+                component: PrintInvoices,
+                name: 'print.invoices',
+                meta: {
+                    allowed: ['cashier', 'manager']
+                }
+            },
+            {
+                path: 'users',
+                component: UserList,
+                name: 'users',
+                meta: {
+                    allowed: ['manager']
+                }
+            },
+            {
+                path: '*',
+                redirect: {
+                    name: 'dashboard'
+                }
+            }
         ]
+    },
+    {
+        path: '*',
+        redirect: {
+            name: 'home'
+        }
     }
 ]

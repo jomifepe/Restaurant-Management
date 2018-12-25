@@ -1,9 +1,9 @@
 <template>
 	<v-form ref="form" v-if="userToEdit">
-        <input class="mt-3 mb-3" v-if="this.isManager()" type="file" name="photo_url" @change="onFileSelected">
+        <input class="mt-3 mb-3" v-if="isUserManager" type="file" name="photo_url" @change="onFileSelected">
 
         <v-text-field box name="email" ref="email" v-model="email" label="E-mail" prepend-icon="alternate_email"
-			:disabled="!this.isManager()" :readonly="!this.isManager()" v-validate="'required|email'"
+			:disabled="!isUserManager" :readonly="!isUserManager" v-validate="'required|email'"
 			:rules="(!errors.first('email')) ? [true] : [errors.first('email')]"></v-text-field>
 
 		<v-text-field box name="name" ref="name" v-model="name" label="Name" prepend-icon="fas fa-signature"
@@ -16,7 +16,7 @@
 
 		<v-checkbox label="Change current password" v-model="changePassword"></v-checkbox>
 
-		<v-flex xs12 fluid  v-if="changePassword" class="white rounded mb-3" transition="scale-transition">
+		<v-flex xs12 fluid v-if="changePassword" class="white rounded mb-3" transition="scale-transition">
 				<v-text-field box name="currentPassword"
 					ref="currentPassword"
 					v-model="currentPassword"
@@ -56,7 +56,7 @@
 
 		<v-layout justify-end align-end>
 			<v-btn :disabled="formErrors" color="primary" @click="submit" large>Submit</v-btn>
-			<v-btn color="primary" @click="close()" large>Cancel</v-btn>
+			<v-btn v-if="!$route.path.includes('profile')" color="primary" @click="close()" large>Cancel</v-btn>
 		</v-layout>
 	</v-form>
 </template>
@@ -64,12 +64,11 @@
 <script type="text/javascript">
 
     import axios from 'axios'
-    import {util} from '../mixin';
-    import {toasts} from '../mixin';
+    import {toasts, helper} from '../mixin';
 
     export default {
 		props:['user'],
-		mixins: [util, toasts],
+		mixins: [toasts, helper],
 		data: () => ({
             userToEdit: null,
             hasNewPhoto: false,
@@ -98,7 +97,7 @@
                     let user = this.userToEdit;
                     user.name = this.name;
                     user.username = this.username;
-                    if (this.isManager()) {
+                    if (this.isUserManager) {
                         user.email = this.email;
                     }
                     if (this.changePassword) {
@@ -106,10 +105,9 @@
                         user.current_password = this.currentPassword;
                     }
 
-
-                    if(this.hasNewPhoto){
+                    if (this.hasNewPhoto) {
                         let form = new FormData;
-                        if (this.isManager()) {
+                        if (this.isUserManager) {
                             form.append('email', user.email);
                         }
                         form.append('name', user.name);
@@ -136,7 +134,7 @@
                                 this.showErrorLog(`Failed to update user`, error);
                             }
                         });
-                    }else {
+                    } else {
                         axios.put(`/users/${user.id}`, user)
                             .then(response => {
                                 if (response.status === 200) {

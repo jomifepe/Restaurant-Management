@@ -72,16 +72,21 @@ export const toasts = {
 };
 
 export const helper = {
+    computed: {
+        isUserManager() {
+            return this.$store.state.user.type === 'manager';
+        }
+    },
     methods: {
-        userFirstName(user) {
-            return user.name.split(" ")[0];
+        userFirstName(name) {
+            return name.split(" ")[0];
         },
-        userFirstAndLastName(user) {
-            let parts = user.name.split(" ");
-            if (parts.length > 1) {
+        userFirstAndLastName(name) {
+            let parts = name.split(" ");
+            if (parts.length > 2) {
                 return `${parts[0]} ${parts[parts.length - 1]}`;
             }
-            return user.name;
+            return name;
         },
         getImage(obj) {
             if (!obj) {
@@ -115,12 +120,4 @@ export const helper = {
             }
         }
     }
-};
-
-export const util = {
-    methods: {
-        isManager() {
-            return this.$store.state.user.type === 'manager' ? true : false;
-        },
-    },
 };

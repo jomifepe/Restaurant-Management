@@ -120,7 +120,6 @@
             }
             this.$store.watch(() => {
                 if (!this.$store.state.user) {
-                    console.info("Cleared shift timer");
                     this.clearShiftTimer();
                 }
             });

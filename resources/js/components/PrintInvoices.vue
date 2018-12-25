@@ -11,14 +11,14 @@
                               :pagination.sync="pagination"
                               :total-items="totalInvoices"
                               :loading="loading"
-                              class="elevation-1"
-                >
+                              class="elevation-1">
 
                     <template slot="items" slot-scope="props">
                         <tr>
                             <td>{{ props.item.id }}</td>
                             <td>{{ props.item.name }}</td>
-                            <td> <v-btn @click="exportToPdf(props.item)" icon>
+                            <td class="dt-actions"> 
+                                <v-btn @click="exportToPdf(props.item)" icon>
                                     <v-icon>print</v-icon>
                                 </v-btn>
                             </td>
