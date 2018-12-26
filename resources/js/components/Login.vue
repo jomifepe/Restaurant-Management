@@ -15,7 +15,7 @@
                         @click:append="showPassword = !showPassword"
                         required></v-text-field>
 
-                    <v-btn :disabled="!valid" @click="login">Login</v-btn>
+                    <v-btn :disabled="!valid" ref="btnLogin" @click="login">Login</v-btn>
                 </v-form>
             </v-flex>
         </v-layout>
@@ -23,8 +23,10 @@
 </template>
 
 <script type="text/javascript">
+    import {toasts, helper} from '../mixin'
 
     export default {
+        mixins: [toasts, helper],
         data: () => ({
             valid: false,
             usernameOrEmail: '',
@@ -45,48 +47,36 @@
                     [isValidEmail ? 'email' : 'username']: this.usernameOrEmail,
                     'password': this.password
                 };
-                this.performLogin(user);
+                this.performLogin(user).then((toast) => {
+                    this.$router.push('/admin');
+                    this.$store.commit('hideProgressBar');
+                    toast.goAway(1);
+                });
             },
             performLogin(user) {
-                let toast;
-                axios.post('login', user)
-                    .then(response => {
-                        if (response.status === 200) {
-                            toast = this.$toasted.show(`Signing in...`, { 
-                                icon: "check",
-                                position: "bottom-center", 
-                                duration : 20000
-                            });
-                            this.$store.commit('setToken', response.data.access_token);
-                            return axios.get('users/me');
-                        } else {
-                            this.$toasted.show(`Failed to sign in (${response.status})`, { 
-                                icon: "error",
-                                position: "bottom-center", 
-                                duration : 4000
-                            });
-                        }
-                    })
-                    .then(response => {
-                        this.$store.commit('setUser', response.data.data);
-                        this.$router.push('/admin');
-                        toast.goAway(1);
-                    })
-                    .catch(error => {
-                        console.log(error.response.data);
-                        this.$store.commit('clearUserAndToken');
-                        /*this.$toasted.show(`Failed to sign in due to invalid credentials`, {
-                            icon: "error",
-                            position: "bottom-center", 
-                            duration : 4000
-                        });*/
-                        this.$toasted.show(error.response.data, {
-                            icon: "error",
-                            position: "bottom-center",
-                            duration : 4000
-                        });
-                    })
-            },
+                return new Promise(resolve => {
+                    let toast;
+                    this.$store.commit('showProgressBar', {indeterminate: true});
+                    axios.post('login', user)
+                        .then(response => {
+                            let toast = this.showSuccessToast('Signing in...', 10000);
+                            if (response.status === 200) {
+                                this.$store.commit('setToken', response.data.access_token);
+                                axios.get('users/me').then(userResponse => {
+                                    this.$store.commit('setUser', userResponse.data.data);
+                                    resolve(toast);
+                                });
+                            } else {
+                                this.showErrorToast(`Failed to sign in (${response.status})`);
+                            }
+                        })
+                        .catch(error => {
+                            this.$store.commit('clearUserAndToken');
+                            this.$store.commit('hideProgressBar');
+                            this.showErrorLog('Failed to sign in', error.response.data);
+                        }) 
+                });
+            }
         }
     }
 </script>

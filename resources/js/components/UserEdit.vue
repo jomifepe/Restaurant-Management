@@ -1,6 +1,6 @@
 <template>
 	<v-form ref="form" v-if="userToEdit">
-        <input class="mt-3 mb-3" v-if="isUserManager" type="file" name="photo_url" @change="onFileSelected">
+        <input class="mt-3 mb-3" type="file" ref="photo" name="photo_url" @change="onFileSelected">
 
         <v-text-field box name="email" ref="email" v-model="email" label="E-mail" prepend-icon="alternate_email"
 			:disabled="!isUserManager" :readonly="!isUserManager" v-validate="'required|email'"
@@ -91,9 +91,8 @@
                 this.email = this.userToEdit.email;
                 this.username = this.userToEdit.username;
             },
-            submit () {
+            submit() {
                 if (this.$refs.form.validate()) {
-
                     let user = this.userToEdit;
                     user.name = this.name;
                     user.username = this.username;
@@ -118,7 +117,6 @@
                             form.append('current_password', user.current_password);
                         }
                         form.append('photo_url', this.photo);  /** HAS IMAGE ? -> ADD TO FORM**/
-
 
                         axios.post('users/update/'+user.id, form).then(response =>{
                             this.userToEdit = response.data.data;

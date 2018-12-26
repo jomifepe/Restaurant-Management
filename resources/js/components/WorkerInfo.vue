@@ -68,17 +68,16 @@
                             'last_shift_end'
                         ]: moment().format("YYYY-MM-DD HH:mm:ss"),
                         shift_active: +startShift
+                    }).then(response => {
+                        if (response.status === 200) {
+                            resolve(response.data.data);
+                        } else {
+                            this.showErrorToast('Failed update shift state');
+                        }
                     })
-                        .then(response => {
-                            if (response.status === 200) {
-                                resolve(response.data.data);
-                            } else {
-                                this.showErrorToast('Failed update shift state');
-                            }
-                        })
-                        .catch(error => {
-                            this.showErrorLog('Failed update shift state', error);
-                        })
+                    .catch(error => {
+                        this.showErrorLog('Failed update shift state', error);
+                    })
                 })
             },
             startShiftElapsedTimeUpdated() {
@@ -114,6 +113,7 @@
         mounted() {
             if (this.user.shift_active) {
                 this.startShiftElapsedTimeUpdated();
+                this.joinSockets(this.user);
             } else {
                 this.showLastShiftTime();
             }

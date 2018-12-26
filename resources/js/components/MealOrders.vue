@@ -15,12 +15,34 @@
             <v-progress-circular v-if="progressBar" indeterminate color="blue-grey"></v-progress-circular>
         </v-toolbar>
         <v-container fluid class="white elevation-1">
-            <v-data-iterator row wrap :items="items" :rows-per-page-items="rowsPerPageItems"
-                            :pagination.sync="pagination" content-tag="v-layout">
-                <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
-                    <Card :item="props.item" @onOrderChange="loadMealItems"></Card>
-                </v-flex>
-            </v-data-iterator>
+            <v-card>
+                <v-toolbar card color="teal" dark>
+                    <v-toolbar-title>Prepared orders</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text style="border: 1px solid teal">
+                    <v-data-iterator row wrap :items="preparedOrders" :rows-per-page-items="preparedOrdersRows"
+                        :pagination.sync="preparedOrdersPagination" content-tag="v-layout"
+                        no-data-text="No prepared orders at the moment">
+                        <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
+                            <Card :item="props.item" @onOrderChange="loadMealOrders"></Card>
+                        </v-flex>
+                    </v-data-iterator>
+                </v-card-text>
+            </v-card>
+            <v-card class="mt-3">
+                <v-toolbar card color="red accent-3" dark>
+                    <v-toolbar-title>Not prepared orders</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text style="border: 1px solid red">
+                    <v-data-iterator row wrap :items="notPreparedOrders" :rows-per-page-items="notPreparedOrdersRows"
+                        :pagination.sync="notPreparedOrdersPagination" content-tag="v-layout"
+                        no-data-text="No pending or confirmed orders at the moment">
+                        <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
+                            <Card :item="props.item" @onOrderChange="loadMealOrders"></Card>
+                        </v-flex>
+                    </v-data-iterator>
+                </v-card-text>
+            </v-card>
         </v-container>
     </v-flex>
 </template>
@@ -29,25 +51,28 @@
     import Card from './MealOrderCard.vue';
     import axios from 'axios';
     import currency from 'currency.js';
-    import {toasts} from '../mixin.js';
+    import {toasts} from '../mixin';
 
     export default {
         name: "MealOrders",
-        mixin: [toasts],
+        mixins: [toasts],
         components: {
             Card
         },
         data: () => ({
             meal: null,
-            items: [],
-            rowsPerPageItems: [4, 8, 12],
-            pagination: { rowsPerPage: 4 },
+            preparedOrders: [],
+            notPreparedOrders: [],
+            preparedOrdersRows: [4, 8, 12],
+            notPreparedOrdersRows: [4, 8, 12],
+            preparedOrdersPagination: { rowsPerPage: 4 },
+            notPreparedOrdersPagination: { rowsPerPage: 4 },
             progressBar: true
         }),
         computed: {
             totalPrice() {
                 let total = 0;
-                this.items.forEach(item => {
+                this.preparedOrders.forEach(item => {
                     if (item.order_state === 'delivered') {
                         total = currency(total).add(item.price).format();
                     }
@@ -60,6 +85,21 @@
                 this.loadMealOrdersFromRouteId();
             }
         },
+        sockets: {
+            order_prepared_waiter(order) {
+                this.showTopRightToast(`Meal #${order.meal_id} from table ${order.meal_table_number} is prepared`, 'check');
+                if (this.meal.id === order.meal_id) {
+                    this.loadMealOrders();
+                }
+            },
+            order_in_preparation_waiter(order) {
+                console.log(order);
+                this.showTopRightToast(`Meal #${order.meal_id} from table ${order.meal_table_number} is in preparation`, 'restaurant');
+                if (this.meal.id === order.meal_id) {
+                    this.loadMealOrders();
+                }
+            }
+        },
         methods: {
             loadMealOrdersFromRouteId() {
                 if (this.$route.params.mealId) {
@@ -69,32 +109,27 @@
                             if (response.status === 200) {
                                 this.meal = response.data.data;
                                 this.$store.commit('setPanelTitle', `Orders for meal #${this.meal.id}`);
-                                this.loadMealItems();
+                                this.loadMealOrders();
                             } else {
                                 this.progressBar = false;
-                                this.$toasted.show('Failed to get orders associated to the selected meal', {
-                                    icon : 'error',
-                                    position: "bottom-center",
-                                    duration : 3000
-                                });
+                                this.showErrorToast('Failed to get orders associated to the selected meal');
                             }
                         })
                         .catch(error => {
                             this.progressBar = false;
-                            console.log(error);
-                            this.$toasted.show('Failed to get meal identified by the given id', {
-                                icon : 'error',
-                                position: "bottom-center",
-                                duration : 3000
-                            });
+                            this.$toasted.show('Failed to get meal identified by the given id', error);
                         })
                 }
             },
-            loadMealItems() {
+            loadMealOrders() {
                 axios.get(`/orders/meal/${this.meal.id}/items`)
                     .then(response => {
                         if (response.status === 200) {
-                            this.items = response.data;
+                            let allItemOrders = response.data;
+                            this.preparedOrders = allItemOrders.filter(itemOrder =>
+                                itemOrder.order_state === 'prepared');
+                            this.notPreparedOrders = allItemOrders.filter(itemOrder =>
+                                ['pending', 'confirmed'].includes(itemOrder.order_state));
                             this.progressBar = false;
                         }
                     })

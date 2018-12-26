@@ -107,7 +107,7 @@
 
             /* auxiliary attributes */
             notDeliveredOrders: []
-        }),
+        }), 
         computed: {
             myMealsHeaders() {
                 let headers = [{ text: 'Table Number', align: 'left', value: 'table_number' }];

@@ -58,8 +58,6 @@ Route::get('orders/meal/{mealId}', 'OrderControllerAPI@mealOrders')->name('order
 
 /* get all the items ordered for a specific meal */
 Route::get('orders/meal/{mealId}/items', 'OrderControllerAPI@mealItems')->name('orders.meal.items');
-Route::post('orders/multiple', 'OrderControllerAPI@storeMultiple')->name('orders.store.multiple');
-Route::delete('orders/multiple', 'OrderControllerAPI@destroyMultiple')->name('orders.destroy.multiple');
 
 
 
