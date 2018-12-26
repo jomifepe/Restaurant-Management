@@ -12,7 +12,6 @@ import AdminItemMenu from './components/AdminItemMenu.vue';
 import MealOrders from './components/MealOrders.vue';
 import UserList from './components/UserList.vue';
 import Invoices from './components/Invoices.vue';
-import PrintInvoices from './components/PrintInvoices.vue';
 import InvoiceDetails from './components/InvoiceDetails.vue';
 
 
@@ -127,14 +126,6 @@ export default [
                         }
                     }
                 ]
-            },
-            {
-                path: 'invoices/print',
-                component: PrintInvoices,
-                name: 'print.invoices',
-                meta: {
-                    allowed: ['cashier', 'manager']
-                }
             },
             {
                 path: 'users',

@@ -209,12 +209,6 @@ import {helper} from '../mixin.js';
                     target: "/admin/invoices",
                     visible: ['cashier', 'manager']
                 },
-                {
-                    title: "Print Invoices",
-                    icon: "print",
-                    target: "/admin/invoices/print",
-                    visible: ['cashier', 'manager']
-                }
             ],
             mini: true,
             right: null
