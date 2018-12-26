@@ -28,7 +28,7 @@
                     <template slot="expand" slot-scope="props">
                         <v-card flat>
                             <v-card-text>
-                                <v-btn  v-if="props.item.state === 'confirmed'" round color="primary" dark
+                                <v-btn  v-if="props.item.state === 'paid'" round color="primary" dark
                                     @click="assignOrderToMe(props.item)">Assign to me</v-btn>
                                 <v-btn  v-if="props.item.state === 'in preparation' ||
                                     props.item.state === 'confirmed'" round color="success" dark
@@ -84,7 +84,6 @@
                 console.log('socket connected (socket ID = '+this.$socket.id+')');
             },
             order_received_list(){
-                console.log("chegou");
                 this.getDataFromApi()
                     .then(data => {
                         //console.log(data);

@@ -224,7 +224,8 @@ import {helper} from '../mixin.js';
                 this.addNotification('Message sent', 'Good luck', false);
             },
             message_from_worker(data){
-                this.addNotification(data[0].title, data[0].text, false);
+                this.addNotification(data.title, data.text, false);
+            
             },
             order_prepared_cook(data) {
                 this.addNotification("Order send confirmation", data, false);
@@ -265,13 +266,12 @@ import {helper} from '../mixin.js';
 
             },
             sendNotificationToManagers(){
-                let message =
-                    [
-                        {
-                            'title': this.titleNotManager,
-                            'text': this.textNotManager
-                        }
-                    ]
+                let message =         
+                {
+                    'title': this.titleNotManager,
+                    'text': this.textNotManager
+                }
+        
                 this.$socket.emit('to_all_managers', message);
                 this.titleNotManager='';
                 this.textNotManager='';

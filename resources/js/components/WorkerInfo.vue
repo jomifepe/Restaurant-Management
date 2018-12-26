@@ -58,7 +58,6 @@
                     this.showLastShiftTime();
                     this.leaveSockets(updatedUser);
                     this.clearNotifications();
-                   
                 });
             },
             updateUser(startShift) {
