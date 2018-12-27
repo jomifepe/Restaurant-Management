@@ -7,16 +7,12 @@
                     <v-divider class="mx-2" inset vertical> </v-divider>
                     <v-spacer></v-spacer>
 
-                    <v-btn slot="activator" color="primary" dark class="mb-2">New User</v-btn>
-
                     <v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
                                 label="Search" prepend-inner-icon="search" solo-inverted>
                     </v-text-field>
 
-
-
-                    <v-dialog v-model="dialog" max-width="500px">
-                        <v-btn slot="activator" color="primary" dark class="mb-2">New User</v-btn>
+                    <v-dialog v-model="dialog" max-width="700px">
+                        <v-btn slot="activator" color="primary" dark>New User</v-btn>
                         <v-card>
                             <v-card-title>
                                 <span class="headline">{{ formTitle }}</span>
@@ -63,7 +59,7 @@
                                 <v-card-actions>
                                     <v-spacer></v-spacer>
                                     <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                                    <v-btn color="blue darken-1" flat type="submit" >Save</v-btn>
+                                    <v-btn color="blue darken-1" flat type="submit">Submit</v-btn>
                                 </v-card-actions>
                             </form>
                         </v-card>
@@ -74,14 +70,14 @@
                     <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                     <template slot="items" slot-scope="props">
                         <td class="text-xs-left">
-                            <v-avatar class="ma-1"  slot="activator" size="100px" >
+                            <v-avatar class="ma-1"  slot="activator" size="50px" >
                                 <img :src="props.item.photo_src" alt="Avatar">
                             </v-avatar>
                         </td>
                         <td class="text-xs-left">{{ props.item.name }}</td>
                         <td class="text-xs-left">{{ props.item.username }}</td>
                         <td class="text-xs-left">
-                            <v-chip :color="getUserAppearence(props.item).color" text-color="white">
+                            <v-chip small :color="getUserAppearence(props.item).color" text-color="white">
                                 {{ props.item.type }}
                             </v-chip>
                         </td>
@@ -147,6 +143,8 @@
     import {toasts, helper} from '../mixin';
     import UserEdit from './UserEdit';
     import Errors from './Errors';
+    import DefaultAxios from 'axios';
+
     export default {
         name: "UserList",
         components: { 
@@ -237,7 +235,7 @@
                     this.editedIndex = -1
                 }, 300)
             },
-            save () {
+            save() {
                 let form = new FormData;
                 form.append('name', this.editedItem.name);
                 form.append('username', this.editedItem.username);
@@ -248,9 +246,20 @@
                     form.append('photo_url', this.editedItem.photo_url);  /** HAS IMAGE ? -> ADD TO FORM**/
                 }
 
+                let email = this.editedItem.email;
                 axios.post('users', form).then(response => {
-                    this.getUsers();
-                    this.close()
+                    if (response.status === 201) {
+                        DefaultAxios.post('http://project.dad/password/reset', {
+                            email: email
+                        }).then(response => {
+                            this.showSuccessToast('Confirmation email successfully sent');
+                            this.getUsers();
+                            this.close()
+                        })
+                        .catch(error => {
+                            this.showErrorLog('Failed to send confirmation email', error);
+                        });
+                    }
                 }).catch(error => {
                     this.hasErrors(error.response.data.errors);
                 });
@@ -291,7 +300,9 @@
         },
 
         created () {
-            this.getUsers()
+            this.getUsers();
+            DefaultAxios.defaults.headers.common.Authorization = "Bearer " + 
+                this.$store.state.token;
         },
     }
 </script>

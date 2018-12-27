@@ -60,7 +60,6 @@ class UserControllerAPI extends Controller
                 'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-
         $newUser = new User();
         $newUser->fill($request->all());
 
@@ -79,9 +78,10 @@ class UserControllerAPI extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'min:3|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
-            'username' => 'string|max:30',
-            'email' => 'email|unique:users,email,'.$id
+            'name' => 'regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
+            'username' => 'string|max:30|unique:users,username,'.$id,
+            'email' => 'email|unique:users,email,'.$id,
+            'type' => 'string|in:manager,cook,waiter,cashier'
         ]);
 
         $user = User::findOrFail($id);
@@ -102,29 +102,16 @@ class UserControllerAPI extends Controller
         return new UserResource($user);
     }
 
-
-
     public function postUpdate(Request $request, $id){
-         $data = $request->validate([
-            'name' => 'required|String',
-            'username' => 'required|String|unique:users,username,'.$id.',id',
-            'email' => 'nullable|email|unique:users,email,'.$id.',id',
-            //'type' => 'required|in:manager,cook,waiter,cashier',
-            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'password' => 'nullable|numeric',
-            'current_password' => 'nullable|numeric',
+        $request->validate([
+            'name' => 'regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/',
+            'username' => 'string|max:30|unique:users,username,'.$id,
+            'email' => 'email|unique:users,email,'.$id,
+            'type' => 'string|in:manager,cook,waiter,cashier',
+            'photo_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-
         $user = User::findOrFail($id);
-        //$user->fill($request->all());
-
-        if ($request->hasFile('photo_url'))
-        {
-            $fileName = Storage::disk('public')->putFile('profiles', Input::file('photo_url'));
-            $photoName = explode('/', $fileName)[1];
-            $user->photo_url = $photoName;
-        }
 
         if ($request->current_password) {
             if (!Hash::check($request->current_password, $user->password)) {
@@ -135,12 +122,18 @@ class UserControllerAPI extends Controller
             }
 
             $user->password = bcrypt($request->password);
+        } else {
+            $user->fill($request->all());
         }
 
-        $user->name = $data["name"];
-        $user->username = $data["username"];
-        $user->email = $data["email"];
-        $user->update();
+        if ($request->hasFile('photo_url'))
+        {
+            $fileName = Storage::disk('public')->putFile('profiles', Input::file('photo_url'));
+            $photoPathParts = explode('/', $fileName);
+            $user->photo_url = end($photoPathParts);
+        }
+        
+        $user->save();
         return new UserResource($user);
     }
 

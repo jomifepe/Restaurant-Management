@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\Order as OrderResource;
+use App\Http\Resources\OrderMeal as OrderMealResource;
 use App\Http\Resources\Item as ItemResource;
 use App\Http\Resources\ItemOrder as ItemOrderResource;
 use App\Order;
 use App\Meal;
 use App\Item;
+use App\User;
 use Validator;
 
 class OrderControllerAPI extends Controller
@@ -27,23 +29,22 @@ class OrderControllerAPI extends Controller
 
     public function toPrepare($id)
     {
-        $myinPrepOrders = DB::table('orders')
-            ->where([
-                ['responsible_cook_id','=', $id],
-                ['state', '=','in preparation'],
-            ])
+        User::findOrFail($id);
+
+        $myinPrepOrders = Order::select('orders.*', 'meals.table_number AS meal_table_number')
+            ->join('meals', 'meals.id', '=', 'orders.meal_id')
+            ->where('orders.responsible_cook_id', $id)
+            ->where('orders.state', 'in preparation')
             ->orderBy('created_at','asc')
             ->get();
 
-        $confirmedOrders = DB::table('orders')
-            ->where([
-                ['state', '=', 'confirmed'],
-            ])
+        $confirmedOrders = Order::select('orders.*', 'meals.table_number AS meal_table_number')
+            ->join('meals', 'meals.id', '=', 'orders.meal_id')
+            ->where('orders.state', 'confirmed')
             ->orderBy('created_at','asc')
             ->get();
-
-        return $myinPrepOrders->merge($confirmedOrders);
-
+            
+        return OrderMealResource::collection($myinPrepOrders->merge($confirmedOrders));
     }
 
 
@@ -73,31 +74,6 @@ class OrderControllerAPI extends Controller
         return response()->json(new OrderResource($order), 201);
     }
 
-    public function storeMultiple(Request $request)
-    {
-        $result = [];
-        foreach ($request->all() as &$order) {
-            $newOrder = new Order();
-            $newOrder->fill($order);
-            $newOrder->save();
-
-            $meal = Meal::findOrFail($order['meal_id']);
-            $item = Item::fifindOrFailnd($order['item_id']);
-            $meal->total_price_preview += $item->price;
-            $meal->save();
-
-            array_push($result, new OrderResource($newOrder));
-        }
-
-        return response()->json($result, 201);
-
-
-        // $order = new Order();
-        // $order->fill($request->all());
-        // $order->save();
-        // return response()->json(new OrderResource($order), 201);
-    }
-
     /**
      * Display the specified resource.
      *
@@ -109,24 +85,22 @@ class OrderControllerAPI extends Controller
         return OrderResource(Order::find($id));
     }
 
-
     public function mealOrders($mealId) {
         return Order::where('meal_id', $mealId)->get();
     }
 
     public function mealItems($mealId)
     {
-        $items = DB::table('items')
+        $items = Item::select('items.*',
+            'orders.id AS order_id',
+            'orders.state AS order_state',
+            'orders.created_at AS order_created_at',
+            'orders.updated_at AS order_updated_at',
+            'orders.start AS order_start',
+            'orders.end AS order_end')
             ->join('orders', 'orders.item_id', '=', 'items.id')
             ->join('meals', 'meals.id', '=', 'orders.meal_id')
             ->where('meals.id', $mealId)
-            ->select('items.*',
-                'orders.id AS order_id',
-                'orders.state AS order_state',
-                'orders.created_at AS order_created_at',
-                'orders.updated_at AS order_updated_at',
-                'orders.start AS order_start',
-                'orders.end AS order_end')
             ->get();
 
         return response()->json(ItemOrderResource::collection($items), 200);
@@ -141,7 +115,6 @@ class OrderControllerAPI extends Controller
      */
     public function update(Request $request, $id)
     {
-        //dd($request);
         $validatedData= $request->validate([
             'state' => 'in:pending,confirmed,in preparation,prepared,delivered,not delivered',
             'responsible_cook_id' => 'nullable|integer|exists:users,id',
@@ -151,7 +124,6 @@ class OrderControllerAPI extends Controller
         ]);
 
         $order = Order::findOrFail($id);
-        //$order->fill($validatedData);
         $order->update($request->all());
         return new OrderResource($order);
     }
@@ -172,15 +144,6 @@ class OrderControllerAPI extends Controller
         $meal->save();
 
         $order->delete();
-        return response()->json(null, 204);
-    }
-
-    public function destroyMultiple(Request $request)
-    {
-        foreach ($request->all() as &$id) {
-            $order = Order::findOrFail($id);
-            $order->delete();
-        }
         return response()->json(null, 204);
     }
 }

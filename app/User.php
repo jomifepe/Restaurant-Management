@@ -8,7 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, Notifiable;
     use SoftDeletes;
@@ -21,7 +21,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'username', 'email', 'password', 'type', 'last_shift_start', 'last_shift_end', 'shift_active', 'blocked', 'photo_url'
+        'name', 'username', 'email', 'email_verified_at', 'password', 'type', 
+        'last_shift_start', 'last_shift_end', 'shift_active', 'blocked', 'photo_url'
     ];
 
     /**
@@ -35,7 +36,7 @@ class User extends Authenticatable
 
 
 
-    public function oders()
+    public function orders()
     {
         return $this->hasMany('App\Order');
     }

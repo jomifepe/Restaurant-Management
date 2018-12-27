@@ -51,18 +51,31 @@ export const itemMixin = {
 export const toasts = {
 	methods: {
 		showErrorLog(message, error) {
-			this.showErrorToast(message);
-			console.error(error);
+			return this.showErrorToast(message);
+        },
+        showToast(message, icon, time = 3000) {
+			return this.$toasted.show(message, {
+				icon : icon,
+				position: 'bottom-center',
+				duration : time
+			});
+		},
+        showTopRightToast(message, icon, time = 3000) {
+			return this.$toasted.show(message, {
+				icon : icon,
+				position: 'top-right',
+				duration : time
+			});
 		},
 		showSuccessToast(message, time = 3000) {
-			this.$toasted.success(message, {
+			return  this.$toasted.success(message, {
 				icon : 'check',
 				position: 'bottom-center',
 				duration : time
 			});
 		},
 		showErrorToast(message, time = 3000) {
-			this.$toasted.error(message, {
+			return  this.$toasted.error(message, {
 				icon : 'error',
 				position: 'bottom-center',
 				duration : time
@@ -74,7 +87,8 @@ export const toasts = {
 export const helper = {
     computed: {
         isUserManager() {
-            return this.$store.state.user.type === 'manager';
+            return this.$store.state.user && 
+                this.$store.state.user.type === 'manager';
         }
     },
     methods: {

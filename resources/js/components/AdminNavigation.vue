@@ -68,27 +68,26 @@
                 </v-dialog>
             </v-toolbar>
             <v-divider></v-divider>
-            <v-card>
+            <v-card class="elevation-0">
                 <v-list three-line>
                     <template v-for="(item, index) in notifications">
-                        <v-list-tile :key="index">
-                            <v-list-tile-content>
-                                <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-                                <v-list-tile-sub-title>{{ item.text }}</v-list-tile-sub-title>
-                            </v-list-tile-content>
+                        <v-flex xs12 :key="index">
+                            <v-list-tile @click="redirectToItemLocation(item.forward)">
+                                <v-list-tile-content>
+                                    <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                                    <v-list-tile-sub-title>{{ item.text }}</v-list-tile-sub-title>
+                                </v-list-tile-content>
 
-                            <v-list-tile-action>
-                                <v-list-tile-action-text>{{ item.action }}</v-list-tile-action-text>
-                            </v-list-tile-action>
+                                <v-list-tile-action>
+                                    <v-list-tile-action-text>{{ item.action }}</v-list-tile-action-text>
+                                </v-list-tile-action>
 
-                            <v-btn @click="dismissNotification(index)" icon>
-                                <v-icon>check_circle</v-icon>
-                            </v-btn>
-                            <v-btn :to="item.forward" v-if="item.forward" icon>
-                                <v-icon>forward</v-icon>
-                            </v-btn>
-                        </v-list-tile>
-                        <v-divider v-if="index + 1 < notifications.length" :key="index"></v-divider>
+                                <v-btn @click="dismissNotification(index)" icon>
+                                    <v-icon>close</v-icon>
+                                </v-btn>
+                            </v-list-tile>
+                            <v-divider v-if="index + 1 < notifications.length"></v-divider>
+                        </v-flex>
                     </template>
                 </v-list>
             </v-card>
@@ -209,12 +208,6 @@ import {helper} from '../mixin.js';
                     target: "/admin/invoices",
                     visible: ['cashier', 'manager']
                 },
-                {
-                    title: "Print Invoices",
-                    icon: "print",
-                    target: "/admin/invoices/print",
-                    visible: ['cashier', 'manager']
-                }
             ],
             mini: true,
             right: null
@@ -224,7 +217,8 @@ import {helper} from '../mixin.js';
                 this.addNotification('Message sent', 'Good luck', false);
             },
             message_from_worker(data){
-                this.addNotification(data[0].title, data[0].text, false);
+                this.addNotification(data.title, data.text, false);
+            
             },
             order_prepared_cook(data) {
                 this.addNotification("Order send confirmation", data, false);
@@ -232,11 +226,11 @@ import {helper} from '../mixin.js';
             order_received() {
                 this.addNotification("New Order", "New order arrived!", "/admin/orders");
             },
-            order_prepared_waiter(mealId) {
+            order_prepared_waiter(order) {
                 this.addNotification(
                     "My order is ready",
-                    "Meal '" + mealId + "' is ready",
-                    "/admin/meals/" + mealId + "/orders"
+                    "Meal '" + order.meal_id + "' is ready",
+                    "/admin/meals/" + order.meal_id + "/orders"
                 );
             },
             user_enter(data) {
@@ -265,13 +259,12 @@ import {helper} from '../mixin.js';
 
             },
             sendNotificationToManagers(){
-                let message =
-                    [
-                        {
-                            'title': this.titleNotManager,
-                            'text': this.textNotManager
-                        }
-                    ]
+                let message =         
+                {
+                    'title': this.titleNotManager,
+                    'text': this.textNotManager
+                }
+        
                 this.$socket.emit('to_all_managers', message);
                 this.titleNotManager='';
                 this.textNotManager='';
@@ -306,6 +299,11 @@ import {helper} from '../mixin.js';
             toggleNotificationDrawer() {
                 if (!!this.user.shift_active) {
                     this.rightDrawer = !this.rightDrawer;
+                }
+            },
+            redirectToItemLocation(notificationRoute) {
+                if (notificationRoute) {
+                    this.$router.push(notificationRoute)
                 }
             }
         }

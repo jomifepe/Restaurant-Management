@@ -25,9 +25,13 @@ Route::middleware('auth:api')->get('users/me', 'UserControllerAPI@myProfile');
 Route::post('register', 'UserControllerAPI@store')->name('register');
 
 Route::get('items', 'ItemControllerAPI@index');
+
+Route::get('invoices/{id}/meal', 'InvoiceControllerAPI@invoiceMeal');
+Route::get('invoices/details','InvoiceControllerAPI@allOrders');
 Route::get('invoices/pending', 'InvoiceControllerAPI@pendingOrders')->name('invoices.pending');
 Route::get('invoices/paid', 'InvoiceControllerAPI@paidOrders')->name('invoices.paid');
-
+Route::get('invoices/{id}/items','InvoiceItemsAPI@itemsFromAnInvoice');
+Route::get('invoices/{id}','InvoiceControllerAPI@orderDetails');
 /**  USER **/
 Route::get('users/all', 'UserControllerAPI@indexManager');
 Route::put('user/{id}', 'UserControllerAPI@toggleBlockUser');
@@ -54,8 +58,6 @@ Route::get('orders/meal/{mealId}', 'OrderControllerAPI@mealOrders')->name('order
 
 /* get all the items ordered for a specific meal */
 Route::get('orders/meal/{mealId}/items', 'OrderControllerAPI@mealItems')->name('orders.meal.items');
-Route::post('orders/multiple', 'OrderControllerAPI@storeMultiple')->name('orders.store.multiple');
-Route::delete('orders/multiple', 'OrderControllerAPI@destroyMultiple')->name('orders.destroy.multiple');
 
 
 

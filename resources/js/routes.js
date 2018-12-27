@@ -12,7 +12,8 @@ import AdminItemMenu from './components/AdminItemMenu.vue';
 import MealOrders from './components/MealOrders.vue';
 import UserList from './components/UserList.vue';
 import Invoices from './components/Invoices.vue';
-import PrintInvoices from './components/PrintInvoices.vue';
+import InvoiceDetails from './components/InvoiceDetails.vue';
+
 
 export default [
     {
@@ -114,15 +115,17 @@ export default [
                 name: 'pending.invoices',
                 meta: {
                     allowed: ['cashier', 'manager']
-                }
-            },
-            {
-                path: 'invoices/print',
-                component: PrintInvoices,
-                name: 'print.invoices',
-                meta: {
-                    allowed: ['cashier', 'manager']
-                }
+                },
+                children: [
+                    {
+                        path: ':invoiceId/details',
+                        component: InvoiceDetails,
+                        name: 'invoices.details',
+                        meta: {
+                            allowed: ['cashier', 'manager']
+                        }
+                    }
+                ]
             },
             {
                 path: 'users',

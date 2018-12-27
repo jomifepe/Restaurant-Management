@@ -14,3 +14,7 @@
 //Route::get('/{any}', 'VueController@index')->where('any', '.*');
 Route::get('/', 'VueController@index');
 
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
