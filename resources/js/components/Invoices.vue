@@ -1,4 +1,8 @@
 <template>
+   <!-- <v-container>
+        <pending-invoices-list></pending-invoices-list>  
+        <not-pending-invoices-list></not-pending-invoices-list>
+    </v-container> --> 
     <v-container grid-list-md>
         <v-layout row wrap>
             <v-flex xs12>
@@ -14,7 +18,8 @@
                         hide-details
                     ></v-text-field>
                 </v-toolbar>
-                <v-data-table :headers="myInvoicesHeaders"
+		                  
+                 <v-data-table :headers="myInvoicesHeaders"
                               :items="invoices"
                               :pagination.sync="pagination"
                               :loading="loading"
@@ -75,12 +80,12 @@
                             </v-card-text>
                         </v-card>
                     </template>
-                </v-data-table>
+                </v-data-table> 
             </v-flex>
         </v-layout>
         <v-flex xs12 id="InvoiceDetails" class="mt-5">
             <router-view></router-view>
-        </v-flex>
+        </v-flex>-->
     </v-container>
 </template>
 
@@ -89,17 +94,23 @@
     import jsPDF from 'jspdf';
     import autoTable from 'jspdf-autotable';
     import InvoiceDetails from './InvoiceDetails';
+    import PendingInvoicesList from './PendingInvoicesList';
+    import NotPendingInvoicesList from './NotPendingInvoicesList';
     import {toasts} from '../mixin';
 
     export default {
         name: "Invoices",
         mixins: [toasts],
         components: {
-            InvoiceDetails
+            InvoiceDetails,
+            'pending-invoices-list' : PendingInvoicesList,
+            'not-pending-invoices-list' : NotPendingInvoicesList
         },
         data(){
             return {
                 invoices: [],
+                pendingInvoices: [],
+                notPendingInvoices: [],
                 myInvoicesHeaders: [
                     { text: 'Id', value: 'id' },
                     { text: 'Table number', value: 'table_number' },
@@ -110,7 +121,6 @@
                 ],
                 search: '',            
                 dialog: false,
-                totalInvoices: 0,
                 loading: true,
                 pagination: {},
                 valid: true,
@@ -126,29 +136,17 @@
                 ],
             }
         },
+        sockets: {
+          pending_invoice_received(){
+            this.loadInvoices();  
+          }
+        },
         computed: {
             user(){
                 return this.$store.state.user;
             }
         },
-        watch: {
-            pagination: {
-                handler () {
-                    this.getDataFromApi()
-                        .then(data => {
-                            this.invoices = data.items;
-                            this.totalInvoices = data.total;
-                        })
-                },
-                deep: true
-            }
-        },
         mounted() {
-           // this.getDataFromApi()
-           //     .then(data => {
-           //         this.invoices = data.items;
-           //         this.totalInvoices= data.total
-           //     })
            this.loadInvoices();
            if(this.user.type==='manager'){
                this.search='pending';
@@ -222,35 +220,6 @@
             showInvoiceDetails(id){
                 this.$router.push({ name: 'invoices.details', params: { invoiceId: id }});
             },
-            getDataFromApi (){
-                this.loading = true;
-                return new Promise((resolve, reject) => {
-                    const { sortBy, descending, page, rowsPerPage } = this.pagination;
-
-                    let items;
-
-                    this.loadInvoices()
-                        .then(data => {
-                            items= data.data;
-                            const total = items.length; 
-                            
-                            
-                            if (rowsPerPage > 0) {
-                                items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage)
-                            }
-
-                            setTimeout(() => {
-
-                                this.loading = false;
-                                resolve({
-                                    items,
-                                    total
-                                })
-                            }, 1000)
-                        });
-                });
-                
-            },
             getStateColor(state) {
                 return state === 'pending' ? 'yellow--text' : 'green--text';
             },
@@ -258,10 +227,13 @@
                 this.loading = true;
                 axios.get(`/invoices/details`)
                     .then(response => {
-                       // console.log(response);
                        if(response.status=== 200){
                         this.loading= false;
                         this.invoices = response.data;
+                        this.pendingInvoices = this.invoices.filter(invoice => 
+                            invoice.state==='pending');
+                        this.notPendingInvoices= this.invoices.filter(invoice => 
+                            invoice.sate !== 'pending');
                        }
                         
                     }).catch(error => {

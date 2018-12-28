@@ -72,7 +72,7 @@
                 console.log('socket connected (socket ID = '+this.$socket.id+')');
             },
             order_received_list(){
-                console.log("chegou");
+                //console.log("chegou");
                 this.loadOrders();
             },
 
