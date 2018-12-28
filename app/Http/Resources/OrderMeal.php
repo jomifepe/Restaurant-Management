@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\Resource;
+use Illuminate\Support\Facades\Storage;
 
 class OrderMeal extends Resource
 {
@@ -22,6 +23,10 @@ class OrderMeal extends Resource
             'meal_id' => $this->meal_id,
             'meal_table_number' => $this->meal_table_number,
             'responsible_cook_id' => $this->responsible_cook_id,
+            'item_name' => $this->item_name,
+            'item_type' => $this->item_type,
+            'item_photo' => $this->item_photo,  
+            'item_photo_src' => Storage::url("items/$this->item_photo"),
             'start' => $this->start,
             'end' => $this->end,
             'created_at' => $this->created_at,

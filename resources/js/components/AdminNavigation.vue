@@ -198,9 +198,9 @@ import {helper} from '../mixin.js';
                 },
                 {
                     title: 'Orders',
-                    icon: 'restaurant',
+                    icon: 'event_note',
                     target: '/admin/orders',
-                    visible: ['cook']
+                    visible: ['cook', 'manager']
                 },
                 {
                     title: "Invoices",

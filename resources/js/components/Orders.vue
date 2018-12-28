@@ -16,7 +16,13 @@
                     <template slot="items" slot-scope="props">
                         <tr @click="props.expanded = !props.expanded">
                             <td>{{ props.item.id }}</td>
-                            <td>{{ props.item.start }}</td>
+                            <td>{{ props.item.item_name }}</td>
+                            <td class="text-xs-left">
+                                <v-avatar class="ma-1"  slot="activator" size="50px" >
+                                    <img :src="props.item.item_photo_src" alt="Avatar">
+                                </v-avatar>
+                            </td>
+                            <td>{{ props.item.item_type }}</td>
                             <td>{{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
                             <td :class="getStateColor(props.item.state)">
                                 <strong>{{ props.item.state }}</strong>
@@ -51,8 +57,10 @@
             orders: [],
             myOrderHeaders: [
                 { text: 'Id', value: 'id' },
-                { text: 'Started', value: 'start' },
-                { text: 'Created', value: 'created_at' },
+                { text: 'Item Name', value: 'item_name' },               
+                { text: 'Item Photo', value: 'item_photo' },
+                { text: 'Item Type', value: 'item_type' },
+                { text: 'Date', value: 'created_at' },
                 { text: 'State', value: 'state' }
             ],
             totalOrders: 0,

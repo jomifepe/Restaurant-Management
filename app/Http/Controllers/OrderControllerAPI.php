@@ -30,20 +30,25 @@ class OrderControllerAPI extends Controller
     public function toPrepare($id)
     {
         User::findOrFail($id);
-
-        $myinPrepOrders = Order::select('orders.*', 'meals.table_number AS meal_table_number')
+        
+        $myinPrepOrders = Order::select('orders.*', 'meals.table_number AS meal_table_number',
+                                        'items.name AS item_name', 'items.photo_url AS item_photo',
+                                        'items.type AS item_type')
             ->join('meals', 'meals.id', '=', 'orders.meal_id')
+            ->join('items', 'items.id', '=', 'orders.item_id')            
             ->where('orders.responsible_cook_id', $id)
             ->where('orders.state', 'in preparation')
             ->orderBy('created_at','asc')
             ->get();
-
-        $confirmedOrders = Order::select('orders.*', 'meals.table_number AS meal_table_number')
+        
+        $confirmedOrders = Order::select('orders.*', 'meals.table_number AS meal_table_number',
+                                   'items.name AS item_name', 'items.photo_url AS item_photo',
+                                   'items.type AS item_type')
             ->join('meals', 'meals.id', '=', 'orders.meal_id')
+            ->join('items', 'items.id', '=', 'orders.item_id')            
             ->where('orders.state', 'confirmed')
             ->orderBy('created_at','asc')
             ->get();
-            
         return OrderMealResource::collection($myinPrepOrders->merge($confirmedOrders));
     }
 

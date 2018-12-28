@@ -53,7 +53,7 @@ Homestead.yaml
 Homestead.json
 /node_modules
 /public/hot
-#/public/storage
+/public/storage
 /public/js
 /public/css
 /public/mix-manifest.json
@@ -78,3 +78,4 @@ phpunit.dusk.xml
 
 # vuepress build output
 .vuepress/dist
+public/storage
