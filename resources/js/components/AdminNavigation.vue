@@ -198,9 +198,9 @@ import {helper} from '../mixin.js';
                 },
                 {
                     title: 'Orders',
-                    icon: 'restaurant',
+                    icon: 'event_note',
                     target: '/admin/orders',
-                    visible: ['cook']
+                    visible: ['cook', 'manager']
                 },
                 {
                     title: "Invoices",
@@ -229,7 +229,10 @@ import {helper} from '../mixin.js';
             order_received() {
                 this.addNotification("New Order", "New order arrived!", "/admin/orders");
             },
-            order_prepared_waiter(order) {
+            pending_invoice_received(){
+                this.addNotification("New Invoice", "New invoice generated", "/admin/inoices");
+            },
+           order_prepared_waiter(order) {
                 this.addNotification(
                     "My order is ready",
                     "Meal '" + order.meal_id + "' is ready",

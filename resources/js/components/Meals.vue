@@ -240,12 +240,22 @@
                     });
                 })
             },
+            sendNotificationMealTerminatedToManagers(meal){
+                console.log("entrou send");
+                let message =
+                {
+                    'title': `Meal Terminated`,
+                    'text': `Meal ${meal.id} from table ${meal.table_number} is now terminated`
+                };
+                this.$socket.emit('to_all_managers', message);
+            },
             terminateMeal(meal) {
                 return new Promise((resolve, reject) => {
                     meal.state = 'terminated';
                     axios.patch(`/meals/${meal.id}`, meal)
                         .then(response => {
                             if (response.status === 200) {
+                                this.sendNotificationMealTerminatedToManagers(meal);
                                 resolve('Success');
                             } else {
                                 this.showErrorToast(`Failed to terminate meal #${meal.id}`);
