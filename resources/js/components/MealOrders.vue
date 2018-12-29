@@ -169,7 +169,8 @@
                 }
             },
             new_order_notify_manager(){
-                this.loadMealOrdersFromRouteId();
+                this.progressBar = true;
+                this.loadMealOrders();
             }
         },
         methods: {
