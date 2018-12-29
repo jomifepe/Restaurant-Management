@@ -133,6 +133,10 @@
                 this.showTopRightToast('Meal terminated by ' + user.name);
                 this.reload();
             },
+            newTable_meal_notify(table){
+                this.showTopRightToast('New table('+ table +') for meal');
+                this.reload();
+            }
         },
         methods: {
             loadMeals() {
@@ -149,6 +153,7 @@
             },
             formatDate: date => moment(date).format("YYYY-MM-DD, HH:mm"),
             onMealCreated(tableNumber) {
+                this.$socket.emit('newTable_meal', tableNumber);
                 this.showSuccessToast(`Meal successfuly started for table ${tableNumber}`);
                 this.loadMeals();
             },
@@ -175,7 +180,6 @@
                         if (response.status === 200) {
                             this.notDeliveredOrders = response.data
                                 .filter(order => order.state !== 'delivered');
-
                             /* if there are orders that were not delivered */
                             if (this.notDeliveredOrders.length > 0) {
                                 this.$store.commit('hideProgressBar');
@@ -187,6 +191,7 @@
                                     this.showSuccessToast('Meal successfully terminated');
                                     this.$store.commit('hideProgressBar');
                                     this.loadMeals();
+                                    this.$socket.emit('meal_terminated', this.$store.state.user);
                                 });
                             }
                         } else {
@@ -232,7 +237,7 @@
                     this.$store.commit('showProgressBar', {'indeterminate': true});
                     this.terminateMeal(this.mealToTerminate).then(() => {
 
-                        this.$socket.emit('meal_terminated', this.$store.state.user);
+                        //this.$socket.emit('meal_terminated', this.$store.state.user);
 
                         this.showSuccessToast('Meal successfully terminated');
                         this.loadMeals();

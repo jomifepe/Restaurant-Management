@@ -29,10 +29,11 @@ Vue.use(Vuetify, {iconfont: 'fa'});
 Vue.use(Toasted);
 Vue.use(new VueSocketio({
     debug: true,
-    connection: 'http://127.0.0.1:8080'
+    //connection: 'http://127.0.0.1:8080'
+    connection: 'http://178.62.85.56:8080'
 }));
 
-axios.defaults.baseURL = 'http://dad-restaurant.ml/api';
+axios.defaults.baseURL = 'http://project.dad/api';
 
 const router = new VueRouter({
     routes: Routes
