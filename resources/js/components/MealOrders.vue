@@ -15,6 +15,41 @@
             <v-progress-circular v-if="progressBar" indeterminate color="blue-grey"></v-progress-circular>
         </v-toolbar>
         <v-container fluid class="white elevation-1">
+
+            <!--  pending & confirmed -->
+            <v-card class="mt-3">
+                <v-toolbar card color="red accent-3" dark>
+                    <v-toolbar-title>Not prepared orders</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text style="border: 1px solid red">
+                    <v-data-iterator row wrap :items="notPreparedOrders" :rows-per-page-items="notPreparedOrdersRows"
+                                     :pagination.sync="notPreparedOrdersPagination" content-tag="v-layout"
+                                     no-data-text="No pending or confirmed orders at the moment">
+                        <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
+                            <Card :item="props.item" @onOrderChange="loadMealOrders"></Card>
+                        </v-flex>
+                    </v-data-iterator>
+                </v-card-text>
+            </v-card>
+
+            <!--  in preparation -->
+            <v-card class="mt-3" v-if="isUserManager">
+                <v-toolbar card color="amber darken-1 accent-3" dark>
+                    <v-toolbar-title>In preparation orders</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text style="border: 1px solid red">
+                    <v-data-iterator row wrap :items="inPreparationOrders" :rows-per-page-items="inPreparationOrdersRows"
+                                     :pagination.sync="inPreparationOrdersPagination" content-tag="v-layout"
+                                     no-data-text="No in preparation orders at the moment">
+                        <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
+                            <Card :item="props.item" @onOrderChange="loadMealOrders"></Card>
+                        </v-flex>
+                    </v-data-iterator>
+                </v-card-text>
+            </v-card>
+
+
+            <!--  prepared -->
             <v-card>
                 <v-toolbar card color="teal" dark>
                     <v-toolbar-title>Prepared orders</v-toolbar-title>
@@ -29,20 +64,41 @@
                     </v-data-iterator>
                 </v-card-text>
             </v-card>
-            <v-card class="mt-3">
-                <v-toolbar card color="red accent-3" dark>
-                    <v-toolbar-title>Not prepared orders</v-toolbar-title>
+
+
+            <!--  delivered -->
+            <v-card class="mt-3" v-if="isUserManager">
+                <v-toolbar card color="green accent-3" dark>
+                    <v-toolbar-title>Delivered orders</v-toolbar-title>
                 </v-toolbar>
                 <v-card-text style="border: 1px solid red">
-                    <v-data-iterator row wrap :items="notPreparedOrders" :rows-per-page-items="notPreparedOrdersRows"
-                        :pagination.sync="notPreparedOrdersPagination" content-tag="v-layout"
-                        no-data-text="No pending or confirmed orders at the moment">
+                    <v-data-iterator row wrap :items="deliveredOrders" :rows-per-page-items="deliveredOrdersRows"
+                                     :pagination.sync="deliveredOrdersPagination" content-tag="v-layout"
+                                     no-data-text="No delivered orders at the moment">
                         <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
                             <Card :item="props.item" @onOrderChange="loadMealOrders"></Card>
                         </v-flex>
                     </v-data-iterator>
                 </v-card-text>
             </v-card>
+
+            <!--  not delivered -->
+            <v-card class="mt-3" v-if="isUserManager">
+                <v-toolbar card color="grey darken-3 accent-3" dark>
+                    <v-toolbar-title>Not delivered orders</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text style="border: 1px solid red">
+                    <v-data-iterator row wrap :items="notDeliveredOrders" :rows-per-page-items="notDeliveredOrdersRows"
+                                     :pagination.sync="notDeliveredOrdersPagination" content-tag="v-layout"
+                                     no-data-text="No delivered orders at the moment">
+                        <v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
+                            <Card :item="props.item" @onOrderChange="loadMealOrders"></Card>
+                        </v-flex>
+                    </v-data-iterator>
+                </v-card-text>
+            </v-card>
+
+
         </v-container>
     </v-flex>
 </template>
@@ -51,11 +107,11 @@
     import Card from './MealOrderCard.vue';
     import axios from 'axios';
     import currency from 'currency.js';
-    import {toasts} from '../mixin';
+    import {toasts, helper} from '../mixin';
 
     export default {
         name: "MealOrders",
-        mixins: [toasts],
+        mixins: [toasts, helper],
         components: {
             Card
         },
@@ -63,10 +119,23 @@
             meal: null,
             preparedOrders: [],
             notPreparedOrders: [],
+            inPreparationOrders: [],
+            deliveredOrders: [],
+            notDeliveredOrders: [],
+
             preparedOrdersRows: [4, 8, 12],
             notPreparedOrdersRows: [4, 8, 12],
+            inPreparationOrdersRows: [4, 8, 12],
+            deliveredOrdersRows: [4, 8, 12],
+            notDeliveredOrdersRows: [4, 8, 12],
+
+
             preparedOrdersPagination: { rowsPerPage: 4 },
             notPreparedOrdersPagination: { rowsPerPage: 4 },
+            inPreparationOrdersPagination: {rowsPerPage: 4},
+            deliveredOrdersPagination: {rowsPerPage: 4},
+            notDeliveredOrdersPagination: {rowsPerPage: 4},
+
             progressBar: true
         }),
         computed: {
@@ -98,6 +167,9 @@
                 if (this.meal.id === order.meal_id) {
                     this.loadMealOrders();
                 }
+            },
+            new_order_notify_manager(){
+                this.loadMealOrdersFromRouteId();
             }
         },
         methods: {
@@ -130,6 +202,16 @@
                                 itemOrder.order_state === 'prepared');
                             this.notPreparedOrders = allItemOrders.filter(itemOrder =>
                                 ['pending', 'confirmed'].includes(itemOrder.order_state));
+
+                            if(this.isUserManager) {
+                                this.inPreparationOrders = allItemOrders.filter(itemOrder =>
+                                    itemOrder.order_state === 'in preparation');
+                                this.deliveredOrders = allItemOrders.filter(itemOrder =>
+                                    itemOrder.order_state === 'delivered')
+                                this.notDeliveredOrders = allItemOrders.filter(itemOrder =>
+                                    itemOrder.order_state === 'not delivered');
+                            }
+
                             this.progressBar = false;
                         }
                     })

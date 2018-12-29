@@ -16,10 +16,19 @@ class MealControllerAPI extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index()
+    public function index() //PARA O MANAGER
     {
         $items = Meal::select('meals.*', 'users.name AS responsible_waiter_name')
             ->join('users', 'users.id', '=', 'meals.responsible_waiter_id')
+            ->get();
+
+        return MealHRResource::collection($items);
+    }
+
+    public function managerIndex(){
+        $items = Meal::select('meals.*', 'users.name AS responsible_waiter_name')
+            ->join('users', 'users.id', '=', 'meals.responsible_waiter_id')
+            ->whereIn('meals.state', ['active', 'terminated'])
             ->get();
 
         return MealHRResource::collection($items);

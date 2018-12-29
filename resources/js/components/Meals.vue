@@ -124,10 +124,21 @@
                 return headers;
             }
         },
+        sockets: {
+            new_order_notify_manager(){
+                this.showTopRightToast('New Item Ordered');
+                this.reload();
+            },
+            meal_terminated_notify(user){
+                this.showTopRightToast('Meal terminated by ' + user.name);
+                this.reload();
+            },
+        },
         methods: {
             loadMeals() {
-                let target = this.isUserManager ? '/meals' :
+                let target = this.isUserManager ? 'meals/manager' :
                     `/meals/waiter/${this.$store.state.user.id}`;
+
                 axios.get(target)
                     .then(response => {
                         if (response.status === 200) {
@@ -220,6 +231,9 @@
                 this.cancelOrder(0, () => {
                     this.$store.commit('showProgressBar', {'indeterminate': true});
                     this.terminateMeal(this.mealToTerminate).then(() => {
+
+                        this.$socket.emit('meal_terminated', this.$store.state.user);
+
                         this.showSuccessToast('Meal successfully terminated');
                         this.loadMeals();
                         this.$store.commit('hideProgressBar');
@@ -247,7 +261,11 @@
             getReponsibleWaiterHR(meal) {
                 return `${this.userFirstAndLastName(meal.responsible_waiter_name)}
                     (${meal.responsible_waiter_id})`;
-            }
+            },
+            reload(){
+                this.loadMeals();
+                setTimeout(function(){ this.showMealItems; }, 2000);
+            },
         },
         mounted() {
             this.$store.commit('setPanelTitle', 'Meals');

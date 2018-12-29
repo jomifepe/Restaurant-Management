@@ -6,12 +6,12 @@
                     <v-toolbar-title>Invoices</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-text-field
-                        v-if="user.type ==='manager'"
-                        v-model="search"
-                        append-icon="search"
-                        label="Search"
-                        single-line
-                        hide-details
+                            v-if="user.type ==='manager'"
+                            v-model="search"
+                            append-icon="search"
+                            label="Search"
+                            single-line
+                            hide-details
                     ></v-text-field>
                 </v-toolbar>
                 <v-data-table :headers="myInvoicesHeaders"
@@ -23,7 +23,7 @@
                 >
 
                     <template slot="items" slot-scope="props">
-                         <tr @click="props.expanded = !props.expanded">
+                        <tr @click="props.expanded = !props.expanded">
                             <td>{{ props.item.id }}</td>
                             <td>{{props.item.table_number}}</td>
                             <td>{{ props.item.responsible_waiter_name}}</td>
@@ -37,43 +37,41 @@
                     <v-alert slot="no-results" :value="true" color="error" icon="warning">
                         Your search for "{{ search }}" found no results.
                     </v-alert>
-                     <template slot="expand" slot-scope="props">
-                                <v-dialog v-model="dialog" persistent max-width="600px">
-                                <v-btn flat small v-if="props.item.state ==='pending'" slot="activator">Fill Client Information</v-btn>
-                                <v-card>
-                                    <v-card-title>
+                    <template slot="expand" slot-scope="props">
+                        <v-dialog v-model="dialog" persistent max-width="600px">
+                            <v-btn flat small v-if="props.item.state ==='pending'" slot="activator">Fill Client Information</v-btn>
+                            <v-card>
+                                <v-card-title>
                                     <span class="headline">User Information</span>
-                                    </v-card-title>
-                                    <v-form ref="form" v-model="valid" >
+                                </v-card-title>
+                                <v-form ref="form" v-model="valid" >
                                     <v-card-text>
-                                    <v-container grid-list-md>
-                                        <v-layout wrap>
-                                        <v-flex xs12>
-                                            <v-text-field  v-model="nif" label="NIF*" :rules="nifRules" required></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12>
-                                            <v-text-field v-model="name" label="Full Name*" :rules="nameRules" required></v-text-field>
-                                        </v-flex>  
-                                        </v-layout>
-                                    </v-container>
-                                    <small>*indicates required field</small>
+                                        <v-container grid-list-md>
+                                            <v-layout wrap>
+                                                <v-flex xs12>
+                                                    <v-text-field  v-model="nif" label="NIF*" :rules="nifRules" required></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs12>
+                                                    <v-text-field v-model="name" label="Full Name*" :rules="nameRules" required></v-text-field>
+                                                </v-flex>
+                                            </v-layout>
+                                        </v-container>
+                                        <small>*indicates required field</small>
                                     </v-card-text>
                                     <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="blue darken-1" flat @click="close()">Close</v-btn>
-                                    <v-btn :disabled="!valid" color="blue darken-1" flat @click="submit(props.item)">Close Invoice</v-btn>
+                                        <v-spacer></v-spacer>
+                                        <v-btn color="blue darken-1" flat @click="close()">Close</v-btn>
+                                        <v-btn :disabled="!valid" color="blue darken-1" flat @click="submit(props.item)">Close Invoice</v-btn>
                                     </v-card-actions>
-                                    </v-form>
-                                </v-card>
-                                </v-dialog>
-                                <v-btn flat small @click="showInvoiceDetails(props.item.id)">
-                                 Details
-                                </v-btn>
-                                <v-btn @click="exportToPdf(props.item)" icon>
-                                 <v-icon>print</v-icon>
-                                </v-btn>
-                            </v-card-text>
-                        </v-card>
+                                </v-form>
+                            </v-card>
+                        </v-dialog>
+                        <v-btn flat small @click="showInvoiceDetails(props.item.id)">
+                            Details
+                        </v-btn>
+                        <v-btn @click="exportToPdf(props.item)" icon>
+                            <v-icon>print</v-icon>
+                        </v-btn>
                     </template>
                 </v-data-table>
             </v-flex>
@@ -108,7 +106,7 @@
                     { text: 'Date', value: 'date'},
                     { text: 'Total Price', value: 'total_price' }
                 ],
-                search: '',            
+                search: '',
                 dialog: false,
                 totalInvoices: 0,
                 loading: true,
@@ -144,23 +142,23 @@
             }
         },
         mounted() {
-           // this.getDataFromApi()
-           //     .then(data => {
-           //         this.invoices = data.items;
-           //         this.totalInvoices= data.total
-           //     })
-           this.loadInvoices();
-           if(this.user.type==='manager'){
-               this.search='pending';
-           }
+            // this.getDataFromApi()
+            //     .then(data => {
+            //         this.invoices = data.items;
+            //         this.totalInvoices= data.total
+            //     })
+            this.loadInvoices();
+            if(this.user.type==='manager'){
+                this.search='pending';
+            }
         },
         methods: {
             sendNotificationToManager(meal){
                 let message =
-                {
-                    'title' : "Meal Paid",
-                    'text' : `The meal ${meal.id} in table ${meal.table_number} is now paid`
-                }
+                    {
+                        'title' : "Meal Paid",
+                        'text' : `The meal ${meal.id} in table ${meal.table_number} is now paid`
+                    }
                 this.$socket.emit('to_all_managers', message);
             },
             close(){
@@ -199,12 +197,12 @@
                                             }
                                         });
                                     }).catch(error => {
-                                            if (error.response.data) {
-                                                this.showErrorToast(error.response.data.message);
-                                            } else {
-                                                this.showErrorLog(`Failed to get the invoice meal`, error);
-                                            }
-                                        });
+                                    if (error.response.data) {
+                                        this.showErrorToast(error.response.data.message);
+                                    } else {
+                                        this.showErrorLog(`Failed to get the invoice meal`, error);
+                                    }
+                                });
                                 this.showSuccessToast('Invoice edited');
                             }
                         }).catch(error => {
@@ -214,8 +212,8 @@
                             this.showErrorLog(`Failed to update invoice`, error);
                         }
                     });
-                
-                
+
+
                 }
                 this.dialog = false
             },
@@ -230,11 +228,11 @@
                     let items;
 
                     this.loadInvoices()
-                        .then(data => {
+                      /*  .then(data => {   ?????????????????????????????????
                             items= data.data;
-                            const total = items.length; 
-                            
-                            
+                            const total = items.length;
+
+
                             if (rowsPerPage > 0) {
                                 items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage)
                             }
@@ -247,9 +245,9 @@
                                     total
                                 })
                             }, 1000)
-                        });
+                        });*/  //?????????????????????????????
                 });
-                
+
             },
             getStateColor(state) {
                 return state === 'pending' ? 'yellow--text' : 'green--text';
@@ -258,14 +256,14 @@
                 this.loading = true;
                 axios.get(`/invoices/details`)
                     .then(response => {
-                       // console.log(response);
-                       if(response.status=== 200){
-                        this.loading= false;
-                        this.invoices = response.data;
-                       }
-                        
+                        // console.log(response);
+                        if(response.status=== 200){
+                            this.loading= false;
+                            this.invoices = response.data;
+                        }
+
                     }).catch(error => {
-                        this.loadingTableEffect=false;
+                    this.loadingTableEffect=false;
                 });
             },
             exportToPdf(invoice){
@@ -277,7 +275,7 @@
                     {title: 'NIF', dataKey: 'NIF'},
                     {title: 'Name', dataKey: 'Name'},
                     {title: 'Date', dataKey: 'Date'},
-                    
+
 
                 ];
                 let teste = [

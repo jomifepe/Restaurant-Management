@@ -213,6 +213,9 @@ import {helper} from '../mixin.js';
             right: null
         }),
         sockets: {
+            connect(){
+                console.log('socket connected (socket ID = '+ this.$socket.id +')');
+            },
             confirmation_sent_to_manager(data){
                 this.addNotification('Message sent', 'Good luck', false);
             },

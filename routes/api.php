@@ -33,6 +33,9 @@ Route::get('invoices/paid', 'InvoiceControllerAPI@paidOrders')->name('invoices.p
 Route::get('invoices/{id}/items','InvoiceItemsAPI@itemsFromAnInvoice');
 Route::get('invoices/{id}','InvoiceControllerAPI@orderDetails');
 /**  USER **/
+
+Route::get('meals/manager', 'MealControllerAPI@managerIndex')->name('meal.manager');
+
 Route::get('users/all', 'UserControllerAPI@indexManager');
 Route::put('user/{id}', 'UserControllerAPI@toggleBlockUser');
 Route::put('user/restore/{id}', 'UserControllerAPI@restore');
@@ -47,9 +50,9 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
 
 
 Route::post('items/update/{id}', 'ItemControllerAPI@updatePost');
-Route::get('meals/{id}/tableNumber', 'MealControllerAPI@tableNumber')->name('meal.tableNumber');
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
 Route::get('meals/table/${tableNumber}', 'MealControllerAPI@tableMeal')->name('meal.table');
+Route::get('meals/{id}/tableNumber', 'MealControllerAPI@tableNumber')->name('meal.tableNumber');
 
 //get waiter id from a meal
 Route::get('meals/{mealId}/waiter', 'MealControllerAPI@getWaiter')->name('meal.waiter');
