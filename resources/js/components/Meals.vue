@@ -122,6 +122,9 @@
                     { text: 'Actions', value: '', sortable: false, align: 'center'}
                 ])
                 return headers;
+            },
+            user() {
+                return this.$store.state.user;
             }
         },
         sockets: {
@@ -247,12 +250,13 @@
             },
             sendNotificationMealTerminatedToManagers(meal){
                 console.log("entrou send");
-                let message =
-                {
-                    'title': `Meal Terminated`,
-                    'text': `Meal ${meal.id} from table ${meal.table_number} is now terminated`
-                };
-                this.$socket.emit('to_all_managers', message);
+                let content = {
+                        'sender': this.user,
+                        'title': `Meal Terminated`,
+                        'text': `Meal ${meal.id} from table ${meal.table_number} is now terminated`
+                }
+                
+                this.$socket.emit('to_all_managers', content);
             },
             terminateMeal(meal) {
                 return new Promise((resolve, reject) => {

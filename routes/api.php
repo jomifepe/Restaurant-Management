@@ -146,7 +146,6 @@ Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type'
 
 ////->->->->->->->->->->->->->->->->->->-ORDERS->->->->->->->->->->->->->->
 
-//O middleware pode ficar com os 3?
 Route::group(
     ['prefix' => 'orders',
      'middleware' => 'managerWaiterAndCook',
@@ -171,15 +170,6 @@ Route::get('orders/{id}/toprepare', 'OrderControllerAPI@toPrepare')->name('order
 Route::delete('orders/{order}', 'OrderControllerAPI@destroy')->name('orders.destroy')
     ->middleware('manager');
 
-Route::group(
-    [
-     'middleware' => 'managerWaiterAndCook',
-    ],
-    function () {
-        //Route::apiResource('orders', 'OrderControllerAPI');
-    }
-);
-
 
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-ORDERS<-<-<-<-<-<-<-<-<-<-<-<-<-<-
 
@@ -191,7 +181,7 @@ Route::group(
      'middleware' => 'manager',
     ],
     function () {
-        Route::apiResource('tables', 'ItemControllerAPI');
+        Route::apiResource('tables', 'Table ControllerAPI');
     }
 );
 

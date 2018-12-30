@@ -13,6 +13,7 @@
                               :items="orders"
                               :pagination.sync="pagination"
                               :loading="loading"
+                              disable-initial-sort
                               class="elevation-1">
 
                     <template slot="items" slot-scope="props">
@@ -70,13 +71,9 @@
             pagination: { rowsPerPage: 10 }
         }),
         sockets:{
-            connect() {
-                console.log('socket connected (socket ID = '+this.$socket.id+')');
-            },
             order_received_list() {
                 this.loadOrders();
             },
-
         },
         methods: {
             getWaiter(order) {
@@ -100,7 +97,6 @@
                 this.getWaiter(order).then(userDest => {
                     this.$socket.emit('order_prepared', this.$store.state.user, userDest, order);
                 });
-                this.loadOrders();
             },
             saveOrder(order){
                 axios.patch(`/orders/${order.id}`, order)
@@ -124,6 +120,7 @@
                     this.$socket.emit('order_in_preparation',
                         this.$store.state.user, userDest, order);
                 });
+                this.loadOrders();
             },
             loadOrders() {
                 this.loading = true;
