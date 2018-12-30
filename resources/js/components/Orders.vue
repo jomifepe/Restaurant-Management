@@ -91,7 +91,7 @@
                         })
                 });
             },
-            markAsDone(order){
+            markAsDone(order){ //AQUI!
                 order.state= "prepared";
                 this.saveOrder(order);
                 this.getWaiter(order).then(userDest => {

@@ -181,7 +181,7 @@ Route::group(
      'middleware' => 'manager',
     ],
     function () {
-        Route::apiResource('tables', 'Table ControllerAPI');
+        Route::apiResource('tables', 'TableControllerAPI');
     }
 );
 
