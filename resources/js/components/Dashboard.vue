@@ -1,5 +1,5 @@
 <template>
-    <v-container grid-list-md>
+    <v-container grid-list-md fuid>
         <v-layout>
             <v-flex xs12>
                 <h4 class="display-1 font-weight-regular">Welcome back, {{ userFirstName(user.name) }}</h4>

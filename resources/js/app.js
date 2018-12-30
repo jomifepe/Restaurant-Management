@@ -14,11 +14,11 @@ import VueRouter from 'vue-router';
 import VueMoment from 'vue-moment'
 import VeeValidate from 'vee-validate';
 import Routes from './routes';
-import App from './components/App.vue';
 import Vuetify from 'vuetify'
 import Toasted from 'vue-toasted';
 import axios from 'axios';
 import VueSocketio from 'vue-socket.io';
+import App from './components/App.vue';
 
 Vue.use(VeeValidate);
 Vue.use(VueRouter);
@@ -28,9 +28,8 @@ Vue.use(VueMoment);
 Vue.use(Vuetify, {iconfont: 'fa'});
 Vue.use(Toasted);
 Vue.use(new VueSocketio({
-    debug: true,
-    //connection: 'http://127.0.0.1:8080'
-    connection: 'http://178.62.85.56:8080'
+    connection: 'http://127.0.0.1:8080'
+    // connection: 'http://178.62.85.56:8080'
 }));
 
 axios.defaults.baseURL = 'http://project.dad/api';

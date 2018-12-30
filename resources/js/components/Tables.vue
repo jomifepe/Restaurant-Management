@@ -1,80 +1,82 @@
 <template>
-    <div>
-        <v-container grid-list-md>
-            <v-toolbar flat color="white">
-                <v-toolbar-title>Restaurant Tables</v-toolbar-title>
-                <v-divider class="mx-2" inset vertical></v-divider>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="dialog" max-width="500px">
-                    <v-btn slot="activator" color="primary" dark class="mb-2">New Table</v-btn>
-                    <form id="form" @submit.prevent="validateBeforeSubmit">
-                        <v-card>
-                            <v-card-title>
-                                <span class="headline">{{ formTitle }}</span>
-                            </v-card-title>
-                            <v-card-title>
-                                <span >Insert 0 to auto create table</span>
-                            </v-card-title>
-                            <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
-                                <errors :msg="value"></errors>
+    <v-container grid-list-md fluid>
+        <v-layout row>
+            <v-flex xs12>
+                <v-toolbar flat color="white">
+                    <v-toolbar-title>Restaurant Tables</v-toolbar-title>
+                    <v-divider class="mx-2" inset vertical></v-divider>
+                    <v-spacer></v-spacer>
+                    <v-dialog v-model="dialog" max-width="500px">
+                        <v-btn slot="activator" color="primary" dark class="mb-2">New Table</v-btn>
+                        <form id="form" @submit.prevent="validateBeforeSubmit">
+                            <v-card>
+                                <v-card-title>
+                                    <span class="headline">{{ formTitle }}</span>
+                                </v-card-title>
+                                <v-card-title>
+                                    <span >Insert 0 to auto create table</span>
+                                </v-card-title>
+                                <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
+                                    <errors :msg="value"></errors>
+                                </div>
+                                <v-card-text>
+                                    <v-container grid-list-md>
+                                        <v-layout wrap>
+                                            <v-flex xs12 sm6 md4>
+                                                <v-text-field v-model="editedItem.table_number" v-validate="'required|numeric'" name="tableNumber" type="text" label="Table number"></v-text-field>
+                                                <span style="color:red">{{ errors.first('tableNumber') }}</span>
+                                            </v-flex>
+                                        </v-layout>
+                                    </v-container>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                                    <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </form>
+                    </v-dialog>
+                </v-toolbar>
+                <v-data-table :headers="headers" :items="tables" :pagination.sync="pagination" :loading="loadingTableEffect"
+                                :rowsPerPage="rows" class="elevation-1">
+                    <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
+                    <template slot="items" slot-scope="props">
+                        <td class="text-xs-center">{{ props.item.table_number }}</td>
+                        <td class="text-xs-left">{{ props.item.created_at.date}}</td>
+                        <td class="text-xs-left">{{ props.item.updated_at.date }}</td>
+                        <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
+                        <td v-else> N/A </td>
+                        <td class="justify-center layout px-0">
+                            <div v-if="props.item.deleted_at != null">
+                                <v-icon large color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
                             </div>
-                            <v-card-text>
-                                <v-container grid-list-md>
-                                    <v-layout wrap>
-                                        <v-flex xs12 sm6 md4>
-                                            <v-text-field v-model="editedItem.table_number" v-validate="'required|numeric'" name="tableNumber" type="text" label="Table number"></v-text-field>
-                                            <span style="color:red">{{ errors.first('tableNumber') }}</span>
-                                        </v-flex>
-                                    </v-layout>
-                                </v-container>
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                                <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </form>
-                </v-dialog>
-            </v-toolbar>
-            <v-data-table :headers="headers" :items="tables" :pagination.sync="pagination" :loading="loadingTableEffect"
-                          :rowsPerPage="rows" class="elevation-1">
-                <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
-                <template slot="items" slot-scope="props">
-                    <td class="text-xs-center">{{ props.item.table_number }}</td>
-                    <td class="text-xs-left">{{ props.item.created_at.date}}</td>
-                    <td class="text-xs-left">{{ props.item.updated_at.date }}</td>
-                    <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
-                    <td v-else> N/A </td>
-                    <td class="justify-center layout px-0">
-                        <div v-if="props.item.deleted_at != null">
-                            <v-icon large color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
-                        </div>
-                        <div v-else>
-                            <v-icon large color="red darken-2" dark right @click.prevent="deleteTable(props.item)">delete</v-icon>
-                        </div>
-                    </td>
-                </template>
-                <template slot="no-data">
-                    <v-alert :value="noData" color="error" icon="warning">
-                        Sorry, nothing to display here :(
-                    </v-alert>
-                </template>
-                <template slot="no-data">
-                    <v-btn color="primary" @click="getTables">Reset</v-btn>
-                </template>
-            </v-data-table>
-        </v-container>
-    </div>
+                            <div v-else>
+                                <v-icon large color="red darken-2" dark right @click.prevent="deleteTable(props.item)">delete</v-icon>
+                            </div>
+                        </td>
+                    </template>
+                    <template slot="no-data">
+                        <v-alert :value="noData" color="error" icon="warning">
+                            Sorry, nothing to display here :(
+                        </v-alert>
+                    </template>
+                    <template slot="no-data">
+                        <v-btn color="primary" @click="getTables">Reset</v-btn>
+                    </template>
+                </v-data-table>
+            </v-flex>
+        </v-layout>
+    </v-container>
 </template>
 
 <script>
     import AdminItemMenu from './AdminItemMenu.vue';
     import Errors from './Errors.vue';
     export default {
-        name: "ManageRestaurant",
+        name: "Tables",
         components: {
-            'items-menu':AdminItemMenu,
+            'items-menu': AdminItemMenu,
             Errors
         },
         data: () => ({
@@ -84,7 +86,7 @@
             validationErrors:[],
             loadingTableEffect: true,
             rows: 20,
-            pagination:{
+            pagination: {
                 rowsPerPage: 10,
             },
             headers: [

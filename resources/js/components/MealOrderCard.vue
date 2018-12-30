@@ -25,7 +25,7 @@
 			<v-list-tile>
 				<v-list-tile-content>Order state:</v-list-tile-content>
 				<v-list-tile-content class="align-end">
-					<v-btn small :color="getStateColor(item.order_state)" round @click="showDeliverMealDialog(item.order_state)"
+					<v-btn small :color="getOrderStateColor(item.order_state)" round @click="showDeliverMealDialog(item.order_state)"
 						class="text-capitalize white--text btn-no-margin elevation-0" depressed="">
 						{{ item.order_state }}
 					</v-btn>
@@ -52,25 +52,15 @@
 </template>
 
 <script>
-	import {toasts} from '../mixin.js';
+	import {toasts, helper} from '../mixin.js';
 
 	export default {
 		props: ['item'],
-		mixins: [toasts],
+		mixins: [toasts, helper],
 		data: () => ({
 			deliverMealDialog: false
 		}),
 		methods: {
-            getStateColor(state) {
-                switch (state) {
-                    case 'pending': return 'orange';
-                    case 'confirmed': return 'cyan';
-                    case 'in preparation': return 'blue darken-2';
-                    case 'prepared': return 'light-green';
-                    case 'delivered': return 'green';
-                    case 'not delivered': return 'red';
-                }
-			},
 			showDeliverMealDialog(state) {
 				if (state === 'prepared') {
 					this.deliverMealDialog = true;

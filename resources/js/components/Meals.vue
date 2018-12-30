@@ -1,5 +1,5 @@
 <template>
-    <v-container grid-list-md>
+    <v-container grid-list-md fluid>
         <v-layout row wrap>
             <v-flex xs12>
                 <v-toolbar flat color="gray">
@@ -126,7 +126,7 @@
         },
         sockets: {
             new_order_notify_manager(){
-                this.showTopRightToast('New Item Ordered');
+                this.showTopRightToast('New item ordered');
                 this.reload();
             },
             meal_terminated_notify(user){

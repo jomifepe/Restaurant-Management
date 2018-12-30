@@ -1,97 +1,99 @@
 <template>
-    <v-container grid-list-md>
-		<v-flex xs12 class="elevation-1">
-			<v-toolbar class="pb-3 grey lighten-3 elevation-0" light tabs>
-				<v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
-							label="Search" prepend-inner-icon="search" solo-inverted>
-				</v-text-field>
+    <v-container grid-list-md fluid>
+		<v-layout row>
+			<v-flex xs12 class="elevation-1">
+				<v-toolbar class="pb-3 grey lighten-3 elevation-0" light tabs>
+					<v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
+								label="Search" prepend-inner-icon="search" solo-inverted>
+					</v-text-field>
 
-				<NewItem v-if="isUserLoggedIn" @onGetItems="getItems"></NewItem>
+					<NewItem v-if="isUserLoggedIn" @onGetItems="getItems"></NewItem>
 
-				<template v-if="isUserLoggedIn && meal">
-					<v-menu v-model="orderSummaryMenu" :close-on-content-click="false" left :nudge-width="200" :min-width="450">
-						<v-btn slot="activator" light depressed round :disabled="selectedItems.length === 0"
-							color="teal" class="white--text">
-							{{ selectedItemsSubtotal }}
-							<v-icon right dark>fas fa-euro-sign</v-icon>
-						</v-btn>
+					<template v-if="isUserLoggedIn && meal">
+						<v-menu v-model="orderSummaryMenu" :close-on-content-click="false" left :nudge-width="200" :min-width="450">
+							<v-btn slot="activator" light depressed round :disabled="selectedItems.length === 0"
+								color="teal" class="white--text">
+								{{ selectedItemsSubtotal }}
+								<v-icon right dark>fas fa-euro-sign</v-icon>
+							</v-btn>
 
-						<v-toolbar flat light color="white">
-							<v-toolbar-title>
-								Order summary 
-							</v-toolbar-title>
-							<v-spacer></v-spacer>
-							<v-toolbar-title>
-								Total: <strong class="teal--text">{{ selectedItemsSubtotal }}€</strong>
-							</v-toolbar-title>
-						</v-toolbar>
-						<v-card>
-							<v-data-table :items="selectedItems" item-key="id" 
-								:rows-per-page-items="summaryRowsPerPageItems" hide-headers>
-								<template slot="items" slot-scope="props">
-									<td>{{ getItemQuantity(props.item.id) }}x</td>
-									<td>{{ props.item.name }}</td>
-									<td class="text-xs-center">{{ props.item.price }}€</td>
-									<td class="justify-center text-md-center">
-										<v-tooltip top>
-											<v-icon class="dt-action" slot="activator" 
-												@click="decrementItemQuantity(props.item)">
-												fas fa-minus-circle
-											</v-icon>
-											Remove item
-										</v-tooltip>
-									</td>
-								</template>
-							</v-data-table>
-							<v-card-actions>
+							<v-toolbar flat light color="white">
+								<v-toolbar-title>
+									Order summary 
+								</v-toolbar-title>
 								<v-spacer></v-spacer>
-								<v-btn @click="askForOrderConfirmation" color="teal" flat>Complete order</v-btn>
-							</v-card-actions>
+								<v-toolbar-title>
+									Total: <strong class="teal--text">{{ selectedItemsSubtotal }}€</strong>
+								</v-toolbar-title>
+							</v-toolbar>
+							<v-card>
+								<v-data-table :items="selectedItems" item-key="id" 
+									:rows-per-page-items="summaryRowsPerPageItems" hide-headers>
+									<template slot="items" slot-scope="props">
+										<td>{{ getItemQuantity(props.item.id) }}x</td>
+										<td>{{ props.item.name }}</td>
+										<td class="text-xs-center">{{ props.item.price }}€</td>
+										<td class="justify-center text-md-center">
+											<v-tooltip top>
+												<v-icon class="dt-action" slot="activator" 
+													@click="decrementItemQuantity(props.item)">
+													fas fa-minus-circle
+												</v-icon>
+												Remove item
+											</v-tooltip>
+										</td>
+									</template>
+								</v-data-table>
+								<v-card-actions>
+									<v-spacer></v-spacer>
+									<v-btn @click="askForOrderConfirmation" color="teal" flat>Complete order</v-btn>
+								</v-card-actions>
+							</v-card>
+						</v-menu>
+					</template>
+
+					<v-tabs slot="extension" v-model="tab" centered color="transparent" icons-and-text>
+						<v-tabs-slider color="blue-grey darken-1"></v-tabs-slider>
+						<v-tab v-for="(item, i) in tabs" :key="i">
+							{{ item.name }}
+							<v-icon>{{ item.icon }}</v-icon>
+						</v-tab>
+					</v-tabs>
+				</v-toolbar>
+
+				<v-tabs-items v-model="tab">
+					<v-tab-item v-for="(itemFromType, i) in items" :key="i">
+						<v-card class="elevation-0">
+							<v-card-text class="pl-5 pr-5 grey lighten-3">
+								<v-data-iterator row wrap :items="itemFromType" :rows-per-page-items="rowsPerPageItems"
+								:pagination.sync="pagination" content-tag="v-layout" :search="filter">
+									<v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
+										<MenuCard :item="props.item" :meal="meal" :exists="hasSelectedItem(props.item.id)"
+											@onItemSelect="selectItem" @updateList="getItems" @onGetItems="getItems()"></MenuCard>
+									</v-flex>
+								</v-data-iterator>
+							</v-card-text>
 						</v-card>
-					</v-menu>
-				</template>
-
-				<v-tabs slot="extension" v-model="tab" centered color="transparent" icons-and-text>
-					<v-tabs-slider color="blue-grey darken-1"></v-tabs-slider>
-					<v-tab v-for="(item, i) in tabs" :key="i">
-						{{ item.name }}
-						<v-icon>{{ item.icon }}</v-icon>
-					</v-tab>
-				</v-tabs>
-			</v-toolbar>
-
-			<v-tabs-items v-model="tab">
-				<v-tab-item v-for="(itemFromType, i) in items" :key="i">
-					<v-card class="elevation-0">
-						<v-card-text class="pl-5 pr-5 grey lighten-3">
-							<v-data-iterator row wrap :items="itemFromType" :rows-per-page-items="rowsPerPageItems"
-							:pagination.sync="pagination" content-tag="v-layout" :search="filter">
-								<v-flex slot="item" slot-scope="props" xs12 sm6 md4 lg3>
-									<MenuCard :item="props.item" :meal="meal" :exists="hasSelectedItem(props.item.id)"
-										@onItemSelect="selectItem" @updateList="getItems" @onGetItems="getItems()"></MenuCard>
-								</v-flex>
-							</v-data-iterator>
+					</v-tab-item>
+				</v-tabs-items>
+				<v-dialog v-if="isUserLoggedIn && meal" v-model="orderSubmitDialog" max-width="450">
+					<v-card>
+						<v-card-text class="subheading">
+							Do you want to submit a total of {{ totalItems }} item orders for meal #{{ meal.id }} on table {{ meal.table_number }}?
 						</v-card-text>
+						<v-card-actions>
+							<v-spacer></v-spacer>
+							<v-btn flat @click="orderSubmitDialog = false">
+								Cancel
+							</v-btn>
+							<v-btn color="teal" flat="flat" @click="submitOrders">
+								Submit
+							</v-btn>
+						</v-card-actions>
 					</v-card>
-				</v-tab-item>
-			</v-tabs-items>
-			<v-dialog v-if="isUserLoggedIn && meal" v-model="orderSubmitDialog" max-width="450">
-				<v-card>
-					<v-card-text class="subheading">
-						Do you want to submit a total of {{ totalItems }} item orders for meal #{{ meal.id }} on table {{ meal.table_number }}?
-					</v-card-text>
-					<v-card-actions>
-						<v-spacer></v-spacer>
-						<v-btn flat @click="orderSubmitDialog = false">
-							Cancel
-						</v-btn>
-						<v-btn color="teal" flat="flat" @click="submitOrders">
-							Submit
-						</v-btn>
-					</v-card-actions>
-				</v-card>
-			</v-dialog>
-		</v-flex>
+				</v-dialog>
+			</v-flex>
+		</v-layout>
     </v-container>
 </template>
 

@@ -40,21 +40,29 @@
                 </v-list-tile>
             </v-list>
         </v-navigation-drawer>
-        <v-navigation-drawer id="nav-notifications" v-model="rightDrawer" temporary right app>
+        <v-navigation-drawer id="nav-notifications" v-model="rightDrawer" :width="400" temporary right app>
             <v-toolbar flat>
                 <v-toolbar-title>Notifications</v-toolbar-title>
                 <v-dialog v-if="user.type !== 'manager'" v-model="dialog" width="500">
-                    <v-btn icon slot="activator">
-                        <v-icon>warning</v-icon>
+                    <v-btn icon slot="activator" title="Message all managers">
+                        <v-icon>message</v-icon>
                     </v-btn>
                     <v-card>
                         <v-card-title class="headline grey lighten-2" xs12 primary-title>
-                            New notification
+                            New message to all managers
                         </v-card-title>
                         <v-card-text>
                             <v-flex xs12>
-                                <v-text-field v-model="titleNotManager" single-line label="Description/Subject"></v-text-field>
-                                <v-textarea v-model="textNotManager" box auto-grow name="input-7-1" label="Message"></v-textarea>
+                                <v-form ref="form" v-model="msgFormValid">
+                                    <v-text-field v-model="titleNotManager" single-line name="msg-title" 
+                                        ref="msg-title" label="Description/Subject" maxlength="20" counter="20" 
+                                        :rules="[v => !!v || 'This field is required', v => v.length <= 25 || 'Max 20 characters']">
+                                    </v-text-field>
+                                    <v-textarea class="mt-3" v-model="textNotManager" box auto-grow
+                                        name="msg-content" ref="msg-content" label="Message" maxlength="200" 
+                                        counter="200" :rules="[v => !!v || 'This field is required', v => v.length <= 200 || 'Max 200 characters']">
+                                    </v-textarea>
+                                </v-form>
                             </v-flex>
                         </v-card-text>
                         <v-divider></v-divider>
@@ -62,7 +70,8 @@
                         <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn color="primary" flat @click="cancelDialog()">Cancel</v-btn>
-                            <v-btn color="primary" flat @click="sendNotificationToManagers()">Send</v-btn>
+                            <v-btn color="primary" :disabled="!msgFormValid" flat 
+                                @click="sendNotificationToManagers()">Send</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-dialog>
@@ -142,11 +151,11 @@
 import WorkerInfo from "./WorkerInfo";
 import axios from "axios";
 const moment = require("moment");
-import {helper} from '../mixin.js';
+import {toasts, helper} from '../mixin.js';
 
     export default {
         name: "AdminNavigation",
-        mixins: [helper],
+        mixins: [toasts, helper],
         components: {
             WorkerInfo
         },
@@ -159,6 +168,7 @@ import {helper} from '../mixin.js';
             clippedToolbar: false,
             drawer: true,
             rightDrawer: false,
+            msgFormValid: true,
             menuItems: [
                 {
                     title: 'Dashboard',
@@ -191,9 +201,9 @@ import {helper} from '../mixin.js';
                     visible: true
                 },
                 {
-                    title: 'Management',
-                    icon: 'build',
-                    target: '/admin/restaurantManagement',
+                    title: 'Tables',
+                    icon: 'fas fa-chair',
+                    target: '/admin/tables',
                     visible: ['manager']
                 },
                 {
@@ -217,11 +227,13 @@ import {helper} from '../mixin.js';
                 console.log('socket connected (socket ID = '+ this.$socket.id +')');
             },
             confirmation_sent_to_manager(data){
-                this.addNotification('Message sent', 'Good luck', false);
+                this.showTopRightSuccessToast('Message sent', 1000);
             },
             message_from_worker(data){
-                this.addNotification(data.title, data.text, false);
-            
+                this.showTopRightInfoToast('Your got a new message from a worker', 2000);
+                this.addNotification(
+                    `Message from ${data.sender.type}`, 
+                    `${this.userFirstAndLastName(data.sender.name)} says:\n ${data.text}`, false);
             },
             order_prepared_cook(data) {
                 this.addNotification("Order send confirmation", data, false);
@@ -230,26 +242,22 @@ import {helper} from '../mixin.js';
                 this.addNotification("New Order", "New order arrived!", "/admin/orders");
             },
             pending_invoice_received(){
-                this.addNotification("New Invoice", "New invoice generated", "/admin/inoices");
+                this.addNotification("New Invoice", "New invoice generated", "/admin/invoices");
             },
-           order_prepared_waiter(order) {
-                this.addNotification(
-                    "My order is ready",
-                    "Meal '" + order.meal_id + "' is ready",
-                    "/admin/meals/" + order.meal_id + "/orders"
-                );
+            order_prepared_waiter(order) {
+                this.addNotification(`Order ${order.id} is prepared`,
+                    ` ${order.item_name} from table ${order.meal_table_number} is ready for pick up`,
+                    `/admin/meals/${order.meal_id}/orders`);
             },
             user_enter(data) {
-                this.addNotification("Welcome!", data, false);
-                console.log(
-                    "Data recieved from the server when started shift = " + data + ")"
-                );
+                this.showTopRightToast(data, 'arrow_forward', 2000);
+                // this.addNotification("Welcome!", data, false);
+                // console.log("Data recieved from the server when started shift = " + data + ")");
             },
             user_exit(data) {
+                this.showTopRightToast(data, 'arrow_back', 2000);
                 //this.addNotification('goodbye',data, false);
-                console.log(
-                    "Data recieved from the server when ended shift = " + data + ")"
-                );
+                // console.log("Data recieved from the server when ended shift = " + data + ")");
             }
         },
         computed: {
@@ -264,17 +272,19 @@ import {helper} from '../mixin.js';
                 this.textNotManager='';
 
             },
-            sendNotificationToManagers(){
-                let message =         
-                {
-                    'title': this.titleNotManager,
-                    'text': this.textNotManager
+            sendNotificationToManagers() {
+                if (this.$refs.form.validate()) {
+                    let content = {
+                        'sender': this.user,
+                        'title': this.titleNotManager,
+                        'text': this.textNotManager
+                    }
+            
+                    this.$socket.emit('to_all_managers', content);
+                    this.titleNotManager='';
+                    this.textNotManager='';
+                    this.rightDrawer = false;
                 }
-        
-                this.$socket.emit('to_all_managers', message);
-                this.titleNotManager='';
-                this.textNotManager='';
-                this.rightDrawer = false;
             },
             clearNotifications() {
                 this.notifications = [];

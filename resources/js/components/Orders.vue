@@ -1,10 +1,12 @@
 <template>
-
-    <v-container grid-list-md>
+    <v-container grid-list-md fluid>
         <v-layout row wrap>
             <v-flex xs12>
                 <v-toolbar flat color="gray">
-                    <v-toolbar-title>Orders</v-toolbar-title>
+                    <v-toolbar-title>
+                        {{ isUserManager ? 'All Orders' : 'My Orders' }}
+                        <span class="body-1">(click to reveal order actions)</span>
+                    </v-toolbar-title>
                     <v-spacer></v-spacer>
                 </v-toolbar>
                 <v-data-table :headers="myOrderHeaders"
@@ -14,17 +16,17 @@
                               class="elevation-1">
 
                     <template slot="items" slot-scope="props">
-                        <tr @click="props.expanded = !props.expanded">
-                            <td>{{ props.item.id }}</td>
-                            <td>{{ props.item.item_name }}</td>
+                        <tr class="clickable" @click="props.expanded = !props.expanded">
                             <td class="text-xs-left">
                                 <v-avatar class="ma-1"  slot="activator" size="50px" >
                                     <img :src="props.item.item_photo_src" alt="Avatar">
                                 </v-avatar>
                             </td>
+                            <td>{{ props.item.id }}</td>
+                            <td>{{ props.item.item_name }}</td>
                             <td>{{ props.item.item_type }}</td>
                             <td>{{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
-                            <td :class="getStateColor(props.item.state)">
+                            <td :class="getOrderStateTextColor(props.item.state)">
                                 <strong>{{ props.item.state }}</strong>
                             </td>
                         </tr>
@@ -48,31 +50,30 @@
 
 <script>
     import axios from 'axios';
-    import {toasts} from '../mixin';
+    import {toasts, helper} from '../mixin';
 
     export default {
         name: "Orders",
-        mixins: [toasts],
+        mixins: [toasts, helper],
         data: () => ({
             orders: [],
             myOrderHeaders: [
+                { text: 'Item Photo', value: 'item_photo' },
                 { text: 'Id', value: 'id' },
                 { text: 'Item Name', value: 'item_name' },               
-                { text: 'Item Photo', value: 'item_photo' },
                 { text: 'Item Type', value: 'item_type' },
                 { text: 'Date', value: 'created_at' },
                 { text: 'State', value: 'state' }
             ],
             totalOrders: 0,
             loading: true,
-            pagination: {}
+            pagination: { rowsPerPage: 10 }
         }),
         sockets:{
-            connect(){
+            connect() {
                 console.log('socket connected (socket ID = '+this.$socket.id+')');
             },
-            order_received_list(){
-                //console.log("chegou");
+            order_received_list() {
                 this.loadOrders();
             },
 
@@ -80,7 +81,6 @@
         methods: {
             getWaiter(order) {
                 return new Promise(resolve => {
-                    console.log(order.meal_id);
                     axios.get(`/meals/${order.meal_id}/waiter`)
                         .then(response => {
                             if (response.status === 200) {
@@ -103,23 +103,17 @@
                 this.loadOrders();
             },
             saveOrder(order){
-                //console.log(order.state);
                 axios.patch(`/orders/${order.id}`, order)
                     .then(response => {
                         if (response.status === 200) {
-                            this.$toasted.show('Order successfully assigned', {
-                                icon : 'check',
-                                position: "bottom-center",
-                                duration : 2000
-                            });
+                            this.showSuccessToast('Order successfully assigned');
                             this.loadOrders();
                         } else {
-                            this.$toasted.show('Failed to assign meal', {
-                                icon : 'error',
-                                position: "bottom-center",
-                                duration : 3000
-                            });
+                            this.showErrorToast('Failed to assign meal');
                         }
+                    })
+                    .catch(error => {
+                        this.showErrorLog('Failed to assign meal', error);
                     })
             },
             assignOrderToMe(order) {
@@ -143,11 +137,7 @@
                     .catch(error => {
                         this.showErrorLog('Failed to get orders', error);
                     })
-            },
-            getStateColor(state) {
-                return state === 'in preparation' ? 'yellow--text' : 'green--text';
-            },
-
+            }
         },
         mounted() {
             this.loadOrders();

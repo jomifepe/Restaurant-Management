@@ -32,6 +32,7 @@ Route::get('invoices/pending', 'InvoiceControllerAPI@pendingOrders')->name('invo
 Route::get('invoices/paid', 'InvoiceControllerAPI@paidOrders')->name('invoices.paid');
 Route::get('invoices/{id}/items','InvoiceItemsAPI@itemsFromAnInvoice');
 Route::get('invoices/{id}','InvoiceControllerAPI@orderDetails');
+
 /**  USER **/
 
 Route::get('meals/manager', 'MealControllerAPI@managerIndex')->name('meal.manager');
@@ -47,7 +48,6 @@ Route::apiResources(['meals'    => 'MealControllerAPI',
                      'items'    => 'ItemControllerAPI',
                      'users'    => 'UserControllerAPI',
                      'tables'    => 'TableControllerAPI']);
-
 
 Route::post('items/update/{id}', 'ItemControllerAPI@updatePost');
 Route::get('meals/waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');

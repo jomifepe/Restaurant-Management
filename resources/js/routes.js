@@ -7,7 +7,7 @@ import Dashboard from './components/Dashboard.vue';
 import Profile from './components/Profile.vue';
 import Meals from './components/Meals.vue';
 import Orders from './components/Orders.vue';
-import RestaurantManagement from './components/RestaurantManagement.vue';
+import Tables from './components/Tables.vue';
 import AdminItemMenu from './components/AdminItemMenu.vue';
 import MealOrders from './components/MealOrders.vue';
 import UserList from './components/UserList.vue';
@@ -102,9 +102,9 @@ export default [
                 }
             },
             {
-                path: 'restaurantManagement',
-                component: RestaurantManagement,
-                name: 'restaurantManagement',
+                path: 'tables',
+                component: Tables,
+                name: 'tables',
                 meta: {
                     allowed: ['manager']
                 }

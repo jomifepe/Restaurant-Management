@@ -50,7 +50,7 @@
 
 
             <!--  prepared -->
-            <v-card>
+            <v-card class="mt-3">
                 <v-toolbar card color="teal" dark>
                     <v-toolbar-title>Prepared orders</v-toolbar-title>
                 </v-toolbar>
@@ -156,15 +156,16 @@
         },
         sockets: {
             order_prepared_waiter(order) {
-                this.showTopRightToast(`Meal #${order.meal_id} from table ${order.meal_table_number} is prepared`, 'check');
+                this.showTopRightToast(`Order ${order.meal_id} from table ${order.meal_table_number} is prepared`, 'check');
                 if (this.meal.id === order.meal_id) {
+                    this.progressBar = true;
                     this.loadMealOrders();
                 }
             },
             order_in_preparation_waiter(order) {
-                console.log(order);
-                this.showTopRightToast(`Meal #${order.meal_id} from table ${order.meal_table_number} is in preparation`, 'restaurant');
+                this.showTopRightToast(`Order ${order.meal_id} from table ${order.meal_table_number} is in preparation`, 'restaurant', 2000);
                 if (this.meal.id === order.meal_id) {
+                    this.progressBar = true;
                     this.loadMealOrders();
                 }
             },

@@ -66,10 +66,31 @@ export const toasts = {
 				position: 'top-right',
 				duration : time
 			});
+        },
+        showTopRightInfoToast(message, time = 3000) {
+			return this.$toasted.info(message, {
+				icon : 'info',
+				position: 'top-right',
+				duration : time
+			});
+        },
+        showTopRightSuccessToast(message, time = 3000) {
+			return this.$toasted.success(message, {
+				icon : 'check_circle',
+				position: 'top-right',
+				duration : time
+			});
+        },
+        showTopRightErrorToast(message, time = 3000) {
+			return this.$toasted.error(message, {
+				icon : 'error',
+				position: 'top-right',
+				duration : time
+			});
 		},
 		showSuccessToast(message, time = 3000) {
 			return  this.$toasted.success(message, {
-				icon : 'check',
+				icon : 'check_circle',
 				position: 'bottom-center',
 				duration : time
 			});
@@ -132,6 +153,19 @@ export const helper = {
                         color: 'teal'
                     }
             }
+        },
+        getOrderStateColor(state) {
+            switch (state) {
+                case 'pending': return 'amber';
+                case 'confirmed': return 'orange';
+                case 'in preparation': return 'blue';
+                case 'prepared': return 'darken-1 lime';
+                case 'delivered': return 'green';
+                case 'not delivered': return 'red';
+            }
+        },
+        getOrderStateTextColor(state) {
+            return `${this.getOrderStateColor(state)}--text`;
         }
     }
 };

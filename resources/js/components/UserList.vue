@@ -1,5 +1,5 @@
 <template>
-    <v-container>
+    <v-container grid-list-md fluid>
 		<v-layout>
 			<v-flex xs12>
                 <v-toolbar flat color="white">
@@ -19,8 +19,10 @@
                             </v-card-title>
                             <form id="form" @submit.prevent="validateBeforeSubmit">
                                 <v-card-text>
-                                    <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
-                                        <errors :msg="value"></errors>
+                                    <div v-if="hasValidationErrors" 
+                                        v-for="(value, key, index) in validationErrors" 
+                                        :key="index">
+                                        <errors :msg="value" ></errors>
                                     </div>
                                     <v-container grid-list-md>
                                         <v-layout wrap>
@@ -66,7 +68,8 @@
                     </v-dialog>
 
                 </v-toolbar>
-                <v-data-table :headers="headers" :items="users" :loading="loadingTableEffect" class="elevation-1" :search="filter">
+                <v-data-table :headers="headers" :items="users" :loading="loadingTableEffect" 
+                    class="elevation-1" :search="filter" :pagination.sync="pagination">
                     <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                     <template slot="items" slot-scope="props">
                         <td class="text-xs-left">
@@ -86,31 +89,31 @@
                         <td class="justify-center px-0 text-md-center dt-actions" v-if="user.id !== props.item.id">
                             <v-tooltip top v-if="!props.item.blocked">
                                 <v-btn icon slot="activator" @click.prevent="blockUser(props.item)">
-                                    <v-icon color="red darken-2" dark>lock</v-icon>
+                                    <v-icon color="red" dark>lock</v-icon>
                                 </v-btn>
                                 <span>Block user</span>
                             </v-tooltip>
                             <v-tooltip top v-else>
                                 <v-btn icon slot="activator" @click.prevent="blockUser(props.item)">
-                                    <v-icon color="green darken-2" dark>lock_open</v-icon>
+                                    <v-icon color="green" dark>lock_open</v-icon>
                                 </v-btn>
                                 <span>Unblock user</span>
                             </v-tooltip>
                             <v-tooltip top>
                                 <v-btn icon slot="activator" @click.prevent="editItem(props.item)">
-                                    <v-icon color="yellow darken-2">edit</v-icon>
+                                    <v-icon color="blue">edit</v-icon>
                                 </v-btn>
                                 <span>Edit user</span>
                             </v-tooltip>
                             <v-tooltip top v-if="props.item.deleted_at != null">
                                 <v-btn icon slot="activator" @click.prevent="restoreUser(props.item)">
-                                    <v-icon color="green darken-2" dark>undo</v-icon>
+                                    <v-icon color="green" dark>undo</v-icon>
                                 </v-btn>
                                 <span>Restore user</span>
                             </v-tooltip>
                             <v-tooltip top v-else>
                                 <v-btn icon slot="activator" @click.prevent="deleteItem(props.item)">
-                                    <v-icon color="red darken-2">delete</v-icon>
+                                    <v-icon color="red">delete</v-icon>
                                 </v-btn>
                                 <span>Delete user</span>
                             </v-tooltip>
@@ -160,6 +163,7 @@
                 filter: '',
                 hasValidationErrors: false,
                 validationErrors: [],
+                pagination: { rowsPerPage: 10 },
                 userToEdit: null,
                 headers: [
                     {text: 'Photo', value: 'photo_src '},
@@ -223,7 +227,7 @@
                 axios.put('user/restore/' + item.id).then(response => {
                     this.showSuccessToast('User restored successfuly');
                     this.getUsers();
-                }).catch(error =>{
+                }).catch(error => {
                     this.showErrorToast('Problem restoring user');
                 });
             },
@@ -236,6 +240,7 @@
                 }, 300)
             },
             save() {
+                this.$store.commit('showProgressBar', {indeterminate: true});
                 let form = new FormData;
                 form.append('name', this.editedItem.name);
                 form.append('username', this.editedItem.username);
@@ -249,19 +254,24 @@
                 let email = this.editedItem.email;
                 axios.post('users', form).then(response => {
                     if (response.status === 201) {
-                        DefaultAxios.post('http://project.dad/password/reset', {
-                            email: email
+                        DefaultAxios.post('http://project.dad/password/email', {
+                            'email': email
                         }).then(response => {
+                            this.showSuccessToast('User successfully registered');
                             this.showSuccessToast('Confirmation email successfully sent');
-                            this.getUsers();
-                            this.close()
                         })
                         .catch(error => {
                             this.showErrorLog('Failed to send confirmation email', error);
+                        })
+                        .finally(() => {
+                            this.getUsers();
+                            this.close();
+                            this.$store.commit('hideProgressBar');
                         });
                     }
                 }).catch(error => {
-                    this.hasErrors(error.response.data.errors);
+                    this.hasErrors(error.response.data.errors);~
+                    this.$store.commit('hideProgressBar');
                 });
             },
             onFileSelected(event){
