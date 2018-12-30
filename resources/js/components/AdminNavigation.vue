@@ -54,12 +54,12 @@
                         <v-card-text>
                             <v-flex xs12>
                                 <v-form ref="form" v-model="msgFormValid">
-                                    <v-text-field v-model="titleNotManager" single-line name="msg-title" 
-                                        ref="msg-title" label="Description/Subject" maxlength="20" counter="20" 
+                                    <v-text-field v-model="titleNotManager" single-line name="msg-title"
+                                        ref="msg-title" label="Description/Subject" maxlength="20" counter="20"
                                         :rules="[v => !!v || 'This field is required', v => v.length <= 25 || 'Max 20 characters']">
                                     </v-text-field>
                                     <v-textarea class="mt-3" v-model="textNotManager" box auto-grow
-                                        name="msg-content" ref="msg-content" label="Message" maxlength="200" 
+                                        name="msg-content" ref="msg-content" label="Message" maxlength="200"
                                         counter="200" :rules="[v => !!v || 'This field is required', v => v.length <= 200 || 'Max 200 characters']">
                                     </v-textarea>
                                 </v-form>
@@ -70,7 +70,7 @@
                         <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn color="primary" flat @click="cancelDialog()">Cancel</v-btn>
-                            <v-btn color="primary" :disabled="!msgFormValid" flat 
+                            <v-btn color="primary" :disabled="!msgFormValid" flat
                                 @click="sendNotificationToManagers()">Send</v-btn>
                         </v-card-actions>
                     </v-card>
@@ -232,7 +232,7 @@ import {toasts, helper} from '../mixin.js';
             message_from_worker(data){
                 this.showTopRightInfoToast('Your got a new message from a worker', 2000);
                 this.addNotification(
-                    `Message from ${data.sender.type}`, 
+                    `Message from ${data.sender.type}`,
                     `${this.userFirstAndLastName(data.sender.name)} says:\n ${data.text}`, false);
             },
             order_prepared_cook(data) {
@@ -279,7 +279,7 @@ import {toasts, helper} from '../mixin.js';
                         'title': this.titleNotManager,
                         'text': this.textNotManager
                     }
-            
+
                     this.$socket.emit('to_all_managers', content);
                     this.titleNotManager='';
                     this.textNotManager='';

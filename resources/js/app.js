@@ -28,8 +28,8 @@ Vue.use(VueMoment);
 Vue.use(Vuetify, {iconfont: 'fa'});
 Vue.use(Toasted);
 Vue.use(new VueSocketio({
-    connection: 'http://127.0.0.1:8080'
-    // connection: 'http://178.62.85.56:8080'
+    debug: true,
+    connection: 'http://178.62.85.56:8080'
 }));
 
 axios.defaults.baseURL = 'http://project.dad/api';

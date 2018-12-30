@@ -108,7 +108,16 @@ class InvoiceControllerAPI extends Controller
      */
     public function show($id)
     {
-        //
+        $item = DB::table('invoices')
+        ->join('meals', 'meals.id', '=', 'invoices.meal_id')
+        ->join('users', 'meals.responsible_waiter_id', '=', 'users.id')
+        ->where('invoices.id', $id)
+        ->select('invoices.*', 
+        'meals.responsible_waiter_id AS responsible_waiter_id',
+        'meals.table_number AS table_number',
+        'users.name AS responsible_waiter_name')
+        ->first();
+        return new InvoiceDetailedResource($item);   
     }
 
     /**
