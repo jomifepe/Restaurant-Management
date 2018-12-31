@@ -9,6 +9,7 @@ use App\Http\Resources\Meal as MealResource;
 use App\Invoice;
 use App\Meal;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class InvoiceControllerAPI extends Controller
 {
@@ -22,13 +23,35 @@ class InvoiceControllerAPI extends Controller
         return InvoiceResource::collection(Invoice::all());
     }
 
-
-
     public function invoiceMeal($invoiceId)
     {
         $invoice = Invoice::findOrFail($invoiceId);
 
         return new MealResource(Meal::where('id',$invoice->meal_id)->first());
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'meal_id' => 'required|integer|exists:meals,id',
+            'total_price' => 'required|numeric'
+        ]);
+        
+        $invoice = new Invoice();
+        $invoice->fill($data);
+        
+        $invoice->state = 'pending';
+        $invoice->date = Carbon::now();
+        $invoice->created_at = Carbon::now();
+
+        $invoice->save();
+        return response()->json(new InvoiceResource($invoice), 201);
     }
 
     public function allOrders()
@@ -88,16 +111,6 @@ class InvoiceControllerAPI extends Controller
         return response()->json(InvoiceDetailedResource::collection($items), 200);
 
        // return InvoiceResource::collection(Invoice::where('state','paid')->get());
-    }
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
     }
 
     /**

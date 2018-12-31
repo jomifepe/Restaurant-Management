@@ -7,6 +7,7 @@ use App\Http\Resources\Meal as MealResource;
 use App\Http\Resources\MealHR as MealHRResource;
 use App\Meal;
 use App\User;
+use App\Table;
 use Illuminate\Support\Facades\DB;
 
 class MealControllerAPI extends Controller
@@ -48,8 +49,10 @@ class MealControllerAPI extends Controller
             'start' => 'required|date',
             'responsible_waiter_id' => 'required|integer|exists:users,id'
         ]);
+
         $activeMeal = Meal::where('table_number', $request->table_number)
             ->where('state', 'active')->first();
+
         if (!empty($activeMeal)) {
             return response()->json([
                 'message' => 'Table already has an active meal associated',

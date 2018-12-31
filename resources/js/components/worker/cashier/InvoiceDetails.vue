@@ -41,15 +41,14 @@
                               :pagination.sync="pagination"
                               :total-items="totalInvoiceItems"
                               :loading="loading"
-                              class="elevation-1"
-                >
+                              class="elevation-1">
 
                     <template slot="items" slot-scope="props">
                         <tr>
                             <td>{{ props.item.item_name }}</td>
                             <td>{{ props.item.quantity }}</td>
-                            <td>{{ props.item.unit_price}}</td>
-                            <td>{{ props.item.sub_total_price }}</td>
+                            <td>{{ props.item.unit_price }}€</td>
+                            <td>{{ props.item.sub_total_price }}€</td>
                         </tr>
                     </template>
 				</v-data-table>
@@ -60,8 +59,11 @@
 </template>
 
 <script>
-     export default {
+    import {toasts, helper} from '../../../mixin';
+
+    export default {
         name: "InvoiceDetails",
+        mixins: [toasts, helper],
         data: () => ({
             invoice : null,
             invoiceItems: [],
@@ -80,100 +82,62 @@
         watch: {
             $route(to, from) {
                 this.loadInvoiceFromRouterId();
-            },
-            pagination: {
-                handler () {
-                    this.getDataFromApi()
-                        .then(data => {
-                            this.invoiceItems = data.items;
-                            this.totalInvoiceItems = data.total;
-                         })
-                },
-                deep: true
             }
         },
         methods: {
-             getDataFromApi (){
-                this.loading = true;
-                return new Promise((resolve, reject) => {
-                    const { sortBy, descending, page, rowsPerPage } = this.pagination;
-
-                    let items;
-
-                    this.loadInvoiceItems()
-                        .then(data => {
-                            items= data.data;
-                            const total = items.length;
-
-
-                            if (rowsPerPage > 0) {
-                                items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage)
-                            }
-
-                            setTimeout(() => {
-
-                                this.loading = false;
-                                resolve({
-                                    items,
-                                    total
-                                })
-                            }, 1000)
-                        });
-
-
-
-                })
-            },
-            loadInvoiceItems(id){
-                return axios.get(`/invoices/${this.$route.params.invoiceId}/items`);
-            },
-            loadInvoiceFromRouterId() {
-               if (this.$route.params.invoiceId) {
-                    
-                    this.progressBar = true;
-                    axios.get(`/invoices/${this.$route.params.invoiceId}`)
+            loadInvoiceItems() {
+                return new Promise(resolve => {
+                    this.loading = true;
+                    axios.get(`/invoices/${this.$route.params.invoiceId}/items`)
                         .then(response => {
-                            console.log(response);
                             if (response.status === 200) {
-                                this.invoice = response.data.data;    
-                             //   this.$store.commit('setPanelTitle', `Details of Invoice #${this.invoice.id}`);
-                             this.getDataFromApi()
-                            .then(data => {
-                                this.invoiceItems = data.items;
-                                this.totalInvoiceItems = data.total;
-                                })
-                                
+                                this.invoiceItems = response.data.data;
+                                this.totalInvoiceItems = this.invoice.length;
                             } else {
-                                this.progressBar = false;
-                                this.$toasted.show('Failed to get orders associated to the selected meal', {
-                                    icon : 'error',
-                                    position: "bottom-center",
-                                    duration : 3000
-                                });
+                                this.showErrorToast('Failed to get invoices');
                             }
                         })
                         .catch(error => {
-                            this.progressBar = false;
-                            console.log(error);
-                            this.$toasted.show('Failed to get meal identified by the given id', {
-                                icon : 'error',
-                                position: "bottom-center",
-                                duration : 3000
-                            });
+                            this.showErrorLog('Failed to get invoices', error);
                         })
-                }
+                        .finally(() => {
+                            this.loading = false;
+                            resolve();
+                        });
+                })
+            },
+            loadInvoiceFromRouterId() {
+                return new Promise(resolve => {
+                    if (this.$route.params.invoiceId) {
+                        this.progressBar = true;
+                        axios.get(`/invoices/${this.$route.params.invoiceId}`)
+                            .then(response => {
+                                if (response.status === 200) {
+                                    this.invoice = response.data.data;
+                                    // this.$store.commit('setPanelTitle', `Details of Invoice #${this.invoice.id}`);
+                                } else {
+                                    this.showErrorToast('Failed to get invoice identified by the given id');
+                                }
+                            })
+                            .catch(error => {
+                                this.showErrorLog('Failed to get invoice identified by the given id', error);
+                            })
+                            .finally(() => {
+                                this.progressBar = false;
+                                resolve();
+                            })
+                    } else {
+                        resolve();
+                    }
+                })
             },
             closeDetails(){
                 this.$router.pop({ name:'invoices.details'});
             },
         },
         mounted() {
-            this.loadInvoiceFromRouterId(),
-            this.getDataFromApi()
-                .then(data => {
-                    this.invoiceItems = data.items;
-                    this.totalInvoiceItems = data.total;
-            })
+            this.loadInvoiceFromRouterId()
+                .then(() => this.loadInvoiceItems());
         }
     }
 </script>

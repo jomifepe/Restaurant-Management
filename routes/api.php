@@ -26,16 +26,14 @@ Route::post('register', 'UserControllerAPI@store')->name('register');
 
 ////->->->->->->->->->->->->->->->->->->-INVOICES<->->->->->->->->->->->->->->
 
-Route::group(
-    [   'prefix' => 'invoices',
-        'middleware' => 'managerAndCashier'],
+Route::group(['prefix' => 'invoices', 'middleware' => 'managerAndCashier'],
     function () {
         Route::get('{id}/meal', 'InvoiceControllerAPI@invoiceMeal')->name('invoices.meal');
         Route::get('details','InvoiceControllerAPI@allOrders')->name('invoices.details');
         Route::get('pending', 'InvoiceControllerAPI@pendingOrders')->name('invoices.pending');
         Route::get('paid', 'InvoiceControllerAPI@paidOrders')->name('invoices.paid');
-        Route::get('{id}/items','InvoiceItemsAPI@itemsFromAnInvoice')->name('invoices.items');
-//------ RESOURCE
+        Route::get('{id}/items','InvoiceItemsControllerAPI@itemsFromAnInvoice')->name('invoices.items');
+        /* Resource */
         Route::get('', 'InvoiceControllerAPI@index')->name('invoices.index');
         Route::match(['put', 'patch'],'{invoice}', 'InvoiceControllerAPI@update')->name('invoices.update');
         Route::get('{invoice}', 'InvoiceControllerAPI@show')->name('invoices.show');
@@ -49,6 +47,9 @@ Route::post('invoices', 'InvoiceControllerAPI@store')->name('invoices.store')
 Route::delete('invoices/{invoice}', 'InvoiceControllerAPI@destroy')->name('invoice.destroy')
     ->middleware('manager');
 
+Route::post('invoices/items', 'InvoiceItemsControllerAPI@store')->name('invoice.items.store')
+    ->middleware('managerAndWaiter');
+
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-INVOICES<-<-<-<-<-<-<-<-<-<-<-<-<-<-
 
 ////->->->->->->->->->->->->->->->->->->-MEALS<->->->->->->->->->->->->->->
@@ -59,7 +60,6 @@ Route::group(['prefix' =>'meals', 'middleware' => 'managerAndWaiter'],
         Route::get('waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
         Route::get('table/{tableNumber}', 'MealControllerAPI@tableMeal')->name('meal.table');
         Route::get('{id}/tableNumber', 'MealControllerAPI@tableNumber')->name('meal.tableNumber');
-
         /* Resource */
         Route::get('', 'MealControllerAPI@index')->name('meals.index');
         Route::post('', 'MealControllerAPI@store')->name('meals.store');
@@ -156,7 +156,7 @@ Route::delete('orders/{order}', 'OrderControllerAPI@destroy')->name('orders.dest
 ////->->->->->->->->->->->->->->->->->->-TABLES->->->->->->->->->->->->->->
 
 Route::group(['middleware' => 'manager'], function () {
-    Route::apiResource('tables', 'Table ControllerAPI');
+    Route::apiResource('tables', 'TableControllerAPI');
 });
 
 //PREFIX TABLE

@@ -106,7 +106,8 @@
             cancelOrdersDialog: false,
 
             /* auxiliary attributes */
-            notDeliveredOrders: []
+            notDeliveredOrders: [],
+            consumedItems: []
         }), 
         computed: {
             myMealsHeaders() {
@@ -168,6 +169,20 @@
             showMealItems(meal) {
                 this.$router.push({ name: 'meal.orders', params: { mealId: meal.id }});
             },
+
+            /* Meal termination process:
+                1. Asks for confirmation
+                2. performMealTermination() (get orders associated with meal)
+                3. If the meal has not delivered orders, asks if the user wants to cancel them, 
+                if not, goes to step 6
+                4. cancelOrders()
+                5. cancelOrder() (cancels each order recursively)
+                6. terminateMeal() (finally terminated the meal)
+                7. generateMealInvoice()
+                8. createInvoiceItems()
+                9. createInvoiceItem() (creates invoice items recursively)
+                10. Refreshes the meals list */
+
             askToConfirmMealTermination(meal) {
                 this.mealToTerminate = meal;
                 this.terminateMealDialog = true;
@@ -181,20 +196,28 @@
                 axios.get(`/orders/meal/${meal.id}`)
                     .then(response => {
                         if (response.status === 200) {
+                            let consumedItems = response.data
+                                .filter(itemOrder => itemOrder.state === 'delivered');
                             this.notDeliveredOrders = response.data
-                                .filter(order => order.state !== 'delivered');
+                                .filter(itemOrder => itemOrder.state !== 'delivered');
+
                             /* if there are orders that were not delivered */
                             if (this.notDeliveredOrders.length > 0) {
                                 this.$store.commit('hideProgressBar');
                                 this.cancelOrdersDialog = true;
                             } else {
                                 this.$store.commit('showProgressBar', {'indeterminate': true});
+
                                 /* changes the meal to terminated */
-                                this.terminateMeal(meal).then(() => {
+                                this.terminateMeal(meal, consumedItems).then(() => {
                                     this.showSuccessToast('Meal successfully terminated');
                                     this.$store.commit('hideProgressBar');
-                                    this.loadMeals();
-                                    this.$socket.emit('meal_terminated', this.$store.state.user);
+
+                                    /* generate meal invoice and invoice items */
+                                    // this.generateMealInvoice(meal).then(() => {
+                                    //     this.$socket.emit('meal_terminated', this.$store.state.user);
+                                    //     this.loadMeals();
+                                    // });
                                 });
                             }
                         } else {
@@ -205,23 +228,18 @@
                         this.showErrorLog('Failed to cancel meal orders', error);
                     })
             },
-            terminateMeal(meal) {
-                return new Promise((resolve, reject) => {
-                    meal.state = 'terminated';
-                    axios.patch(`/meals/${meal.id}`, meal)
-                        .then(response => {
-                            if (response.status === 200) {
-                                this.sendNotificationMealTerminatedToManagers(meal);
-                                resolve('Success');
-                            } else {
-                                this.showErrorToast(`Failed to terminate meal #${meal.id}`);
-                                this.$store.commit('hideProgressBar');
-                            }
-                        })
-                        .catch(error => {
-                            this.showErrorLog(`Failed to terminate meal #${meal.id}`, error);
-                            this.$store.commit('hideProgressBar');
-                        })
+            cancelOrders() {
+                this.cancelOrdersDialog = false;
+                this.$store.commit('showProgressBar', {'indeterminate': false, 'value': 0});
+                /* enters recursion */
+                this.cancelOrder(0, () => {
+                    this.$store.commit('showProgressBar', {'indeterminate': true});
+                    this.terminateMeal(this.mealToTerminate).then(() => {
+                        //this.$socket.emit('meal_terminated', this.$store.state.user);
+                        this.showSuccessToast('Meal successfully terminated');
+                        this.loadMeals();
+                        this.$store.commit('hideProgressBar');
+                    });
                 })
             },
             cancelOrder(orderIndex, callback) {
@@ -243,7 +261,6 @@
                         } else {
                             this.showErrorToast(`Failed to cancel meal order #${order.id}`);
                             this.$store.commit('hideProgressBar');
-                            return;
                         }
                     })
                     .catch(error => {
@@ -251,21 +268,100 @@
                         this.$store.commit('hideProgressBar');
                     })
             },
-            cancelOrders() {
-                this.cancelOrdersDialog = false;
-                this.$store.commit('showProgressBar', {'indeterminate': false, 'value': 0});
-                /* enters recursion */
-                this.cancelOrder(0, () => {
-                    this.$store.commit('showProgressBar', {'indeterminate': true});
-                    this.terminateMeal(this.mealToTerminate).then(() => {
+            terminateMeal(meal) {
+                return new Promise((resolve, reject) => {
+                    meal.state = 'terminated';
+                    axios.patch(`/meals/${meal.id}`, meal)
+                        .then(response => {
+                            if (response.status === 200) {
+                                this.sendNotificationMealTerminatedToManagers(meal);
+                                resolve('Success');
+                            } else {
+                                this.showErrorToast(`Failed to terminate meal #${meal.id}`);
+                                this.$store.commit('hideProgressBar');
+                            }
+                        })
+                        .catch(error => {
+                            this.showErrorLog(`Failed to terminate meal #${meal.id}`, error);
+                            this.$store.commit('hideProgressBar');
+                        })
+                })
+            },
+            generateMealInvoice(meal, consumedItems) {
+                return new Promise(resolve => {
+                    let priceSum = consumedItems.reduce((acc, item) => acc + item.price);
+                    let invoice = {
+                        meal_id: meal.id,
+                        total_price: priceSum
+                    }
+                    axios.post('/invoices', invoice)
+                        .then(response => {
+                            if (response.status === 201) {
+                                let createdInvoice = response.data.data;
+                                console.log(`Created invoice: ${createdInvoice}`);
+                                this.createInvoiceItems(consumedItems, createdInvoice.id).then(() => {
+                                    resolve();
+                                })
+                            } else {
+                                this.showErrorToast(`Failed to generate invoice for meal #${meal.id}`);
+                            }
 
-                        //this.$socket.emit('meal_terminated', this.$store.state.user);
-
-                        this.showSuccessToast('Meal successfully terminated');
-                        this.loadMeals();
+                        })
+                        .catch(error => {
+                            this.showErrorLog(`Failed to generate invoice for meal #${meal.id}`, error);
+                        });
+                });
+            },
+            createInvoiceItems(consumedItems, invoiceId) {
+                return new Promise(resolve => {
+                    let groupedList = this.groupItemOrders(consumedItems);
+                    createInvoiceItem(0, groupedList, invoiceId, () => resolve());
+                })
+            },
+            createInvoiceItem(itemIndex, consumedItems, invoiceId, callback) {
+                let currentItem = consumedItems[itemIndex];
+                let invoiceItem = {
+                    invoice_id: invoiceId,
+                    item_id: consumedItems[itemIndex].id,
+                    quantity: listFilteredByItem.length,
+                    unit_price: currentItem.price,
+                    sub_total_price: currentItem.quantity * currentItem.price
+                }
+                axios.post('/invoices/items', invoiceItem)
+                    .then(response => {
+                        if (response.status === 201) {
+                            this.$store.commit('showProgressBar', {'indeterminate': false, 
+                                'value': (itemIndex + 1) * (100 / consumedItems.length)
+                            });
+                            if (++itemIndex !== consumedItems.length) {
+                                this.cancelOcreateInvoiceItemrder(itemIndex, 
+                                    consumedItems, invoiceId, callback);
+                            } else {
+                                callback();
+                                return;
+                            }
+                        } else {
+                            this.showErrorToast(`Failed to create invoice item #${itemIndex + 1} 
+                                for invoice ${invoiceId}`);
+                            this.$store.commit('hideProgressBar');
+                        }
+                    })
+                    .catch(error => {
+                        this.showErrorLog(`Failed to create invoice item #${itemIndex + 1} 
+                            for invoice ${invoiceId}`, error);
                         this.$store.commit('hideProgressBar');
                     });
-                })
+            },
+            groupItemOrders(itemList) {
+                let grouped = [];
+                invoiceItemsList.forEach((item, i) => {
+                    if (!grouped.includes(item)) {
+                        let groupedItem = item;
+                        item.quantity = itemList.reduce((acc, it) => acc + it);
+                        grouped.push(groupedItem);
+                    }
+                });
+                return grouped;
             },
             sendNotificationMealTerminatedToManagers(meal){
                 console.log("entrou send");
