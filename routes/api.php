@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -23,8 +24,8 @@ Route::middleware('auth:api')->get('users/me', 'UserControllerAPI@myProfile');
 
 Route::post('register', 'UserControllerAPI@store')->name('register');
 
-
 ////->->->->->->->->->->->->->->->->->->-INVOICES<->->->->->->->->->->->->->->
+
 Route::group(
     [   'prefix' => 'invoices',
         'middleware' => 'managerAndCashier'],
@@ -48,22 +49,18 @@ Route::post('invoices', 'InvoiceControllerAPI@store')->name('invoices.store')
 Route::delete('invoices/{invoice}', 'InvoiceControllerAPI@destroy')->name('invoice.destroy')
     ->middleware('manager');
 
-
-
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-INVOICES<-<-<-<-<-<-<-<-<-<-<-<-<-<-
 
 ////->->->->->->->->->->->->->->->->->->-MEALS<->->->->->->->->->->->->->->
-Route::group(
-    [
-        'prefix' =>'meals',
-        'middleware' => 'managerAndWaiter',
-    ],
+
+Route::group(['prefix' =>'meals', 'middleware' => 'managerAndWaiter'],
     function () {
         Route::get('manager', 'MealControllerAPI@managerIndex')->name('meal.manager');
         Route::get('waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
         Route::get('table/{tableNumber}', 'MealControllerAPI@tableMeal')->name('meal.table');
         Route::get('{id}/tableNumber', 'MealControllerAPI@tableNumber')->name('meal.tableNumber');
-//------RESOURCE
+
+        /* Resource */
         Route::get('', 'MealControllerAPI@index')->name('meals.index');
         Route::post('', 'MealControllerAPI@store')->name('meals.store');
         Route::match(['put', 'patch'], '{meal}' ,'MealControllerAPI@update')->name('meals.update');
@@ -81,37 +78,28 @@ Route::delete('meals/{meal}', 'MealControllerAPI@destroy')->name('meal.destroy')
 
 ////->->->->->->->->->->->->->->->->->->-USERS->->->->->->->->->->->->->->
 
-Route::group(
-    ['prefix' => 'users',
-     'middleware' => 'manager',
-    ],
+Route::group(['prefix' => 'users', 'middleware' => 'manager'],
     function () {
         Route::get('all', 'UserControllerAPI@indexManager');
-        //resource
+        /* Resource */
         Route::get('', 'UserControllerAPI@index')->name('users.index');
         Route::post('', 'UserControllerAPI@store')->name('users.store');
         Route::delete('{user}', 'UserControllerAPI@destroy')->name('users.destroy');
     }
 );
 
-Route::group(
-    ['prefix' => 'users',
-     'middleware' => 'auth:api',
-    ],
+Route::group(['prefix' => 'users', 'middleware' => 'auth:api'],
     function () {
-        //update imagem
+        /* Worker photo update */
         Route::post('update/{id}', 'UserControllerAPI@postUpdate');
-        //resource
+        /* Resource */
         Route::get('{user}', 'UserControllerAPI@show')->name('users.show');
         Route::match(['put', 'patch'], '{user}','UserControllerAPI@update')->name('users.update');
     }
 );
 
 
-Route::group(
-    ['prefix'=>'user',
-     'middleware' => 'manager',
-    ],
+Route::group(['prefix'=>'user', 'middleware' => 'manager'],
     function () {
         Route::put('{id}', 'UserControllerAPI@toggleBlockUser');
         Route::put('restore/{id}', 'UserControllerAPI@restore');
@@ -122,10 +110,7 @@ Route::group(
 
 ////->->->->->->->->->->->->->->->->->->-ITEMS->->->->->->->->->->->->->->
 
-Route::group(
-    [ 'prefix' => 'items',
-      'middleware' => 'manager',
-    ],
+Route::group([ 'prefix' => 'items', 'middleware' => 'manager'],
     function () {
         Route::post('update/{id}', 'ItemControllerAPI@updatePost');
         Route::post('', 'ItemControllerAPI@store')->name('items.store');
@@ -141,15 +126,9 @@ Route::get('items/type/{type}', 'ItemControllerAPI@showType')->name('items.type'
 
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-ITEMS<-<-<-<-<-<-<-<-<-<-<-<-<-<-
 
-
-
-
 ////->->->->->->->->->->->->->->->->->->-ORDERS->->->->->->->->->->->->->->
 
-Route::group(
-    ['prefix' => 'orders',
-     'middleware' => 'managerWaiterAndCook',
-    ],
+Route::group(['prefix' => 'orders', 'middleware' => 'managerWaiterAndCook'],
     function () {
         /* get all the orders for a specific meal */
         Route::get('meal/{mealId}', 'OrderControllerAPI@mealOrders')->name('orders.meal');
@@ -161,6 +140,8 @@ Route::group(
     }
 );
 
+Route::get('users/email/{email}', 'UserControllerAPI@findUserByEmail')->name('user.email');
+
 Route::post('orders', 'OrderControllerAPI@store')->name('orders.store')
     ->middleware('managerAndWaiter');
 
@@ -170,20 +151,13 @@ Route::get('orders/{id}/toprepare', 'OrderControllerAPI@toPrepare')->name('order
 Route::delete('orders/{order}', 'OrderControllerAPI@destroy')->name('orders.destroy')
     ->middleware('manager');
 
-
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-ORDERS<-<-<-<-<-<-<-<-<-<-<-<-<-<-
-
 
 ////->->->->->->->->->->->->->->->->->->-TABLES->->->->->->->->->->->->->->
 
-Route::group(
-    [
-     'middleware' => 'manager',
-    ],
-    function () {
-        Route::apiResource('tables', 'Table ControllerAPI');
-    }
-);
+Route::group(['middleware' => 'manager'], function () {
+    Route::apiResource('tables', 'Table ControllerAPI');
+});
 
 //PREFIX TABLE
 Route::put('table/restore/{id}', 'TableControllerAPI@restore')->middleware('manager');

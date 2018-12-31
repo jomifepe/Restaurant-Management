@@ -1,18 +1,18 @@
 import UserNavigation from './components/UserNavigation.vue';
-import AdminNavigation from './components/AdminNavigation.vue';
+import AdminNavigation from './components/worker/AdminNavigation.vue';
 import Home from './components/Home.vue';
 import ItemMenu from './components/ItemMenu.vue';
 import Login from './components/Login.vue';
-import Dashboard from './components/Dashboard.vue';
-import Profile from './components/Profile.vue';
-import Meals from './components/Meals.vue';
-import Orders from './components/Orders.vue';
-import Tables from './components/Tables.vue';
-import AdminItemMenu from './components/AdminItemMenu.vue';
-import MealOrders from './components/MealOrders.vue';
-import UserList from './components/UserList.vue';
-import Invoices from './components/Invoices.vue';
-import InvoiceDetails from './components/InvoiceDetails.vue';
+import Dashboard from './components/worker/Dashboard.vue';
+import Profile from './components/worker/Profile.vue';
+import Meals from './components/worker/waiter/Meals.vue';
+import Orders from './components/worker/cook/Orders.vue';
+import Tables from './components/worker/manager/Tables.vue';
+import AdminItemMenu from './components/worker/ItemMenu.vue';
+import MealOrders from './components/worker/waiter/MealOrders.vue';
+import UserList from './components/worker/manager/UserList.vue';
+import Invoices from './components/worker/cashier/Invoices.vue';
+import InvoiceDetails from './components/worker/cashier/InvoiceDetails.vue';
 
 
 export default [

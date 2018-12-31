@@ -15,7 +15,7 @@
         <App></App>
     </div>
 
-    <script src="js/app.js"></script>
+    <script src="{{ URL::asset('js/app.js') }}"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
     {{--  <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>  --}}
     <script src="https://unpkg.com/vuex"></script>

@@ -5,7 +5,7 @@
 </template>
 
 <script>
-    import Menu from "./AdminItemMenu";
+    import Menu from "./worker/ItemMenu";
 
     export default {
         components: {
