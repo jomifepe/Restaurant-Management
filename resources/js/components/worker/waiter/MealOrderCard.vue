@@ -74,6 +74,7 @@
 							this.$emit('onOrderChange');
 							this.showSuccessToast('Successfully changed the order to delivered');
 							this.$store.commit('hideProgressBar');
+							this.$socket.emit('order_delivered', this.$store.state.user);
 						} else {
 							this.showErrorToast('Successfully changed the order to delivered')
 							this.$store.commit('hideProgressBar');

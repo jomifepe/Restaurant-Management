@@ -167,6 +167,18 @@
             new_order_notify_manager(){
                 this.progressBar = true;
                 this.loadMealOrders();
+            },
+            order_prepared_notify_manager(){
+                this.progressBar = true;
+                this.loadMealOrders();
+            },
+            order_in_preparation_notify(){
+                this.progressBar = true;
+                this.loadMealOrders();
+            },
+            order_delivered_notify(){
+                this.progressBar = true;
+                this.loadMealOrders();
             }
         },
         methods: {

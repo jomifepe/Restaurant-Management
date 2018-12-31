@@ -140,6 +140,18 @@
             newTable_meal_notify(table){
                 this.showTopRightToast('New table('+ table +') for meal');
                 this.reload();
+            },
+            order_prepared_notify_manager(cook){
+                this.showTopRightToast('Order prepared by ('+cook.name+')');
+                this.reload();
+            },
+            order_in_preparation_notify(cook){
+                this.showTopRightToast('Order in preparation by ('+ cook.name+')');
+                this.reload();
+            },
+            order_delivered_notify(waiter){
+                this.showTopRightToast('Order delivered by ('+ waiter.name+')');
+                this.reload();
             }
         },
         methods: {
