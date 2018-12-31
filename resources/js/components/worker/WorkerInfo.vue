@@ -18,16 +18,25 @@
 <script>
     import axios from 'axios';
     import moment from 'moment';
-    import {toasts, helper} from '../mixin';
+    import {toasts, helper} from '../../mixin';
 
     export default {
         name: "WorkerInfo",
+        props: ['user', 'logOutFlag'],
         mixins: [toasts, helper],
-        props: ['user'],
         data: () => ({
             shiftElapsedTimeIntervalId: null,
             shiftElapsedTime: ''
         }),
+        watch: {
+            logOutFlag() {
+                if (this.logOutFlag) {
+                    this.endShift().then(() => {
+                        this.$emit('onShiftEndLogout');
+                    })
+                }
+            }
+        },
         methods: {
             clearNotifications(){
                 this.$emit('onClearNotifications');
@@ -46,27 +55,31 @@
                 }
             },
             startShift() {
-                this.updateUser(true).then((updatedUser) => {
-                    this.$store.commit('setUser', updatedUser);
-                    this.startShiftElapsedTimeUpdated();
-                    this.joinSockets(updatedUser);
-                });
+                return new Promise(resolve => {
+                    this.updateUser(true).then((updatedUser) => {
+                        this.$store.commit('setUser', updatedUser);
+                        this.startShiftElapsedTimeUpdated();
+                        this.joinSockets(updatedUser);
+                        resolve();
+                    });
+                })
             },
             endShift() {
-                this.updateUser(false).then((updatedUser) => {
-                    this.$store.commit('setUser', updatedUser);
-                    this.showLastShiftTime();
-                    this.leaveSockets(updatedUser);
-                    this.clearNotifications();
-                });
+                return new Promise(resolve => {
+                    this.updateUser(false).then((updatedUser) => {
+                        this.$store.commit('setUser', updatedUser);
+                        this.showLastShiftTime();
+                        this.leaveSockets(updatedUser);
+                        this.clearNotifications();
+                        resolve();
+                    });
+                })
             },
             updateUser(startShift) {
                 return new Promise(resolve => {
                     axios.patch(`/users/${this.user.id}`, {
-                        [startShift ?
-                            'last_shift_start' :
-                            'last_shift_end'
-                        ]: moment().format("YYYY-MM-DD HH:mm:ss"),
+                        [startShift ? 'last_shift_start' : 'last_shift_end']: 
+                            moment().format("YYYY-MM-DD HH:mm:ss"),
                         shift_active: +startShift
                     }).then(response => {
                         if (response.status === 200) {

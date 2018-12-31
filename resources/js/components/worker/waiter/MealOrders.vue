@@ -5,8 +5,12 @@
                 Orders for table {{ meal.table_number }} (meal #{{ meal.id }})
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-chip color="teal" text-color="white">
+            <v-chip color="grey darken-1" text-color="white">
                 {{ totalPrice }}
+                <v-icon right>euro_symbol</v-icon>
+            </v-chip>
+            <v-chip color="teal" text-color="white">
+                {{ totalDeliveredPrice }}
                 <v-icon right>euro_symbol</v-icon>
             </v-chip>
             <v-btn dark color="success" v-if="meal.state === 'active'" :to="'/admin/menu/meal/' + meal.id">
@@ -107,7 +111,7 @@
     import Card from './MealOrderCard.vue';
     import axios from 'axios';
     import currency from 'currency.js';
-    import {toasts, helper} from '../mixin';
+    import {toasts, helper} from '../../../mixin';
 
     export default {
         name: "MealOrders",
@@ -117,6 +121,8 @@
         },
         data: () => ({
             meal: null,
+            totalPrice: 0,
+            totalDeliveredPrice: 0,
             preparedOrders: [],
             notPreparedOrders: [],
             inPreparationOrders: [],
@@ -138,17 +144,6 @@
 
             progressBar: true
         }),
-        computed: {
-            totalPrice() {
-                let total = 0;
-                this.preparedOrders.forEach(item => {
-                    if (item.order_state === 'delivered') {
-                        total = currency(total).add(item.price).format();
-                    }
-                })
-                return total;
-            }
-        },
         watch: {
             $route(to, from) {
                 this.loadMealOrdersFromRouteId();
@@ -200,6 +195,18 @@
                     .then(response => {
                         if (response.status === 200) {
                             let allItemOrders = response.data;
+
+                            this.totalPrice = 0;
+                            this.totalDeliveredPrice = 0;
+                            allItemOrders.forEach(itemOrder => {
+                                if (itemOrder.order_state === 'delivered') {
+                                    this.totalDeliveredPrice = currency(this.totalDeliveredPrice)
+                                        .add(itemOrder.price).format();
+                                }
+                                this.totalPrice = currency(this.totalPrice)
+                                    .add(itemOrder.price).format();
+                            })
+
                             this.preparedOrders = allItemOrders.filter(itemOrder =>
                                 itemOrder.order_state === 'prepared');
                             this.notPreparedOrders = allItemOrders.filter(itemOrder =>

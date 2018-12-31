@@ -11,9 +11,9 @@
 </template>
 
 <script>
-    import Invoices from "./Invoices";
-    import Meals from "./Meals"
-    import {helper} from "../mixin"
+    import Invoices from "./cashier/Invoices";
+    import Meals from "./waiter/Meals"
+    import {helper} from "../../mixin"
 
     export default {
         name: "Dashboard",

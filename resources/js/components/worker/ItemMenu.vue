@@ -98,13 +98,13 @@
 </template>
 
 <script>
-	import MenuCard from './AdminItemMenuCard.vue';
+	import MenuCard from './ItemMenuCard.vue';
 	import axios from 'axios';
 	import currency from 'currency.js'
 	import moment from 'moment';
-    import NewItem from "./NewItem";
+    import NewItem from "./manager/NewItem";
 	// const moment = require('moment');
-	import {toasts} from '../mixin';
+	import {toasts} from '../../mixin';
 
     export default {
 		name: "OrderItemMenu",

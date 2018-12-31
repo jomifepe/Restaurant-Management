@@ -64,7 +64,7 @@
 <script type="text/javascript">
 
     import axios from 'axios'
-    import {toasts, helper} from '../mixin';
+    import {toasts, helper} from '../../mixin';
 
     export default {
 		props:['user'],

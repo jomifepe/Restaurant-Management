@@ -14,7 +14,7 @@
 
 <script type="text/javascript">
 	import UserList from './UserList.vue';
-	import UserEdit from './UserEdit.vue';
+	import UserEdit from '../UserEdit.vue';
 	
 	export default {
 		components: {

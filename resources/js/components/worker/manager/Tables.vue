@@ -71,8 +71,8 @@
 </template>
 
 <script>
-    import AdminItemMenu from './AdminItemMenu.vue';
-    import Errors from './Errors.vue';
+    import AdminItemMenu from '../ItemMenu.vue';
+    import Errors from '../Errors.vue';
     export default {
         name: "Tables",
         components: {

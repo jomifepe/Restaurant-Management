@@ -51,7 +51,7 @@
 
 <script>
     import axios from 'axios';
-    import {toasts, helper} from '../mixin';
+    import {toasts, helper} from '../../../mixin';
 
     export default {
         name: "Orders",

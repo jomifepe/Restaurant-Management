@@ -53,7 +53,7 @@ Homestead.yaml
 Homestead.json
 /node_modules
 /public/hot
-#/public/storage
+/public/storage
 #/public/js
 #/public/css
 #/public/mix-manifest.json
@@ -63,10 +63,6 @@ Homestead.json
 /.vagrant
 npm-debug.log
 yarn-error.log
-.env
-#/public/js
-#/public/css
-#/public/mix-manifest.json
 phpunit.dusk.xml
 
 

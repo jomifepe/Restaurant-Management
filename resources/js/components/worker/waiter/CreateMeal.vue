@@ -6,7 +6,8 @@
             <v-card-text>
                 <v-flex xs12>
                     <v-form ref="form">
-                        <v-text-field v-model="tableNumber" box ref="tableNumber"  label="Table number" type="number" name="tableNumber" :error-messages="errorMessages"
+                        <v-text-field v-model="tableNumber" box ref="tableNumber"  label="Table number" 
+                            type="number" name="tableNumber" :error-messages="errorMessages"
                             :rules="[() => !!tableNumber || 'This field is required']" required>
                         </v-text-field>
                     </v-form>
@@ -54,8 +55,12 @@
                             }
                         })
                         .catch(error => {
-                            console.log(error);
-                            this.errorMessages = 'Invalid table name';
+                            if (error.response.status === 422) {
+                                this.errorMessages = error.response.data.message;
+                            } else {
+                                console.log(error);
+                                this.errorMessages = 'Invalid table number';
+                            }
                         })
                 }
             }

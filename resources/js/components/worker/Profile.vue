@@ -33,7 +33,7 @@
 
 <script type="text/javascript">
     import UserEdit from './UserEdit.vue';
-    import {helper} from '../mixin.js';
+    import {helper} from '../../mixin.js';
 
     export default {
         mixins: [helper],

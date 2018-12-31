@@ -86,7 +86,7 @@
 
 <script>
     import InvoiceDetails from './InvoiceDetails';
-    import {toasts} from '../mixin';
+    import {toasts} from '../../../mixin';
 
     export default {
             name: "NotPendingInvoices",

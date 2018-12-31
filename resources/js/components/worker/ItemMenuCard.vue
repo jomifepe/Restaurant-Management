@@ -34,8 +34,8 @@
 </template>
 
 <script>
-	import ItemForm from './ItemForm';
-	import {toasts, helper} from '../mixin';
+	import ItemForm from './manager/ItemForm';
+	import {toasts, helper} from '../../mixin';
 
     export default {
 		props: ['item', 'meal', 'exists'],

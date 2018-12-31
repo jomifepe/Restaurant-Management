@@ -6,9 +6,10 @@ use Illuminate\Http\Request;
 use App\Invoice;
 use App\Http\Resources\InvoiceItems as InvoiceItemsResource;
 use Illuminate\Support\Facades\DB;
+use App\InvoiceItem;
+use App\Item;
 
-
-class InvoiceItemsAPI extends Controller
+class InvoiceItemsControllerAPI extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -18,7 +19,6 @@ class InvoiceItemsAPI extends Controller
 
 
     public function itemsFromAnInvoice($invoiceId){
-        //dd("entrou");
         $invoice = Invoice::findOrFail($invoiceId);
 
         $items= DB::table('invoice_items')
@@ -36,16 +36,6 @@ class InvoiceItemsAPI extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -53,7 +43,23 @@ class InvoiceItemsAPI extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // $data = $request->validate([
+        //     'invoice_id' => 'required|integer|exists:invoices,id',
+        //     'item_id' => 'required|integer|exists:items,id',
+        //     'quantity' => 'required|integer',
+        //     'unit_price' => 'required|numeric',
+        //     'sub_total_price' => 'required|numeric'
+        // ]);
+
+        $invoiceItem = new InvoiceItem();
+        $invoiceItem->fill($request->all());
+        $invoiceItem->save();
+
+        
+        $item = Item::findOrFail($invoiceItem->item_id);
+        $invoiceItem->item_name = $item->name;
+
+        return response()->json(new InvoiceItemsResource($invoiceItem), 201);
     }
 
     /**

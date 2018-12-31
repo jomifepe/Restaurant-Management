@@ -7,7 +7,7 @@ use App\User;
 use Illuminate\Support\Facades\DB;
 
 define('YOUR_SERVER_URL', 'http://project.dad');
-// Check "oauth_clients" table for next 2 values:
+/* Check "oauth_clients" table for next 2 values: */
 define('CLIENT_ID', '2');
 define('CLIENT_SECRET','r6DM32mBT1QSblxKJhK4Zp1W7FUHdxH6L0dpeTw7');
 
@@ -23,8 +23,10 @@ class LoginControllerAPI extends Controller
         }
         $user = User::where($userCredLabel, $userCred)->first();
 
-        if($user->blocked == 1) {
-            return response()->json("Unauthorized user is blocked", 401);
+        if ($user->blocked == 1) {
+            return response()->json("Unauthorized, user is blocked", 401);
+        } else if ($user->email_verified_at == null) {
+            return response()->json("Unauthorized, user needs to verify email", 401);
         }
 
         $http = new \GuzzleHttp\Client;

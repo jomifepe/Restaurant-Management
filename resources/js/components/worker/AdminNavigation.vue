@@ -111,14 +111,14 @@
                 class="mr-3" :value="$store.state.progressBarValue" 
                 :indeterminate="$store.state.progressBarIndeterminate"></v-progress-circular>
 
-            <v-toolbar-items class="hidden-sm-and-down">
+            <v-toolbar-items>
                 <v-menu :left="true" :nudge-width="100">
                     <v-toolbar-title slot="activator">
                         <span>{{ userFirstName(user.name) }}</span>
                         <v-icon>arrow_drop_down</v-icon>
                     </v-toolbar-title>
                     <v-list>
-                        <v-list-tile @click="logout">
+                        <v-list-tile @click="performControledLogout">
                             <v-list-tile-action>
                                 <v-icon>exit_to_app</v-icon>
                             </v-list-tile-action>
@@ -134,6 +134,25 @@
                 <v-icon class="ml-2" @click.stop="toggleNotificationDrawer" title="Toggle right menu">fas fa-bell</v-icon>
              </v-badge>
         </v-toolbar>
+        <v-dialog v-model="logoutEndShiftDialog" max-width="350">
+            <v-card>
+                <v-card-text class="subheading">
+                    Your shift is currently active, do you want to end it before logging out?
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn flat @click="logoutEndShiftDialog = false">
+                        Cancel
+                    </v-btn>
+                    <v-btn flat color="teal" @click="logout">
+                        No
+                    </v-btn>
+                    <v-btn flat color="red" @click="logoutEndShiftDialog = false; loggedOut = true">
+                        Yes
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
         <v-content>
             <v-container fluid>
                 <v-flex xs12>
@@ -142,16 +161,17 @@
             </v-container>
         </v-content>
         <v-footer height="auto" app inset>
-            <WorkerInfo :user="user" @onClearNotifications="clearNotifications"></WorkerInfo>
+            <WorkerInfo :user="user" @onClearNotifications="clearNotifications" 
+                :logOutFlag="loggedOut" @onShiftEndLogout="logout"></WorkerInfo>
         </v-footer>
     </v-app>
 </template>
 
 <script>
-import WorkerInfo from "./WorkerInfo";
-import axios from "axios";
-const moment = require("moment");
-import {toasts, helper} from '../mixin.js';
+    import WorkerInfo from "./WorkerInfo";
+    import axios from "axios";
+    import moment from 'moment';
+    import {toasts, helper} from '../../mixin.js';
 
     export default {
         name: "AdminNavigation",
@@ -220,7 +240,9 @@ import {toasts, helper} from '../mixin.js';
                 },
             ],
             mini: true,
-            right: null
+            right: null,
+            loggedOut: false,
+            logoutEndShiftDialog: false
         }),
         sockets: {
             connect(){
@@ -229,36 +251,37 @@ import {toasts, helper} from '../mixin.js';
             confirmation_sent_to_manager(data){
                 this.showTopRightSuccessToast('Message sent', 1000);
             },
-            message_from_worker(data){
-                this.showTopRightInfoToast('Your got a new message from a worker', 2000);
-                this.addNotification(
-                    `Message from ${data.sender.type}`,
-                    `${this.userFirstAndLastName(data.sender.name)} says:\n ${data.text}`, false);
+            /* everyone */
+            user_enter(data) {
+                this.showTopRightToast(data, 'arrow_forward', 2000);
             },
+            user_exit(data) {
+                this.showTopRightToast(data, 'arrow_back', 2000);
+            },
+            /* waiters */
+            order_prepared_waiter(order) {
+                this.addNotification(`Order ${order.id} is prepared`,
+                    ` ${order.item_name} from table ${order.meal_table_number} is ready for pick up`,
+                    `/admin/meals/${order.meal_id}/orders`);
+            },
+            /* cooks */
             order_prepared_cook(data) {
                 this.addNotification("Order send confirmation", data, false);
             },
             order_received() {
                 this.addNotification("New Order", "New order arrived!", "/admin/orders");
             },
+            /* cashiers */
             pending_invoice_received(){
                 this.addNotification("New Invoice", "New invoice generated", "/admin/invoices");
             },
-            order_prepared_waiter(order) {
-                this.addNotification(`Order ${order.id} is prepared`,
-                    ` ${order.item_name} from table ${order.meal_table_number} is ready for pick up`,
-                    `/admin/meals/${order.meal_id}/orders`);
+            /* managers */
+            message_from_worker(data){
+                this.showTopRightInfoToast('Your got a new message from a worker', 2000);
+                this.addNotification(
+                    `Message from ${data.sender.type}`,
+                    `${this.userFirstAndLastName(data.sender.name)} says:\n ${data.text}`, false);
             },
-            user_enter(data) {
-                this.showTopRightToast(data, 'arrow_forward', 2000);
-                // this.addNotification("Welcome!", data, false);
-                // console.log("Data recieved from the server when started shift = " + data + ")");
-            },
-            user_exit(data) {
-                this.showTopRightToast(data, 'arrow_back', 2000);
-                //this.addNotification('goodbye',data, false);
-                // console.log("Data recieved from the server when ended shift = " + data + ")");
-            }
         },
         computed: {
             user() {
@@ -304,13 +327,23 @@ import {toasts, helper} from '../mixin.js';
             logout() {
                 axios.post('logout')
                     .then(response => {
-                        this.$store.commit('clearUserAndToken');
-                        this.$router.push("/");
+                        if (response.status === 200) {
+                            this.$store.commit('clearUserAndToken');
+                            this.$router.push("/");
+                        }
                     })
                     .catch(error => {
                         this.$store.commit('clearUserAndToken');
                         console.log(`Failed to logout, But local credentials were discarded: \n${error}`);
+                        this.$router.push("/");
                     })
+            },
+            performControledLogout() {
+                if (!!this.user.shift_active) {
+                    this.logoutEndShiftDialog = true;
+                } else {
+                    this.logout();
+                }
             },
             toggleNotificationDrawer() {
                 if (!!this.user.shift_active) {
@@ -327,20 +360,20 @@ import {toasts, helper} from '../mixin.js';
 </script>
 
 <style scoped>
-#nav-notifications {
-    z-index: 60;
-}
-#nav-menu {
-    z-index: 50;
-}
-#toolbar-main {
-    z-index: 40;
-}
-.nav-list-toolbar {
-    padding-top: 0;
-    padding-bottom: 0;
-}
-.v-divider {
-    margin: 0;
-}
+    #nav-notifications {
+        z-index: 60;
+    }
+    #nav-menu {
+        z-index: 50;
+    }
+    #toolbar-main {
+        z-index: 40;
+    }
+    .nav-list-toolbar {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .v-divider {
+        margin: 0;
+    }
 </style>

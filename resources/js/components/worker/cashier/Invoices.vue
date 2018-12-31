@@ -20,8 +20,7 @@
                               :pagination.sync="pagination"
                               :loading="loading"
                               :search="search"
-                              class="elevation-1"
-                >
+                              class="elevation-1">
 
                     <template slot="items" slot-scope="props">
                         <tr @click="props.expanded = !props.expanded">
@@ -90,7 +89,7 @@
     import InvoiceDetails from './InvoiceDetails';
     import PendingInvoicesList from './PendingInvoicesList';
     import NotPendingInvoicesList from './NotPendingInvoicesList';
-    import {toasts} from '../mixin';
+    import {toasts} from '../../../mixin';
 
     export default {
         name: "Invoices",
@@ -100,36 +99,34 @@
             'pending-invoices-list' : PendingInvoicesList,
             'not-pending-invoices-list' : NotPendingInvoicesList
         },
-        data(){
-            return {
-                invoices: [],
-                pendingInvoices: [],
-                notPendingInvoices: [],
-                myInvoicesHeaders: [
-                    { text: 'Id', value: 'id' },
-                    { text: 'Table number', value: 'table_number' },
-                    { text: 'Waiter', value: 'responsible_waiter_name' },
-                    { text: 'State', value: 'state' },
-                    { text: 'Date', value: 'date'},
-                    { text: 'Total Price', value: 'total_price' }
-                ],
-                search: '',
-                dialog: false,
-                loading: true,
-                pagination: {},
-                valid: true,
-                name: '',
-                nameRules: [
-                    v => !!v || 'Name is required',
-                    v => /^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/.test(v) || 'Name must only contain letters and spaces'
-                ],
-                nif: '',
-                nifRules: [
-                    v => !!v || 'NIF is required',
-                    v => /^\d{9}$/.test(v) || 'NIF must have 9 numbers'
-                ],
-            }
-        },
+        data: () => ({
+            invoices: [],
+            pendingInvoices: [],
+            notPendingInvoices: [],
+            myInvoicesHeaders: [
+                { text: 'Id', value: 'id' },
+                { text: 'Table number', value: 'table_number' },
+                { text: 'Waiter', value: 'responsible_waiter_name' },
+                { text: 'State', value: 'state' },
+                { text: 'Date', value: 'date'},
+                { text: 'Total Price', value: 'total_price' }
+            ],
+            search: '',
+            dialog: false,
+            loading: true,
+            pagination: { rowsPerPage: 5 },
+            valid: true,
+            name: '',
+            nameRules: [
+                v => !!v || 'Name is required',
+                v => /^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/.test(v) || 'Name must only contain letters and spaces'
+            ],
+            nif: '',
+            nifRules: [
+                v => !!v || 'NIF is required',
+                v => /^\d{9}$/.test(v) || 'NIF must have 9 numbers'
+            ],
+        }),
         sockets: {
           pending_invoice_received(){
             this.loadInvoices();

@@ -52,7 +52,7 @@
 </template>
 
 <script>
-	import {toasts, helper} from '../mixin.js';
+	import {toasts, helper} from '../../../mixin.js';
 
 	export default {
 		props: ['item'],

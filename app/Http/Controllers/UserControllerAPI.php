@@ -49,6 +49,17 @@ class UserControllerAPI extends Controller
         return new UserResource(User::find($id));
     }
 
+    public function findUserByEmail($email) {
+        $user = User::where('email', $email)->first();
+        if (empty($user)) {
+            return response()->json([
+                'message' => 'Couldn\'t find a user with the provived email',
+                'status' => 404
+            ], 404);
+        }
+        return new UserResource($user);
+    }
+
     public function store(Request $request)
     {
         $request->validate([

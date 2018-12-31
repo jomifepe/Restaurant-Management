@@ -143,9 +143,9 @@
 </template>
 
 <script>
-    import {toasts, helper} from '../mixin';
-    import UserEdit from './UserEdit';
-    import Errors from './Errors';
+    import {toasts, helper} from '../../../mixin';
+    import UserEdit from '../UserEdit';
+    import Errors from '../Errors';
     import DefaultAxios from 'axios';
 
     export default {
