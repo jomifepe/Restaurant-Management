@@ -18,12 +18,12 @@ class InvoiceItemsControllerAPI extends Controller
      */
 
 
-    public function itemsFromAnInvoice($invoiceId){
-        $invoice = Invoice::findOrFail($invoiceId);
+    public function itemsFromAnInvoice($id){
+        $invoice = Invoice::findOrFail($id);
 
         $items= DB::table('invoice_items')
         ->join('items', 'items.id', '=', 'invoice_items.item_id')
-        ->where('invoice_id', $invoiceId)
+        ->where('invoice_id', $id)
         ->select('invoice_items.*', 
         'items.name AS item_name')
         ->get();

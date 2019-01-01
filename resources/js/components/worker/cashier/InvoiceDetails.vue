@@ -91,7 +91,7 @@
                     axios.get(`/invoices/${this.$route.params.invoiceId}/items`)
                         .then(response => {
                             if (response.status === 200) {
-                                this.invoiceItems = response.data.data;
+                                this.invoiceItems = response.data;
                                 this.totalInvoiceItems = this.invoice.length;
                             } else {
                                 this.showErrorToast('Failed to get invoices');

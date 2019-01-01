@@ -40,7 +40,6 @@ Route::group(['prefix' => 'invoices', 'middleware' => 'managerAndCashier'],
     }
 );
 
-
 Route::post('invoices', 'InvoiceControllerAPI@store')->name('invoices.store')
 ->middleware('managerAndWaiter');
 

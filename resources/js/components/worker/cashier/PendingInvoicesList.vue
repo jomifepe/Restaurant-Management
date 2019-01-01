@@ -74,9 +74,6 @@
                 </v-data-table> 
               </v-flex>
         </v-layout>
-        <v-flex xs12 id="InvoiceDetails" class="mt-5">
-            <router-view></router-view>
-        </v-flex>
     </v-container>
 </template>
 
@@ -128,13 +125,74 @@
 
             },
             methods: {
-                submit(invoice){
-                    
+                close(){
+                    this.dialog = false;
+                    this.$refs.form.reset();
                 },
+                sendNotificationToManager(meal){
+                    let message =
+                        {
+                            'sender' : this.user,
+                            'title' : "Meal Paid",
+                            'text' : `The meal ${meal.id} in table ${meal.table_number} is now paid`
+                        }
+                    this.$socket.emit('to_all_managers', message);
+                },
+                submit(invoice){
+                    if (this.$refs.form.validate()) {
+                        invoice.nif= this.nif;
+                        invoice.name= this.name;
+                        invoice.state = 'paid';
+                        var meal = null;
+
+                        axios.patch(`/invoices/${invoice.id}`, invoice)
+                            .then(response => {
+                                if (response.status === 200) {
+                                    this.getMeal(invoice.id)
+                                        .then(response => {
+                                            meal = response.data.data;
+                                            meal.state = 'paid';
+                                            this.updateMeal(meal)
+                                                .then(responseMealUpdate => {
+                                                    this.showSuccessToast('Meal edited');
+                                                    this.sendNotificationToManager(meal);
+                                                    this.loadInvoices();
+                                                }).catch(error => {
+                                                if (error.response.data) {
+                                                    this.showErrorToast(error.response.data.message);
+                                                } else {
+                                                    this.showErrorLog(`Failed to update meal`, error);
+                                                }
+                                            });
+                                        }).catch(error => {
+                                                if (error.response.data) {
+                                                    this.showErrorToast(error.response.data.message);
+                                                } else {
+                                                    this.showErrorLog(`Failed to get the invoice meal`, error);
+                                                }
+                                            });
+                                    this.showSuccessToast('Invoice edited');
+                                }
+                            }).catch(error => {
+                            if (error.response.data) {
+                                this.showErrorToast(error.response.data.message);
+                            } else {
+                                this.showErrorLog(`Failed to update invoice`, error);
+                            }
+                        });
+                    }
+                    this.dialog = false
+                 },
                 showInvoiceDetails(id){
                     this.$router.push({ name: 'invoices.details', params: { invoiceId: id }});
                 },
-                 loadInvoices() {
+                getMeal(id){
+                    return axios.get(`invoices/${id}/meal`);
+                },
+                updateMeal(meal){
+                    return axios.patch(`meals/${meal.id}`, meal);
+                },
+                loadInvoices() {
                  this.loading = true;
                      axios.get(`/invoices/pending`)
                          .then(response => {
@@ -147,8 +205,8 @@
                     });
                 },
                 getStateColor(state) {
-                return state === 'pending' ? 'yellow--text' : 'green--text';
-            },
+                    return state === 'pending' ? 'yellow--text' : 'green--text';
+                },
                 
             }
     }
