@@ -3,7 +3,9 @@
         <v-layout row wrap>
             <v-flex xs12> 
                 <v-toolbar flat color="green">
-                    <v-toolbar-title>Other Invoices</v-toolbar-title>
+                    <v-toolbar-title>Other Invoices
+                         <span class="body-1">(click to reveal invoice actions)</span>
+                    </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-text-field
                         v-model="search"
@@ -44,7 +46,7 @@
                                     Details
                                 </v-btn>
                                 <v-btn @click="exportToPdf(props.item)" icon>
-                                 <v-icon>print</v-icon>
+                                    <v-icon>print</v-icon>
                                 </v-btn>
                         </template>
                 </v-data-table> 
@@ -93,6 +95,11 @@
                 ],
             }
         },
+        sockets: {
+            update_orders(){
+                this.loadInvoices();
+            },
+        },
         computed: {
             user(){
                 return this.$store.state.user;
@@ -113,11 +120,11 @@
                 this.$router.push({ name: 'invoices.details', params: { invoiceId: id }});
             },
             getStateColor(state) {
-                return state === 'pending' ? 'yellow--text' : 'green--text';
+                return state === 'not paid' ? 'red--text' : 'green--text';
             },
             loadInvoices() {
                 this.loading = true;
-                axios.get(`/invoices/paid`)
+                axios.get(`/invoices/notpending`)
                     .then(response => {
                        if(response.status=== 200){
                         this.loading= false;

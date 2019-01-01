@@ -3,7 +3,9 @@
         <v-layout row wrap>
             <v-flex xs12> 
                 <v-toolbar flat color="yellow">
-                    <v-toolbar-title>Pending Invoices</v-toolbar-title>
+                    <v-toolbar-title>Pending Invoices
+                         <span class="body-1">(click to reveal invoice actions)</span>
+                    </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-text-field
                         v-model="search"
@@ -26,7 +28,7 @@
                         <td>{{ props.item.id }}</td>
                         <td>{{props.item.table_number}}</td>
                         <td>{{ props.item.responsible_waiter_name}}</td>
-                        <td :class="getStateColor(props.item.state)">
+                        <td :class="'yellow--text'">
                             <strong>{{ props.item.state }}</strong>
                         </td>
                         <td>{{ props.item.date }}</td>
@@ -65,6 +67,9 @@
                                     </v-form>
                                 </v-card>
                                 </v-dialog>
+                                <v-btn flat small v-if="user.type==='manager'" @click="declareAsNotPaid(props.item)">
+                                    Declare as not paid
+                                </v-btn>
                                 <v-btn flat small @click="showInvoiceDetails(props.item.id)">
                                     Details
                                 </v-btn>
@@ -125,61 +130,98 @@
 
             },
             methods: {
+                saveOrder(order){
+                    return axios.patch(`/orders/${order.id}`, order);
+                },
+                getAllNotDelOrdersFormAMeal(meal){
+                    return axios.get(`/orders/meal/${meal.id}/notDeliveredItems`);
+                },
+                changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal){
+                    let orders= null;
+                    var promises= [];
+                    this.getAllNotDelOrdersFormAMeal(meal)
+                        .then(response => {
+                            orders = response.data;
+                            orders.forEach(order => {
+                                order.state = 'not delivered';
+                                promises.push(this.saveOrder(order));
+                                
+                            })
+                            axios.all(promises)
+                                .then(axios.spread((...responses) => {
+                                    responses.forEach(res => console.log('Success'))
+                                    console.log('submitted all axios calls');
+                                    this.$socket.emit('update_not_pending');
+                                }))
+
+                        })
+                        .catch(error => {
+                            this.showErrorLog('Failed to change orders', error);
+                        })
+                },
+                declareAsNotPaid(invoice){
+                    this.changeInvoice(invoice,'not paid');
+                },
+                changeInvoice(invoice, state){
+                    invoice.state = state;
+                    var meal = null;
+                    axios.patch(`/invoices/${invoice.id}`, invoice)
+                        .then(response => {
+                            if (response.status === 200) {
+                                this.getMeal(invoice.id)
+                                    .then(response => {
+                                        meal = response.data.data;
+                                        meal.state = state;
+                                        this.updateMeal(meal)
+                                            .then(responseMealUpdate => {
+                                                this.showSuccessToast('Meal edited');
+                                                this.sendNotificationToManager(meal, state);
+                                                if(state === 'not paid'){
+                                                    this.changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal);
+                                                }
+                                                this.loadInvoices();
+                                            }).catch(error => {
+                                            if (error.response.data) {
+                                                this.showErrorToast(error.response.data.message);
+                                            } else {
+                                                this.showErrorLog(`Failed to update meal`, error);
+                                            }
+                                        });
+                                        }).catch(error => {
+                                            if (error.response.data) {
+                                                this.showErrorToast(error.response.data.message);
+                                            } else {
+                                                this.showErrorLog(`Failed to get the invoice meal`, error);
+                                            }
+                                        });
+                                this.showSuccessToast('Invoice edited');
+                            }
+                        }).catch(error => {
+                        if (error.response.data) {
+                            this.showErrorToast(error.response.data.message);
+                        } else {
+                            this.showErrorLog(`Failed to update invoice`, error);
+                        }
+                    });
+                },
                 close(){
                     this.dialog = false;
                     this.$refs.form.reset();
                 },
-                sendNotificationToManager(meal){
+                sendNotificationToManager(meal, state){
                     let message =
-                        {
-                            'sender' : this.user,
-                            'title' : "Meal Paid",
-                            'text' : `The meal ${meal.id} in table ${meal.table_number} is now paid`
-                        }
+                    {
+                        'sender' : this.user,
+                        'title' : "Meal Paid",
+                        'text' : `The meal ${meal.id} in table ${meal.table_number} is now paid`
+                    }
                     this.$socket.emit('to_all_managers', message);
                 },
                 submit(invoice){
                     if (this.$refs.form.validate()) {
                         invoice.nif= this.nif;
                         invoice.name= this.name;
-                        invoice.state = 'paid';
-                        var meal = null;
-
-                        axios.patch(`/invoices/${invoice.id}`, invoice)
-                            .then(response => {
-                                if (response.status === 200) {
-                                    this.getMeal(invoice.id)
-                                        .then(response => {
-                                            meal = response.data.data;
-                                            meal.state = 'paid';
-                                            this.updateMeal(meal)
-                                                .then(responseMealUpdate => {
-                                                    this.showSuccessToast('Meal edited');
-                                                    this.sendNotificationToManager(meal);
-                                                    this.loadInvoices();
-                                                }).catch(error => {
-                                                if (error.response.data) {
-                                                    this.showErrorToast(error.response.data.message);
-                                                } else {
-                                                    this.showErrorLog(`Failed to update meal`, error);
-                                                }
-                                            });
-                                        }).catch(error => {
-                                                if (error.response.data) {
-                                                    this.showErrorToast(error.response.data.message);
-                                                } else {
-                                                    this.showErrorLog(`Failed to get the invoice meal`, error);
-                                                }
-                                            });
-                                    this.showSuccessToast('Invoice edited');
-                                }
-                            }).catch(error => {
-                            if (error.response.data) {
-                                this.showErrorToast(error.response.data.message);
-                            } else {
-                                this.showErrorLog(`Failed to update invoice`, error);
-                            }
-                        });
+                        this.changeInvoice(invoice, 'paid');
                     }
                     this.dialog = false
                  },
@@ -204,10 +246,6 @@
                             this.loadingTableEffect=false;
                     });
                 },
-                getStateColor(state) {
-                    return state === 'pending' ? 'yellow--text' : 'green--text';
-                },
-                
             }
     }
 </script>

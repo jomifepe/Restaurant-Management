@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Resources\Invoice as InvoiceResource;
 use App\Http\Resources\InvoiceDetailed as InvoiceDetailedResource;
 use App\Http\Resources\Meal as MealResource;
 use App\Invoice;
 use App\Meal;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class InvoiceControllerAPI extends Controller
@@ -84,33 +84,29 @@ class InvoiceControllerAPI extends Controller
 
     public function pendingOrders()
     {
-        //dd("entrou");
-        $items = DB::table('invoices')
+        $items = Invoice::select('invoices.*',
+        'meals.responsible_waiter_id AS responsible_waiter_id',
+        'meals.table_number AS table_number',
+        'users.name AS responsible_waiter_name') 
         ->join('meals', 'meals.id', '=', 'invoices.meal_id')
         ->join('users', 'meals.responsible_waiter_id', '=', 'users.id')
         ->where('invoices.state', 'pending')
-        ->select('invoices.*',
+        ->get();
+
+        return response()->json(InvoiceDetailedResource::collection($items), 200);
+    }
+    public function notPendingOrders()
+    {
+        $items= Invoice::select('invoices.*',
         'meals.responsible_waiter_id AS responsible_waiter_id',
         'meals.table_number AS table_number',
         'users.name AS responsible_waiter_name')
-        ->get();
-        return response()->json(InvoiceDetailedResource::collection($items), 200);
-        //return InvoiceResource::collection(Invoice::where('state','pending')->get());
-    }
-    public function paidOrders()
-    {
-        $items = DB::table('invoices')
         ->join('meals', 'meals.id', '=', 'invoices.meal_id')
         ->join('users', 'meals.responsible_waiter_id', '=', 'users.id')
-        ->where('invoices.state', 'paid')
-        ->select('invoices.*',
-        'meals.responsible_waiter_id AS responsible_waiter_id',
-        'meals.table_number AS table_number',
-        'users.name AS responsible_waiter_name')
+        ->where('invoices.state', '!=', 'pending')
         ->get();
-        return response()->json(InvoiceDetailedResource::collection($items), 200);
 
-       // return InvoiceResource::collection(Invoice::where('state','paid')->get());
+        return response()->json(InvoiceDetailedResource::collection($items), 200);
     }
 
     /**

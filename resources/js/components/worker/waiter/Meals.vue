@@ -39,6 +39,14 @@
                                         </v-btn>
                                         <span>Terminate meal</span>
                                     </v-tooltip>
+                                    <v-tooltip top v-if="props.item.state === 'terminated'">
+                                        <v-btn icon slot="activator" @click="declareMealAsNotPaid(props.item)">
+                                            <v-icon>
+                                               money_off
+                                            </v-icon>
+                                        </v-btn>
+                                        <span>Declare meal as not paid</span>
+                                    </v-tooltip>
                                 </td>
                             </tr>
                         </template>
@@ -153,8 +161,76 @@
                 this.showTopRightToast('Order delivered by ('+ waiter.name+')');
                 this.reload();
             }
-        },
+        },  
         methods: {
+            saveOrder(order){
+                return axios.patch(`/orders/${order.id}`, order);
+            },            
+            getAllNotDelOrdersFormAMeal(meal){
+                    return axios.get(`/orders/meal/${meal.id}/notDeliveredItems`);
+            },
+            changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal){
+                    let orders= null;
+                    var promises= [];
+                    this.getAllNotDelOrdersFormAMeal(meal)
+                        .then(response => {
+                            orders = response.data;
+                            orders.forEach(order => {
+                                order.state = 'not delivered';
+                                promises.push(this.saveOrder(order));
+                                
+                            })
+                             console.log(promises);
+                            axios.all(promises)
+                                .then(axios.spread((...responses) => {
+                                    responses.forEach(res => console.log('Success'))
+                                    console.log('submitted all axios calls');
+                                    this.$socket.emit('update_not_pending');
+                                }))
+
+                        })
+                        .catch(error => {
+                            this.showErrorLog('Failed to change orders', error);
+                        })
+            },
+            getInvoice(meal){
+                return axios.get(`/meals/${meal.id}/invoice`);
+            },
+            updateInvoice(invoice){
+                return axios.patch(`/invoices/${invoice.id}`, invoice);
+            },
+            declareMealAsNotPaid(meal){
+                    meal.state = 'not paid';
+                    var invoice =null;
+                    axios.patch(`/meals/${meal.id}`, meal)
+                        .then(response => {
+                            if (response.status === 200) {
+                                this.showSuccessToast('Meal edited');
+                                this.getInvoice(meal)
+                                    .then(responseInvoice => {
+                                        invoice = response.data.data;
+                                        invoice.state = 'not paid';
+                                        this.updateInvoice(invoice)
+                                            .then(responseInvoiceUpdate => {
+                                                console.log(responseInvoiceUpdate);
+                                                this.showSuccessToast('Invoice edited');
+                                                this.changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal);
+                                                this.loadMeals();
+                                            })
+                                            .catch(error => {
+                                                this.showErrorToast('Failed to edit invoice');
+                                            })
+                                    })  
+                                    .catch(error => {
+                                       this.showErrorLog('Failed to get meal invoice', error);
+                                    })                              
+                            } 
+                        })
+                        .catch(error => {
+                            this.showErrorLog(`Failed to update meal #${meal.id}`, error);
+                            this.$store.commit('hideProgressBar');
+                        })
+            },
             loadMeals() {
                 let target = this.isUserManager ? 'meals/manager' :
                     `/meals/waiter/${this.$store.state.user.id}`;

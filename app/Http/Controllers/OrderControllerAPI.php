@@ -114,6 +114,17 @@ class OrderControllerAPI extends Controller
         return response()->json(ItemOrderResource::collection($items), 200);
     }
 
+    public function notDeliveredOrdersFromAMeal($mealId)
+    {
+        $items = Order::select('orders.*')
+        ->join('meals', 'meals.id', '=', 'orders.meal_id')
+        ->where([ ['meals.id', $mealId],
+                  ['orders.state', '!=', 'delivered'],
+                  ['orders.state', '!=', 'not delivered'],])
+        ->get();
+
+    return response()->json(OrderResource::collection($items), 200);
+    }
     /**
      * Update the specified resource in storage.
      *
@@ -135,6 +146,7 @@ class OrderControllerAPI extends Controller
         $order->update($request->all());
         return new OrderResource($order);
     }
+
 
     /**
      * Remove the specified resource from storage.

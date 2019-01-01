@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Resources\Meal as MealResource;
 use App\Http\Resources\MealHR as MealHRResource;
+use App\Http\Resources\Invoice as InvoiceResource;
 use App\Meal;
 use App\User;
 use App\Table;
+use App\Invoice;
 use Illuminate\Support\Facades\DB;
 
 class MealControllerAPI extends Controller
@@ -105,6 +107,17 @@ class MealControllerAPI extends Controller
 
     }
 
+    public function getInvoice($mealId)
+    {
+        $meal = Meal::findOrFail($mealId);
+        
+        // return Meal::select('invoices.id')
+        // ->join('invoices', 'meals.id', '=', 'invoices.meal_id')
+        // ->where('meals.id', $mealId)
+        // ->first();
+
+        return new InvoiceResource(Invoice::where('meal_id', $meal->id)->first());
+    }
     /**
      * Update the specified resource in storage.
      *

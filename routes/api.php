@@ -31,7 +31,7 @@ Route::group(['prefix' => 'invoices', 'middleware' => 'managerAndCashier'],
         Route::get('{id}/meal', 'InvoiceControllerAPI@invoiceMeal')->name('invoices.meal');
         Route::get('details','InvoiceControllerAPI@allOrders')->name('invoices.details');
         Route::get('pending', 'InvoiceControllerAPI@pendingOrders')->name('invoices.pending');
-        Route::get('paid', 'InvoiceControllerAPI@paidOrders')->name('invoices.paid');
+        Route::get('notpending', 'InvoiceControllerAPI@notPendingOrders')->name('invoices.paid');
         Route::get('{id}/items','InvoiceItemsControllerAPI@itemsFromAnInvoice')->name('invoices.items');
         /* Resource */
         Route::get('', 'InvoiceControllerAPI@index')->name('invoices.index');
@@ -39,6 +39,7 @@ Route::group(['prefix' => 'invoices', 'middleware' => 'managerAndCashier'],
         Route::get('{invoice}', 'InvoiceControllerAPI@show')->name('invoices.show');
     }
 );
+
 
 Route::post('invoices', 'InvoiceControllerAPI@store')->name('invoices.store')
 ->middleware('managerAndWaiter');
@@ -66,6 +67,9 @@ Route::group(['prefix' =>'meals', 'middleware' => 'managerAndWaiter'],
         Route::get('{meal}', 'MealControllerAPI@show')->name('meals.show');
     }
 );
+
+Route::get('meals/{mealId}/invoice', 'MealControllerAPI@getInvoice')->name('meals.invoice')
+    ->middleware('manager');
 
 Route::get('meals/{mealId}/waiter', 'MealControllerAPI@getWaiter')->name('meal.waiterresponsible')
     ->middleware('managerWaiterAndCook');
@@ -133,6 +137,8 @@ Route::group(['prefix' => 'orders', 'middleware' => 'managerWaiterAndCook'],
         Route::get('meal/{mealId}', 'OrderControllerAPI@mealOrders')->name('orders.meal');
         /* get all the items ordered for a specific meal */
         Route::get('meal/{mealId}/items', 'OrderControllerAPI@mealItems')->name('orders.meal.items');
+        Route::get('meal/{mealId}/notDeliveredItems', 'OrderControllerAPI@notDeliveredOrdersFromAMeal')
+            ->name('orders.meal.notDeliveredOrdersFromAMeal');
         Route::get('', 'OrderControllerAPI@index')->name('orders.index');
         Route::match(['put', 'patch'],'{order}','OrderControllerAPI@update')->name('orders.update');
         Route::get('{order}', 'OrderControllerAPI@show')->name('orders.show');
