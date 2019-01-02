@@ -1,12 +1,14 @@
 <template>
     <v-container grid-list-md fluid>
-        <pending-invoices-list></pending-invoices-list>
-        <v-btn v-if="user.type==='manager' && !otherInvoices" block color="info" @click="showAllInvoices()">Get Other Invoices</v-btn>
-        <not-pending-invoices-list v-if="user.type==='cashier' || otherInvoices" @onClose="closeOtherInvoices"></not-pending-invoices-list>
-    <v-flex xs12 id="InvoiceDetails" class="mt-5">
-            <router-view></router-view>
-    </v-flex>
-    </v-container> 
+        <v-layout row wrap>
+            <pending-invoices-list></pending-invoices-list>
+            <v-btn v-if="user.type==='manager' && !otherInvoices" block color="info" @click="showAllInvoices()">Get Other Invoices</v-btn>
+            <not-pending-invoices-list v-if="user.type==='cashier' || otherInvoices" @onClose="closeOtherInvoices"></not-pending-invoices-list>
+            <v-flex xs12 id="InvoiceDetails" class="mt-5">
+                <router-view></router-view>
+            </v-flex>
+        </v-layout>
+    </v-container>
 </template>
 
 <script>
@@ -22,7 +24,6 @@
             'not-pending-invoices-list' : NotPendingInvoicesList
         },
         data: () => ({
-            
             dialog: false,
             otherInvoices: false,
         }),
@@ -32,7 +33,7 @@
             }
         },
         mounted() {
- 
+
         },
         methods: {
             closeOtherInvoices(){
@@ -41,7 +42,7 @@
             showAllInvoices(){
                 this.otherInvoices= true;
             },
-            
+
         }
     }
 </script>

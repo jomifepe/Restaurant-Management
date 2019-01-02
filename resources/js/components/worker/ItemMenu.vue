@@ -137,7 +137,7 @@
 			pagination: { rowsPerPage: 12 },
 			orderSubmitDialog: false,
 			toastButtonClicked: false,
-			summaryRowsPerPageItems: [],
+			summaryRowsPerPageItems: [ 5 ],
             summaryPagination: { rowsPerPage: 5 },
 		}),
 		computed: {
@@ -249,7 +249,6 @@
 					meal_id: this.meal.id,
 					responsible_cook_id: null,
 					start: moment().format('YYYY-MM-DD HH:mm:ss'),
-
 				};
 
 				axios.post('/orders', newOrder)

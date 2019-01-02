@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 define('YOUR_SERVER_URL', 'http://project.dad');
 /* Check "oauth_clients" table for next 2 values: */
 define('CLIENT_ID', '2');
-define('CLIENT_SECRET','aFH6g9BrJw2QQ5IVAFXnHaK6oOfiRODMEhbPawGs');
+define('CLIENT_SECRET','k5eM3DIORGskp5iDaZ2MTGRTkyZOqsirbbigwY0W');
 
 class LoginControllerAPI extends Controller
 {

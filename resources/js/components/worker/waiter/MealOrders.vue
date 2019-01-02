@@ -13,19 +13,25 @@
                 {{ totalDeliveredPrice }}
                 <v-icon right>euro_symbol</v-icon>
             </v-chip>
-            <v-btn dark color="success" v-if="meal.state === 'active'" :to="'/admin/menu/meal/' + meal.id">
+            <v-btn dark color="success" v-if="meal.state === 'active'" @click="redirectToMenu">
                 Order new item(s)
             </v-btn>
             <v-progress-circular v-if="progressBar" indeterminate color="blue-grey"></v-progress-circular>
         </v-toolbar>
         <v-container fluid class="white elevation-1">
 
+            <h4 class="text-md-center" v-if="!isUserManager && !notPreparedOrders.length && !preparedOrders.length">
+                No orders to display
+            </h4>
+
             <!--  pending & confirmed -->
-            <v-card class="mt-3">
-                <v-toolbar card color="red accent-3" dark>
-                    <v-toolbar-title>Not prepared orders</v-toolbar-title>
+            <v-card class="mt-3" v-if="notPreparedOrders.length">
+                <v-toolbar card :class="getOrderStateColor('confirmed')" dark>
+                    <v-toolbar-title>
+                        Pending & Confirmed orders
+                    </v-toolbar-title>
                 </v-toolbar>
-                <v-card-text style="border: 1px solid red">
+                <v-card-text :style="getCardBorderColor('confirmed')">
                     <v-data-iterator row wrap :items="notPreparedOrders" :rows-per-page-items="notPreparedOrdersRows"
                                      :pagination.sync="notPreparedOrdersPagination" content-tag="v-layout"
                                      no-data-text="No pending or confirmed orders at the moment">
@@ -37,11 +43,11 @@
             </v-card>
 
             <!--  in preparation -->
-            <v-card class="mt-3" v-if="isUserManager">
-                <v-toolbar card color="amber darken-1 accent-3" dark>
+            <v-card class="mt-3" v-if="isUserManager && inPreparationOrders.length">
+                <v-toolbar card :class="getOrderStateColor('in preparation')" dark>
                     <v-toolbar-title>In preparation orders</v-toolbar-title>
                 </v-toolbar>
-                <v-card-text style="border: 1px solid red">
+                <v-card-text :style="getCardBorderColor('in preparation')">
                     <v-data-iterator row wrap :items="inPreparationOrders" :rows-per-page-items="inPreparationOrdersRows"
                                      :pagination.sync="inPreparationOrdersPagination" content-tag="v-layout"
                                      no-data-text="No in preparation orders at the moment">
@@ -54,11 +60,11 @@
 
 
             <!--  prepared -->
-            <v-card class="mt-3">
-                <v-toolbar card color="teal" dark>
+            <v-card class="mt-3" v-if="preparedOrders.length">
+                <v-toolbar card :class="getOrderStateColor('prepared')" dark>
                     <v-toolbar-title>Prepared orders</v-toolbar-title>
                 </v-toolbar>
-                <v-card-text style="border: 1px solid teal">
+                <v-card-text :style="getCardBorderColor('prepared')">
                     <v-data-iterator row wrap :items="preparedOrders" :rows-per-page-items="preparedOrdersRows"
                         :pagination.sync="preparedOrdersPagination" content-tag="v-layout"
                         no-data-text="No prepared orders at the moment">
@@ -71,11 +77,11 @@
 
 
             <!--  delivered -->
-            <v-card class="mt-3" v-if="isUserManager">
-                <v-toolbar card color="green accent-3" dark>
+            <v-card class="mt-3" v-if="isUserManager && deliveredOrders.length">
+                <v-toolbar card :class="getOrderStateColor('delivered')" dark>
                     <v-toolbar-title>Delivered orders</v-toolbar-title>
                 </v-toolbar>
-                <v-card-text style="border: 1px solid red">
+                <v-card-text :style="getCardBorderColor('delivered')">
                     <v-data-iterator row wrap :items="deliveredOrders" :rows-per-page-items="deliveredOrdersRows"
                                      :pagination.sync="deliveredOrdersPagination" content-tag="v-layout"
                                      no-data-text="No delivered orders at the moment">
@@ -87,11 +93,11 @@
             </v-card>
 
             <!--  not delivered -->
-            <v-card class="mt-3" v-if="isUserManager">
-                <v-toolbar card color="grey darken-3 accent-3" dark>
+            <v-card class="mt-3" v-if="isUserManager && notDeliveredOrders.length">
+                <v-toolbar card :class="getOrderStateColor('not delivered')" dark>
                     <v-toolbar-title>Not delivered orders</v-toolbar-title>
                 </v-toolbar>
-                <v-card-text style="border: 1px solid red">
+                <v-card-text :style="getCardBorderColor('not delivered')">
                     <v-data-iterator row wrap :items="notDeliveredOrders" :rows-per-page-items="notDeliveredOrdersRows"
                                      :pagination.sync="notDeliveredOrdersPagination" content-tag="v-layout"
                                      no-data-text="No delivered orders at the moment">
@@ -151,14 +157,16 @@
         },
         sockets: {
             order_prepared_waiter(order) {
-                this.showTopRightToast(`Order ${order.meal_id} from table ${order.meal_table_number} is prepared`, 'check');
+                this.showTopRightToast(`Order ${order.meal_id} from table 
+                    ${order.meal_table_number} is prepared`, 'check');
                 if (this.meal.id === order.meal_id) {
                     this.progressBar = true;
                     this.loadMealOrders();
                 }
             },
             order_in_preparation_waiter(order) {
-                this.showTopRightToast(`Order ${order.meal_id} from table ${order.meal_table_number} is in preparation`, 'restaurant', 2000);
+                this.showTopRightToast(`Order ${order.meal_id} from table ${order.meal_table_number} 
+                    is in preparation`, 'restaurant', 2000);
                 if (this.meal.id === order.meal_id) {
                     this.progressBar = true;
                     this.loadMealOrders();
@@ -237,8 +245,16 @@
                         }
                     })
                     .catch(error => {
-                        console.log(error);
+                        this.showErrorLog(`Failed to load orderd for meal #${this.meal}`, error);
                     });
+            },
+            getCardBorderColor(state) {
+                return `border: 1px solid ${this.getOrderStateColorHEX(state)}`;
+            },
+            redirectToMenu() {
+                if (this.isUserInShift()) {
+                    this.$router.push({name: 'menu.meal.orders', params: { mealId: this.meal.id }});
+                }
             }
         },
         mounted() {

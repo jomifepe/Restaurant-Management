@@ -27,6 +27,7 @@
                             <td>{{ props.item.item_name }}</td>
                             <td>{{ props.item.item_type }}</td>
                             <td>{{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
+                            <td>{{ userFirstAndLastName(props.item.responsible_waiter_name) }}</td>
                             <td :class="getOrderStateTextColor(props.item.state)">
                                 <strong>{{ props.item.state }}</strong>
                             </td>
@@ -64,6 +65,7 @@
                 { text: 'Item Name', value: 'item_name' },               
                 { text: 'Item Type', value: 'item_type' },
                 { text: 'Date', value: 'created_at' },
+                { text: 'Responsible waiter', value: 'responsible_waiter_name' },
                 { text: 'State', value: 'state' }
             ],
             totalOrders: 0,
@@ -127,6 +129,7 @@
                 axios.get(`/orders/${this.$store.state.user.id}/toprepare`)
                     .then(response => {
                         if (response.status === 200) {
+                            console.log(response.data.data);
                             this.orders = response.data.data;
                             this.loading = false;
                         }

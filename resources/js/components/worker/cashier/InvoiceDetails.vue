@@ -39,7 +39,6 @@
 				<v-data-table :headers="headers"
                               :items="invoiceItems"
                               :pagination.sync="pagination"
-                              :total-items="totalInvoiceItems"
                               :loading="loading"
                               class="elevation-1">
 
@@ -67,7 +66,6 @@
         data: () => ({
             invoice : null,
             invoiceItems: [],
-            totalInvoiceItems: 0,
             loading: true,
             pagination: {},
             headers: [
@@ -91,8 +89,7 @@
                     axios.get(`/invoices/${this.$route.params.invoiceId}/items`)
                         .then(response => {
                             if (response.status === 200) {
-                                this.invoiceItems = response.data;
-                                this.totalInvoiceItems = this.invoice.length;
+                                this.invoiceItems = response.data.data;
                             } else {
                                 this.showErrorToast('Failed to get invoices');
                             }
@@ -107,37 +104,32 @@
                 })
             },
             loadInvoiceFromRouterId() {
-                return new Promise(resolve => {
-                    if (this.$route.params.invoiceId) {
-                        this.progressBar = true;
-                        axios.get(`/invoices/${this.$route.params.invoiceId}`)
-                            .then(response => {
-                                if (response.status === 200) {
-                                    this.invoice = response.data.data;
-                                    // this.$store.commit('setPanelTitle', `Details of Invoice #${this.invoice.id}`);
-                                } else {
-                                    this.showErrorToast('Failed to get invoice identified by the given id');
-                                }
-                            })
-                            .catch(error => {
-                                this.showErrorLog('Failed to get invoice identified by the given id', error);
-                            })
-                            .finally(() => {
-                                this.progressBar = false;
-                                resolve();
-                            })
-                    } else {
-                        resolve();
-                    }
-                })
+                if (this.$route.params.invoiceId) {
+                    this.progressBar = true;
+                    axios.get(`/invoices/${this.$route.params.invoiceId}`)
+                        .then(response => {
+                            if (response.status === 200) {
+                                this.invoice = response.data.data;
+                                // this.$store.commit('setPanelTitle', `Details of Invoice #${this.invoice.id}`);
+                                this.loadInvoiceItems();
+                            } else {
+                                this.showErrorToast('Failed to get invoice identified by the given id');
+                            }
+                        })
+                        .catch(error => {
+                            this.showErrorLog('Failed to get invoice identified by the given id', error);
+                            this.progressBar = false;
+                        })
+                } else {
+                    this.invoiceItems = [];
+                }
             },
             closeDetails(){
                 this.$router.pop({ name:'invoices.details'});
             },
         },
         mounted() {
-            this.loadInvoiceFromRouterId()
-                .then(() => this.loadInvoiceItems());
+            this.loadInvoiceFromRouterId();
         }
     }
 </script>

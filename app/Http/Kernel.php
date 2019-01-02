@@ -65,6 +65,7 @@ class Kernel extends HttpKernel
         'managerAndCashier' => \App\Http\Middleware\isManagerOrCashier::class,
         'managerAndWaiter' => \App\Http\Middleware\isManagerOrWaiter::class,
         'managerWaiterAndCook' => \App\Http\Middleware\isManagerOrCookOrWaiter::class,
+        'managerWaiterAndCashier' => \App\Http\Middleware\isManagerOrWaiterOrCashier::class,
         'managerAndCook' => \App\Http\Middleware\isManagerOrCook::class,
 
     ];

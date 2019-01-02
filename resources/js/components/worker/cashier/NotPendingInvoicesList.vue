@@ -1,69 +1,65 @@
 <template>
-    <v-container grid-list-md>
-        <v-layout row wrap>
-            <v-flex xs12> 
-                <v-toolbar flat color="green">
-                    <v-toolbar-title>Other Invoices
-                         <span class="body-1">(click to reveal invoice actions)</span>
-                    </v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-text-field
-                        v-model="search"
-                        append-icon="search"
-                        label="Search"
-                        single-line
-                        hide-details
-                    ></v-text-field>
-                    <v-btn flat icon v-if="user.type==='manager'" @click="closeInvoices()">
-                        <v-icon>close</v-icon>
-                    </v-btn>                     
-                </v-toolbar>
-                <v-data-table :headers="myInvoicesHeaders"
-                                :items="invoices"
-                                :pagination.sync="pagination"
-                                :loading="loading"
-                                :search="search"
-                                class="elevation-1"
-                >
+    <v-flex xs12 class="mt-3"> 
+        <v-toolbar flat color="green">
+            <v-toolbar-title>
+                Other Invoices
+                <span class="body-1">(click to reveal invoice actions)</span>
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-text-field
+                v-model="search"
+                append-icon="search"
+                label="Search"
+                single-line
+                hide-details
+            ></v-text-field>
+            <v-btn flat icon v-if="user.type==='manager'" @click="closeInvoices()">
+                <v-icon>close</v-icon>
+            </v-btn>                     
+        </v-toolbar>
+        <v-data-table :headers="myInvoicesHeaders"
+                        :items="invoices"
+                        :pagination.sync="pagination"
+                        :loading="loading"
+                        :search="search"
+                        class="elevation-1">
 
-                <template slot="items" slot-scope="props">
-                        <tr @click="props.expanded = !props.expanded">
-                        <td>{{ props.item.id }}</td>
-                        <td>{{props.item.table_number}}</td>
-                        <td>{{ props.item.responsible_waiter_name}}</td>
-                        <td :class="getStateColor(props.item.state)">
-                            <strong>{{ props.item.state }}</strong>
-                        </td>
-                        <td>{{ props.item.date }}</td>
-                        <td>{{ props.item.total_price }}€</td>
-                    </tr>
-                </template>
-                <v-alert slot="no-results" :value="true" color="error" icon="warning">
-                    Your search for "{{ search }}" found no results.
-                </v-alert>
-                        <template slot="expand" slot-scope="props">
-                                <v-btn flat small @click="showInvoiceDetails(props.item.id)">
-                                    Details
-                                </v-btn>
-                                <v-btn @click="exportToPdf(props.item)" icon>
-                                    <v-icon>print</v-icon>
-                                </v-btn>
-                        </template>
-                </v-data-table> 
-              </v-flex>
-        </v-layout>
-    </v-container>
+        <template slot="items" slot-scope="props">
+            <tr class="clickable" @click="props.expanded = !props.expanded">
+                <td>{{ props.item.id }}</td>
+                <td>{{props.item.table_number}}</td>
+                <td>{{ props.item.responsible_waiter_name}}</td>
+                <td :class="getInvoiceStateTextColor(props.item.state)">
+                    <strong>{{ props.item.state }}</strong>
+                </td>
+                <td>{{ props.item.date }}</td>
+                <td>{{ props.item.total_price }}€</td>
+            </tr>
+        </template>
+        <v-alert slot="no-results" :value="true" color="error" icon="warning">
+            Your search for "{{ search }}" found no results.
+        </v-alert>
+            <template slot="expand" slot-scope="props">
+                <v-btn flat small @click="showInvoiceDetails(props.item.id)">
+                    Details
+                </v-btn>
+                <v-btn @click="exportToPdf(props.item)" icon>
+                    <v-icon>print</v-icon>
+                </v-btn>
+            </template>
+        </v-data-table> 
+    </v-flex>
 </template>
 
 <script>
     import InvoiceDetails from './InvoiceDetails';
-    import {toasts} from '../../../mixin';
+    import {toasts, helper} from '../../../mixin';
     import jsPDF from 'jspdf';
     import autoTable from 'jspdf-autotable';
 
     export default {
             name: "NotPendingInvoices",
-            mixins: [toasts],
+            mixins: [toasts, helper],
             components: {
                 InvoiceDetails
             },
@@ -118,9 +114,6 @@
             },
             showInvoiceDetails(id){
                 this.$router.push({ name: 'invoices.details', params: { invoiceId: id }});
-            },
-            getStateColor(state) {
-                return state === 'not paid' ? 'red--text' : 'green--text';
             },
             loadInvoices() {
                 this.loading = true;

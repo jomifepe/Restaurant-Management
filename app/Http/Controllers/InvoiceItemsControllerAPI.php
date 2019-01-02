@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Invoice;
-use App\Http\Resources\InvoiceItems as InvoiceItemsResource;
+use App\Http\Resources\InvoiceItem as InvoiceItemResource;
+use App\Http\Resources\InvoiceItemDetailed as InvoiceItemDetailedResource;
 use Illuminate\Support\Facades\DB;
 use App\InvoiceItem;
 use App\Item;
+use App\Meal;
+use App\Order;
 
 class InvoiceItemsControllerAPI extends Controller
 {
@@ -28,7 +31,7 @@ class InvoiceItemsControllerAPI extends Controller
         'items.name AS item_name')
         ->get();
 
-        return response()->json(InvoiceItemsResource::collection($items), 200); 
+        return InvoiceItemDetailedResource::collection($items); 
     }
     public function index()
     {
@@ -41,25 +44,37 @@ class InvoiceItemsControllerAPI extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store($invoiceId, $mealId)
     {
-        // $data = $request->validate([
-        //     'invoice_id' => 'required|integer|exists:invoices,id',
-        //     'item_id' => 'required|integer|exists:items,id',
-        //     'quantity' => 'required|integer',
-        //     'unit_price' => 'required|numeric',
-        //     'sub_total_price' => 'required|numeric'
-        // ]);
-
-        $invoiceItem = new InvoiceItem();
-        $invoiceItem->fill($request->all());
-        $invoiceItem->save();
-
+        $meal = Meal::findOrFail($mealId);
+        $orders = Order::where('meal_id', $mealId)->where('state', 'delivered')->get();
+        $created = [];
         
-        $item = Item::findOrFail($invoiceItem->item_id);
-        $invoiceItem->item_name = $item->name;
+        foreach($orders as $order) {
+            if(!in_array($order->item_id, $created)) {
+                $item = Item::withTrashed()->where('id', $order->item_id)->first();
 
-        return response()->json(new InvoiceItemsResource($invoiceItem), 201);
+                $quantity = 0;
+                foreach ($orders as $ord) {
+                    if ($ord->item_id == $order->item_id) {
+                        $quantity++;
+                    }
+                }
+
+                $invoiceItem = new InvoiceItem();
+                $invoiceItem->invoice_id = $invoiceId;
+                $invoiceItem->item_id = $order->item_id;
+                $invoiceItem->quantity = $quantity;
+                $invoiceItem->unit_price = $item->price;
+                $invoiceItem->sub_total_price = $quantity * $item->price;
+
+                $invoiceItem->save();
+                array_push($created, $invoiceItem->item_id);
+            }
+        }
+
+        $result = InvoiceItem::where('invoice_id', $invoiceId)->get();
+        return response()->json(InvoiceItemResource::collection($result), 201);
     }
 
     /**

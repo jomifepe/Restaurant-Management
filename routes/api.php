@@ -40,14 +40,13 @@ Route::group(['prefix' => 'invoices', 'middleware' => 'managerAndCashier'],
     }
 );
 
-
 Route::post('invoices', 'InvoiceControllerAPI@store')->name('invoices.store')
 ->middleware('managerAndWaiter');
 
 Route::delete('invoices/{invoice}', 'InvoiceControllerAPI@destroy')->name('invoice.destroy')
     ->middleware('manager');
 
-Route::post('invoices/items', 'InvoiceItemsControllerAPI@store')->name('invoice.items.store')
+Route::post('invoices/{invoiceId}/items/{mealId}', 'InvoiceItemsControllerAPI@store')->name('invoice.items.store')
     ->middleware('managerAndWaiter');
 
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-INVOICES<-<-<-<-<-<-<-<-<-<-<-<-<-<-
@@ -60,13 +59,16 @@ Route::group(['prefix' =>'meals', 'middleware' => 'managerAndWaiter'],
         Route::get('waiter/{waiterId}', 'MealControllerAPI@responsible')->name('meal.waiter');
         Route::get('table/{tableNumber}', 'MealControllerAPI@tableMeal')->name('meal.table');
         Route::get('{id}/tableNumber', 'MealControllerAPI@tableNumber')->name('meal.tableNumber');
+        Route::post('{mealId}/terminate', 'MealControllerAPI@terminate')->name('meal.terminate');
         /* Resource */
         Route::get('', 'MealControllerAPI@index')->name('meals.index');
         Route::post('', 'MealControllerAPI@store')->name('meals.store');
-        Route::match(['put', 'patch'], '{meal}' ,'MealControllerAPI@update')->name('meals.update');
         Route::get('{meal}', 'MealControllerAPI@show')->name('meals.show');
     }
 );
+
+Route::match(['put', 'patch'], 'meals/{mealId}' ,'MealControllerAPI@update')->name('meals.update')
+    ->middleware('managerWaiterAndCashier');
 
 Route::get('meals/{mealId}/invoice', 'MealControllerAPI@getInvoice')->name('meals.invoice')
     ->middleware('manager');

@@ -9,8 +9,11 @@ use App\Http\Resources\Invoice as InvoiceResource;
 use App\Meal;
 use App\User;
 use App\Table;
+use App\Order;
+use App\Item;
 use App\Invoice;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class MealControllerAPI extends Controller
 {
@@ -87,6 +90,29 @@ class MealControllerAPI extends Controller
         $meal = Meal::findOrFail($id);
         return $meal->table_number;
     }
+
+    public function terminate($mealId) {
+        $meal = Meal::findOrFail($mealId);
+        $notDeliveredOrders = Order::where('meal_id', $mealId)
+            ->where('state', '<>', 'delivered')->get();
+
+        foreach ($notDeliveredOrders as $order) {
+            $order->state = 'not delivered';
+            $order->end = Carbon::now();
+
+            $item = Item::withTrashed()->where('id', $order->item_id)->first();
+            $meal->total_price_preview = $meal->total_price_preview - $item->price;
+
+            $order->save();
+        }
+
+        $meal->state = 'terminated';
+        $meal->end = Carbon::now();
+        $meal->save();
+
+        return new MealResource($meal);
+    }
+
     /**
      * Display the specified resource.
      *
@@ -110,7 +136,7 @@ class MealControllerAPI extends Controller
     public function getInvoice($mealId)
     {
         $meal = Meal::findOrFail($mealId);
-        
+
         // return Meal::select('invoices.id')
         // ->join('invoices', 'meals.id', '=', 'invoices.meal_id')
         // ->where('meals.id', $mealId)
@@ -118,6 +144,7 @@ class MealControllerAPI extends Controller
 
         return new InvoiceResource(Invoice::where('meal_id', $meal->id)->first());
     }
+
     /**
      * Update the specified resource in storage.
      *

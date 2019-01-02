@@ -39,19 +39,20 @@ class InvoiceControllerAPI extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'meal_id' => 'required|integer|exists:meals,id',
-            'total_price' => 'required|numeric'
+            'meal_id' => 'required|integer|exists:meals,id'
         ]);
         
+        $meal = Meal::findOrFail($request->meal_id);
         $invoice = new Invoice();
         $invoice->fill($data);
         
         $invoice->state = 'pending';
         $invoice->date = Carbon::now();
         $invoice->created_at = Carbon::now();
+        $invoice->total_price = $meal->total_price_preview;
 
         $invoice->save();
-        return response()->json(new InvoiceResource($invoice), 201);
+        return new InvoiceResource($invoice);
     }
 
     public function allOrders()

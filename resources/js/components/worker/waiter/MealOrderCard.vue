@@ -67,6 +67,8 @@
 				}
 			},
             deliverOrder() {
+				if (!this.isUserInShift()) return;
+				
 				this.$store.commit('showProgressBar', {indeterminate: true});
 				axios.patch(`/orders/${this.item.order_id}`, {state: 'delivered'})
 					.then(response => {

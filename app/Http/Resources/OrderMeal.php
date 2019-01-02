@@ -23,6 +23,7 @@ class OrderMeal extends Resource
             'meal_id' => $this->meal_id,
             'meal_table_number' => $this->meal_table_number,
             'responsible_cook_id' => $this->responsible_cook_id,
+            'responsible_waiter_name' => $this->responsible_waiter_name,
             'item_name' => $this->item_name,
             'item_type' => $this->item_type,
             'item_photo' => $this->item_photo,  

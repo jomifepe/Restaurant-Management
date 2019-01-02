@@ -103,6 +103,7 @@ class InitialMigration extends Migration
             $table->integer('quantity');
             $table->decimal('unit_price', 8, 2);
             $table->decimal('sub_total_price', 8, 2);
+	    $table->timestamps();
         });
     }
 

@@ -16,7 +16,7 @@
                                 <v-card-title>
                                     <span >Insert 0 to auto create table</span>
                                 </v-card-title>
-                                <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
+                                <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors" :key="index">
                                     <errors :msg="value"></errors>
                                 </div>
                                 <v-card-text>
@@ -43,17 +43,23 @@
                     <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                     <template slot="items" slot-scope="props">
                         <td class="text-xs-center">{{ props.item.table_number }}</td>
-                        <td class="text-xs-left">{{ props.item.created_at.date}}</td>
-                        <td class="text-xs-left">{{ props.item.updated_at.date }}</td>
+                        <td class="text-xs-left">{{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
+                        <td class="text-xs-left">{{ props.item.updated_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
                         <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
-                        <td v-else> N/A </td>
+                        <td v-else>N/A</td>
                         <td class="justify-center layout px-0">
-                            <div v-if="props.item.deleted_at != null">
-                                <v-icon large color="green darken-2" dark right @click.prevent="restoreTable(props.item)">undo</v-icon>
-                            </div>
-                            <div v-else>
-                                <v-icon large color="red darken-2" dark right @click.prevent="deleteTable(props.item)">delete</v-icon>
-                            </div>
+                            <v-tooltip top v-if="props.item.deleted_at != null">
+                                <v-btn icon slot="activator" @click.prevent="restoreTable(props.item)">
+                                    <v-icon color="red" dark>undo</v-icon>
+                                </v-btn>
+                                <span>Undo table deletion</span>
+                            </v-tooltip>
+                            <v-tooltip top v-else>
+                                <v-btn icon slot="activator" @click.prevent="deleteTable(props.item)">
+                                    <v-icon color="red" dark>delete</v-icon>
+                                </v-btn>
+                                <span>Delete table</span>
+                            </v-tooltip>
                         </td>
                     </template>
                     <template slot="no-data">
@@ -117,9 +123,6 @@
                     this.loadingTableEffect=false;
                 });
             },
-            /*editItem () {
-                this.dialog = true
-            },*/
             deleteTable (item) {
                 if(confirm('Are you sure you want to delete table ' + item.table_number +' ?')){
                     axios.delete('tables/'+item.table_number).then(response => {

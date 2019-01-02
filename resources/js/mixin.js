@@ -101,7 +101,14 @@ export const toasts = {
 				position: 'bottom-center',
 				duration : time
 			});
-		}
+        },
+        isUserInShift() {
+            if (!this.$store.state.user.shift_active) {
+                this.showErrorToast('Your shift hasn\'t started', 2000);
+                return false;
+            } 
+            return true;
+        }
 	}
 };
 
@@ -130,6 +137,17 @@ export const helper = {
                 return obj.photo_url;
             }
         },
+        arrayAdd(array, value) {
+            if (array.indexOf(value) === -1) {
+              array.push(value);
+            }
+        },
+        arrayRemove(array, value) {
+            var index = array.indexOf(value);
+            if (index !== -1) {
+                array.splice(index, 1);
+            }
+        },
         getUserAppearence(user) {
             switch (user.type) {
                 case 'manager':
@@ -154,15 +172,46 @@ export const helper = {
                     }
             }
         },
+        getOrderStateColorHEX(state) {
+            switch (state) {
+                case 'pending': return '#FFC107';
+                case 'confirmed': return '#FF9800';
+                case 'in preparation': return '#2196F3';
+                case 'prepared': return '#AFB42B';
+                case 'delivered': return '#4CAF50';
+                case 'not delivered': return '#F44336';
+            }
+        },
         getOrderStateColor(state) {
             switch (state) {
                 case 'pending': return 'amber';
                 case 'confirmed': return 'orange';
                 case 'in preparation': return 'blue';
-                case 'prepared': return 'darken-1 lime';
+                case 'prepared': return 'lime darken-2';
                 case 'delivered': return 'green';
                 case 'not delivered': return 'red';
             }
+        },
+        getInvoiceStateColor(state) {
+            switch (state) {
+                case 'pending': return 'amber';
+                case 'paid': return 'green';
+                case 'not paid': return 'red';
+            }
+        },
+        getMealStateColor(state) {
+            switch (state) {
+                case 'active': return 'red';
+                case 'terminated': return 'orange';
+                case 'paid': return 'green';
+                case 'not paid': return 'blue';
+            }
+        },
+        getMealStateTextColor(state) {
+            return `${this.getMealStateColor(state)}--text`;
+        },
+        getInvoiceStateTextColor(state) {
+            return `${this.getInvoiceStateColor(state)}--text`;
         },
         getOrderStateTextColor(state) {
             return `${this.getOrderStateColor(state)}--text`;

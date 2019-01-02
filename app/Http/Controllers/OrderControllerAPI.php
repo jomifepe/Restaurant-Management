@@ -33,10 +33,13 @@ class OrderControllerAPI extends Controller
         
         $myinPrepOrders = Order::select('orders.*', 
             'meals.table_number AS meal_table_number',
-            'items.name AS item_name', 'items.photo_url AS item_photo',
-            'items.type AS item_type')
+            'items.name AS item_name', 
+            'items.photo_url AS item_photo',
+            'items.type AS item_type',
+            'users.name AS responsible_waiter_name')
             ->join('meals', 'meals.id', '=', 'orders.meal_id')
             ->join('items', 'items.id', '=', 'orders.item_id')            
+            ->join('users', 'users.id', '=', 'meals.responsible_waiter_id')            
             ->where('orders.responsible_cook_id', $id)
             ->where('orders.state', 'in preparation')
             ->orderBy('created_at','asc')
@@ -45,9 +48,11 @@ class OrderControllerAPI extends Controller
         $confirmedOrders = Order::select('orders.*', 
             'meals.table_number AS meal_table_number',
             'items.name AS item_name', 'items.photo_url AS item_photo',
-            'items.type AS item_type')
+            'items.type AS item_type',
+            'users.name AS responsible_waiter_name')
             ->join('meals', 'meals.id', '=', 'orders.meal_id')
-            ->join('items', 'items.id', '=', 'orders.item_id')            
+            ->join('items', 'items.id', '=', 'orders.item_id')          
+            ->join('users', 'users.id', '=', 'meals.responsible_waiter_id')  
             ->where('orders.state', 'confirmed')
             ->orderBy('created_at','asc')
             ->get();

@@ -12,11 +12,19 @@
                 </v-toolbar>
                 <v-card>
                     <v-card-title>
+                        <v-checkbox v-model="filterActive" :color="getMealStateColor('active')" 
+                            label="Active"></v-checkbox>
+                        <v-checkbox v-model="filterTerminated" :color="getMealStateColor('terminated')"
+                            label="Terminated"></v-checkbox>
+                        <v-checkbox v-model="filterPaid" :color="getMealStateColor('paid')"
+                            label="Paid"></v-checkbox>
+                        <v-checkbox v-model="filterNotPaid" :color="getMealStateColor('not paid')"
+                            label="Not Paid"></v-checkbox>
                         <v-spacer></v-spacer>
                         <v-text-field v-model="search" append-icon="search"
                             label="Search" single-line hide-details></v-text-field>
                     </v-card-title>
-                    <v-data-table :headers="myMealsHeaders" :items="meals" class="elevation-1"
+                    <v-data-table :headers="myMealsHeaders" :items="filteredMeals" class="elevation-1"
                             :search="search" :pagination.sync="pagination" :loading="myMealsProgressBar">
                         <v-progress-linear slot="progress" color="blue-grey" indeterminate></v-progress-linear>
                         <template slot="items" slot-scope="props">
@@ -26,16 +34,14 @@
                                 <td>{{ formatDate(props.item.start) }}</td>
                                 <td>{{ formatDate(props.item.created_at.date) }}</td>
                                 <td>{{ props.item.total_price_preview }}€</td>
-                                <td :class="getStateColor(props.item.state)">
+                                <td :class="getMealStateTextColor(props.item.state)">
                                     <strong>{{ props.item.state }}</strong>
                                 </td>
                                 <td class="justify-center text-md-center dt-actions">
                                     <v-tooltip top v-if="props.item.state === 'active'">
                                         <v-btn slot="activator" icon
                                             @click="askToConfirmMealTermination(props.item)">
-                                            <v-icon>
-                                                fas fa-check-circle
-                                            </v-icon>
+                                            <v-icon>fas fa-check-circle</v-icon>
                                         </v-btn>
                                         <span>Terminate meal</span>
                                     </v-tooltip>
@@ -66,7 +72,7 @@
 						<v-btn flat @click="terminateMealDialog = false; mealToTerminate = null">
 							No
 						</v-btn>
-						<v-btn color="orange darken-1" flat="flat" @click="performMealTermination">
+						<v-btn color="orange darken-1" flat="flat" @click="checkForNotDeliveredOrders">
 							Yes
 						</v-btn>
 					</v-card-actions>
@@ -75,13 +81,14 @@
             <v-dialog v-model="cancelOrdersDialog" max-width="450">
 				<v-card>
 					<v-card-text class="subheading">
-						This meal has orders that were not delivered. Do you want to cancel these orders?
+						This meal has orders that were not delivered. These orders are going to be canceled.
 					</v-card-text>
 					<v-card-actions>
 						<v-spacer></v-spacer>
-						<v-btn flat @click="cancelOrdersDialog = false">No</v-btn>
-						<v-btn color="red accent-3" flat="flat" @click="cancelOrders">
-							Yes
+						<v-btn flat @click="cancelOrdersDialog = false">Cancel</v-btn>
+						<v-btn color="red accent-3" flat="flat" 
+                            @click="cancelOrdersDialog = false; performMealTermination()">
+							Ok
 						</v-btn>
 					</v-card-actions>
 				</v-card>
@@ -112,10 +119,14 @@
             mealToTerminate: null,
             terminateMealDialog: false,
             cancelOrdersDialog: false,
+            filterActive: true,
+            filterTerminated: true,
+            filterPaid: false,
+            filterNotPaid: false,
+            mealStateFilter: [],
 
             /* auxiliary attributes */
-            notDeliveredOrders: [],
-            consumedItems: []
+            hasDeliveredOrders: false
         }), 
         computed: {
             myMealsHeaders() {
@@ -134,18 +145,51 @@
             },
             user() {
                 return this.$store.state.user;
+            },
+            filteredMeals() {
+                return this.meals.filter(meal => this.mealStateFilter.includes(meal.state));
+            }
+        },
+        watch: {
+            filterActive() {
+                if (this.filterActive) {
+                    this.arrayAdd(this.mealStateFilter, 'active');
+                } else {
+                    this.arrayRemove(this.mealStateFilter, 'active');
+                }
+            },
+            filterTerminated() {
+                if (this.filterTerminated) {
+                    this.arrayAdd(this.mealStateFilter, 'terminated');
+                } else {
+                    this.arrayRemove(this.mealStateFilter, 'terminated');
+                }
+            },
+            filterPaid() {
+                if (this.filterPaid) {
+                    this.arrayAdd(this.mealStateFilter, 'paid');
+                } else {
+                    this.arrayRemove(this.mealStateFilter, 'paid');
+                }
+            },
+            filterNotPaid() {
+                if (this.filterNotPaid) {
+                    this.arrayAdd(this.mealStateFilter, 'not paid');
+                } else {
+                    this.arrayRemove(this.mealStateFilter, 'not paid');
+                }
             }
         },
         sockets: {
-            new_order_notify_manager(){
+            new_order_notify_manager() {
                 this.showTopRightToast('New item ordered');
                 this.reload();
             },
-            meal_terminated_notify(user){
+            meal_terminated_notify(user) {
                 this.showTopRightToast('Meal terminated by ' + user.name);
                 this.reload();
             },
-            newTable_meal_notify(table){
+            newTable_meal_notify(table) {
                 this.showTopRightToast('New table('+ table +') for meal');
                 this.reload();
             },
@@ -167,31 +211,31 @@
                 return axios.patch(`/orders/${order.id}`, order);
             },            
             getAllNotDelOrdersFormAMeal(meal){
-                    return axios.get(`/orders/meal/${meal.id}/notDeliveredItems`);
+                return axios.get(`/orders/meal/${meal.id}/notDeliveredItems`);
             },
-            changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal){
-                    let orders= null;
-                    var promises= [];
-                    this.getAllNotDelOrdersFormAMeal(meal)
-                        .then(response => {
-                            orders = response.data;
-                            orders.forEach(order => {
-                                order.state = 'not delivered';
-                                promises.push(this.saveOrder(order));
-                                
-                            })
-                             console.log(promises);
-                            axios.all(promises)
-                                .then(axios.spread((...responses) => {
-                                    responses.forEach(res => console.log('Success'))
-                                    console.log('submitted all axios calls');
-                                    this.$socket.emit('update_not_pending');
-                                }))
+            changeAllNotDeliveredOrdersFromAMealToNotDelivered(meal){
+                let orders= null;
+                var promises= [];
+                this.getAllNotDelOrdersFormAMeal(meal)
+                    .then(response => {
+                        orders = response.data;
+                        orders.forEach(order => {
+                            order.state = 'not delivered';
+                            promises.push(this.saveOrder(order));
+                            
+                        })
+                        console.log(promises);
+                        axios.all(promises)
+                            .then(axios.spread((...responses) => {
+                                responses.forEach(res => console.log('Success'))
+                                console.log('submitted all axios calls');
+                                this.$socket.emit('update_not_pending');
+                            }))
 
-                        })
-                        .catch(error => {
-                            this.showErrorLog('Failed to change orders', error);
-                        })
+                    })
+                    .catch(error => {
+                        this.showErrorLog('Failed to change orders', error);
+                    })
             },
             getInvoice(meal){
                 return axios.get(`/meals/${meal.id}/invoice`);
@@ -200,36 +244,37 @@
                 return axios.patch(`/invoices/${invoice.id}`, invoice);
             },
             declareMealAsNotPaid(meal){
-                    meal.state = 'not paid';
-                    var invoice =null;
-                    axios.patch(`/meals/${meal.id}`, meal)
-                        .then(response => {
-                            if (response.status === 200) {
-                                this.showSuccessToast('Meal edited');
-                                this.getInvoice(meal)
-                                    .then(responseInvoice => {
-                                        invoice = response.data.data;
-                                        invoice.state = 'not paid';
-                                        this.updateInvoice(invoice)
-                                            .then(responseInvoiceUpdate => {
-                                                console.log(responseInvoiceUpdate);
-                                                this.showSuccessToast('Invoice edited');
-                                                this.changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal);
-                                                this.loadMeals();
-                                            })
-                                            .catch(error => {
-                                                this.showErrorToast('Failed to edit invoice');
-                                            })
-                                    })  
-                                    .catch(error => {
-                                       this.showErrorLog('Failed to get meal invoice', error);
-                                    })                              
-                            } 
-                        })
-                        .catch(error => {
-                            this.showErrorLog(`Failed to update meal #${meal.id}`, error);
-                            this.$store.commit('hideProgressBar');
-                        })
+                if (!this.isUserInShift()) return;
+                
+                meal.state = 'not paid';
+                var invoice =null;
+                axios.patch(`/meals/${meal.id}`, meal)
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.showSuccessToast('Meal edited');
+                            this.getInvoice(meal)
+                                .then(responseInvoice => {
+                                    invoice = response.data.data;
+                                    invoice.state = 'not paid';
+                                    this.updateInvoice(invoice)
+                                        .then(responseInvoiceUpdate => {
+                                            this.showSuccessToast('Invoice edited');
+                                            this.changeAllNotDeliveredOrdersFromAMealToNotDelivered(meal);
+                                            this.loadMeals();
+                                        })
+                                        .catch(error => {
+                                            this.showErrorToast('Failed to edit invoice');
+                                        })
+                                })  
+                                .catch(error => {
+                                    this.showErrorLog('Failed to get meal invoice', error);
+                                })                              
+                        } 
+                    })
+                    .catch(error => {
+                        this.showErrorLog(`Failed to update meal #${meal.id}`, error);
+                        this.$store.commit('hideProgressBar');
+                    })
             },
             loadMeals() {
                 let target = this.isUserManager ? 'meals/manager' :
@@ -249,64 +294,36 @@
                 this.showSuccessToast(`Meal successfuly started for table ${tableNumber}`);
                 this.loadMeals();
             },
-            getStateColor(state) {
-                return state === 'active' ? 'red--text' :
-                    state === 'terminated' ? 'orange--text' :
-                        state === 'not paid' ? 'blue--text' : 'green--text';
-            },
             showMealItems(meal) {
                 this.$router.push({ name: 'meal.orders', params: { mealId: meal.id }});
             },
-
-            /* Meal termination process:
-                1. Asks for confirmation
-                2. performMealTermination() (get orders associated with meal)
-                3. If the meal has not delivered orders, asks if the user wants to cancel them, 
-                if not, goes to step 6
-                4. cancelOrders()
-                5. cancelOrder() (cancels each order recursively)
-                6. terminateMeal() (finally terminated the meal)
-                7. generateMealInvoice()
-                8. createInvoiceItems()
-                9. createInvoiceItem() (creates invoice items recursively)
-                10. Refreshes the meals list */
-
             askToConfirmMealTermination(meal) {
-                this.mealToTerminate = meal;
-                this.terminateMealDialog = true;
+                if (this.isUserInShift()) {
+                    this.mealToTerminate = meal;
+                    this.terminateMealDialog = true;
+                }
             },
-            performMealTermination() {
+            checkForNotDeliveredOrders() {
                 this.terminateMealDialog = false;
                 let meal = this.mealToTerminate;
 
                 this.$store.commit('showProgressBar', {'indeterminate': true});
+
                 /* get the orders for the selected meal */
                 axios.get(`/orders/meal/${meal.id}`)
                     .then(response => {
                         if (response.status === 200) {
-                            let consumedItems = response.data
-                                .filter(itemOrder => itemOrder.state === 'delivered');
-                            this.notDeliveredOrders = response.data
+                            let notDeliveredOrders = response.data
                                 .filter(itemOrder => itemOrder.state !== 'delivered');
+                            this.hasDeliveredOrders = (response.data.length > notDeliveredOrders.length);
 
                             /* if there are orders that were not delivered */
-                            if (this.notDeliveredOrders.length > 0) {
+                            if (notDeliveredOrders.length > 0) {
                                 this.$store.commit('hideProgressBar');
                                 this.cancelOrdersDialog = true;
                             } else {
                                 this.$store.commit('showProgressBar', {'indeterminate': true});
-
-                                /* changes the meal to terminated */
-                                this.terminateMeal(meal, consumedItems).then(() => {
-                                    this.showSuccessToast('Meal successfully terminated');
-                                    this.$store.commit('hideProgressBar');
-
-                                    /* generate meal invoice and invoice items */
-                                    // this.generateMealInvoice(meal).then(() => {
-                                    //     this.$socket.emit('meal_terminated', this.$store.state.user);
-                                    //     this.loadMeals();
-                                    // });
-                                });
+                                this.performMealTermination();
                             }
                         } else {
                             this.showErrorToast('Failed to cancel meal orders');
@@ -314,56 +331,37 @@
                     })
                     .catch(error => {
                         this.showErrorLog('Failed to cancel meal orders', error);
-                    })
-            },
-            cancelOrders() {
-                this.cancelOrdersDialog = false;
-                this.$store.commit('showProgressBar', {'indeterminate': false, 'value': 0});
-                /* enters recursion */
-                this.cancelOrder(0, () => {
-                    this.$store.commit('showProgressBar', {'indeterminate': true});
-                    this.terminateMeal(this.mealToTerminate).then(() => {
-                        //this.$socket.emit('meal_terminated', this.$store.state.user);
-                        this.showSuccessToast('Meal successfully terminated');
-                        this.loadMeals();
-                        this.$store.commit('hideProgressBar');
                     });
-                })
             },
-            cancelOrder(orderIndex, callback) {
-                let order = this.notDeliveredOrders[orderIndex];
-                order.state = 'not delivered';
-
-                axios.patch(`/orders/${order.id}`, order)
-                    .then(response => {
-                        if (response.status === 200) {
-                            this.$store.commit('showProgressBar', {'indeterminate': false, 
-                                'value': (orderIndex + 1) * (100 / this.notDeliveredOrders.length)
-                            });
-                            if (++orderIndex !== this.notDeliveredOrders.length) {
-                                this.cancelOrder(orderIndex, callback);
-                            } else {
-                                callback();
-                                return;
-                            }
-                        } else {
-                            this.showErrorToast(`Failed to cancel meal order #${order.id}`);
-                            this.$store.commit('hideProgressBar');
+            performMealTermination() {
+                let meal = this.mealToTerminate;
+                this.terminateMeal(meal).then(() => {
+                    let showSuccessMessages = (() => {
+                        this.loadMeals();
+                        this.showSuccessToast('Meal successfully terminated');
+                        this.$socket.emit('meal_terminated', this.user);
+                        if (this.hasDeliveredOrders) {
+                            this.showSuccessToast('Meal invoice successfully generated');
+                            this.$socket.emit('invoice_generated', this.user);
                         }
-                    })
-                    .catch(error => {
-                        this.showErrorLog(`Failed to cancel meal order #${order.id}`, error);
                         this.$store.commit('hideProgressBar');
+                        resolve();
                     })
+
+                    if (this.hasDeliveredOrders) {
+                        this.generateMealInvoice(meal).then(showSuccessMessages());
+                    } else {
+                        showSuccessMessages();
+                    }
+                });
             },
             terminateMeal(meal) {
-                return new Promise((resolve, reject) => {
-                    meal.state = 'terminated';
-                    axios.patch(`/meals/${meal.id}`, meal)
+                return new Promise(resolve => {
+                    axios.post(`/meals/${meal.id}/terminate`)
                         .then(response => {
                             if (response.status === 200) {
                                 this.sendNotificationMealTerminatedToManagers(meal);
-                                resolve('Success');
+                                resolve();
                             } else {
                                 this.showErrorToast(`Failed to terminate meal #${meal.id}`);
                                 this.$store.commit('hideProgressBar');
@@ -372,24 +370,17 @@
                         .catch(error => {
                             this.showErrorLog(`Failed to terminate meal #${meal.id}`, error);
                             this.$store.commit('hideProgressBar');
-                        })
+                        });
                 })
             },
-            generateMealInvoice(meal, consumedItems) {
+            generateMealInvoice(meal) {
                 return new Promise(resolve => {
-                    let priceSum = consumedItems.reduce((acc, item) => acc + item.price);
-                    let invoice = {
-                        meal_id: meal.id,
-                        total_price: priceSum
-                    }
-                    axios.post('/invoices', invoice)
+                    axios.post('/invoices', { meal_id: meal.id })
                         .then(response => {
+                            console.log(response.data);
                             if (response.status === 201) {
                                 let createdInvoice = response.data.data;
-                                console.log(`Created invoice: ${createdInvoice}`);
-                                this.createInvoiceItems(consumedItems, createdInvoice.id).then(() => {
-                                    resolve();
-                                })
+                                this.createInvoiceItems(createdInvoice.id, meal.id).then(() => resolve());
                             } else {
                                 this.showErrorToast(`Failed to generate invoice for meal #${meal.id}`);
                             }
@@ -400,59 +391,22 @@
                         });
                 });
             },
-            createInvoiceItems(consumedItems, invoiceId) {
-                return new Promise(resolve => {
-                    let groupedList = this.groupItemOrders(consumedItems);
-                    createInvoiceItem(0, groupedList, invoiceId, () => resolve());
+            createInvoiceItems(invoiceId, mealId) {
+                return new Promise((resolve,) => {
+                    axios.post(`/invoices/${invoiceId}/items/${mealId}`)
+                        .then(response => {
+                            if (response.status === 201) {
+                                resolve();
+                            } else {
+                                this.showErrorToast(`Failed to create invoice items for invoice ${invoiceId}`);
+                            }
+                        })
+                        .catch(error => {
+                            this.showErrorLog(`Failed to create invoice items for invoice ${invoiceId}`, error);
+                        });
                 })
             },
-            createInvoiceItem(itemIndex, consumedItems, invoiceId, callback) {
-                let currentItem = consumedItems[itemIndex];
-                let invoiceItem = {
-                    invoice_id: invoiceId,
-                    item_id: consumedItems[itemIndex].id,
-                    quantity: listFilteredByItem.length,
-                    unit_price: currentItem.price,
-                    sub_total_price: currentItem.quantity * currentItem.price
-                }
-                axios.post('/invoices/items', invoiceItem)
-                    .then(response => {
-                        if (response.status === 201) {
-                            this.$store.commit('showProgressBar', {'indeterminate': false, 
-                                'value': (itemIndex + 1) * (100 / consumedItems.length)
-                            });
-                            if (++itemIndex !== consumedItems.length) {
-                                this.cancelOcreateInvoiceItemrder(itemIndex, 
-                                    consumedItems, invoiceId, callback);
-                            } else {
-                                callback();
-                                return;
-                            }
-                        } else {
-                            this.showErrorToast(`Failed to create invoice item #${itemIndex + 1} 
-                                for invoice ${invoiceId}`);
-                            this.$store.commit('hideProgressBar');
-                        }
-                    })
-                    .catch(error => {
-                        this.showErrorLog(`Failed to create invoice item #${itemIndex + 1} 
-                            for invoice ${invoiceId}`, error);
-                        this.$store.commit('hideProgressBar');
-                    });
-            },
-            groupItemOrders(itemList) {
-                let grouped = [];
-                invoiceItemsList.forEach((item, i) => {
-                    if (!grouped.includes(item)) {
-                        let groupedItem = item;
-                        item.quantity = itemList.reduce((acc, it) => acc + it);
-                        grouped.push(groupedItem);
-                    }
-                });
-                return grouped;
-            },
             sendNotificationMealTerminatedToManagers(meal){
-                console.log("entrou send");
                 let content = {
                         'sender': this.user,
                         'title': `Meal Terminated`,
@@ -472,6 +426,8 @@
         },
         mounted() {
             this.$store.commit('setPanelTitle', 'Meals');
+            this.arrayAdd(this.mealStateFilter, 'active');
+            this.arrayAdd(this.mealStateFilter, 'terminated');
             this.loadMeals();
         }
     }

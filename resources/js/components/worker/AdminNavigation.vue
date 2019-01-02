@@ -43,7 +43,7 @@
         <v-navigation-drawer id="nav-notifications" v-model="rightDrawer" :width="400" temporary right app>
             <v-toolbar flat>
                 <v-toolbar-title>Notifications</v-toolbar-title>
-                <v-dialog v-if="user.type !== 'manager'" v-model="dialog" width="500">
+                <v-dialog v-if="user.type !== 'manager'" v-model="managerMessageDialog" width="500">
                     <v-btn icon slot="activator" title="Message all managers">
                         <v-icon>message</v-icon>
                     </v-btn>
@@ -54,12 +54,12 @@
                         <v-card-text>
                             <v-flex xs12>
                                 <v-form ref="form" v-model="msgFormValid">
-                                    <v-text-field v-model="titleNotManager" single-line name="msg-title"
-                                        ref="msg-title" label="Description/Subject" maxlength="20" counter="20"
+                                    <v-text-field v-model="titleNotManager" single-line name="msgTitle"
+                                        ref="msgTitle" label="Description/Subject" maxlength="20" counter="20"
                                         :rules="[v => !!v || 'This field is required', v => v.length <= 25 || 'Max 20 characters']">
                                     </v-text-field>
                                     <v-textarea class="mt-3" v-model="textNotManager" box auto-grow
-                                        name="msg-content" ref="msg-content" label="Message" maxlength="200"
+                                        name="msgContent" ref="msgContent" label="Message" maxlength="200"
                                         counter="200" :rules="[v => !!v || 'This field is required', v => v.length <= 200 || 'Max 200 characters']">
                                     </v-textarea>
                                 </v-form>
@@ -69,9 +69,9 @@
 
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn color="primary" flat @click="cancelDialog()">Cancel</v-btn>
+                            <v-btn color="primary" flat @click="managerMessageDialog = false">Cancel</v-btn>
                             <v-btn color="primary" :disabled="!msgFormValid" flat
-                                @click="sendNotificationToManagers()">Send</v-btn>
+                                @click="sendNotificationToManagers">Send</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-dialog>
@@ -181,7 +181,7 @@
         },
         data: () => ({
             notifications: [],
-            dialog: false,
+            managerMessageDialog: false,
             titleNotManager: '',
             textNotManager: '',
             clippedNavDrawer: false,
@@ -244,11 +244,21 @@
             loggedOut: false,
             logoutEndShiftDialog: false
         }),
+        watch: {
+            managerMessageDialog() {
+                if (this.managerMessageDialog) {
+                    this.$refs.form.reset();
+                    this.$nextTick(function(){
+                        this.$refs.msgTitle.focus();
+                    });
+                }
+            }
+        },
         sockets: {
             connect(){
                 console.log('socket connected (socket ID = '+ this.$socket.id +')');
             },
-            confirmation_sent_to_manager(data){
+            confirmation_message_sent_to_manager(data){
                 this.showTopRightSuccessToast('Message sent', 1000);
             },
             /* everyone */
@@ -266,7 +276,7 @@
             },
             /* cooks */
             order_prepared_cook(data) {
-                this.addNotification("Order send confirmation", data, false);
+                // this.addNotification("Order send confirmation", data, false);
             },
             order_received() {
                 this.addNotification("New Order", "New order arrived!", "/admin/orders");
@@ -289,12 +299,6 @@
             }
         },
         methods: {
-            cancelDialog(){
-                this.dialog = false;
-                this.titleNotManager='';
-                this.textNotManager='';
-
-            },
             sendNotificationToManagers() {
                 if (this.$refs.form.validate()) {
                     let content = {
@@ -303,7 +307,7 @@
                         'text': this.textNotManager
                     }
 
-                    this.$socket.emit('to_all_managers', content);
+                    this.$socket.emit('notification_to_all_managers', content);
                     this.titleNotManager='';
                     this.textNotManager='';
                     this.rightDrawer = false;
