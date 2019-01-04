@@ -122,6 +122,10 @@
             sockets: {
                 pending_invoice_received(user) {
                     this.loadInvoices();
+                },
+                meal_paid_notify(meal){
+                    this.showTopRightInfoToast("Invoice paid table(" + meal.table_number +")")
+                    this.loadInvoices();
                 }
             },
             methods: {
@@ -175,6 +179,10 @@
                                                     this.changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal);
                                                 }
                                                 // console.log("loading");
+                                                this.$socket.emit('meal_paid', meal);
+
+
+
                                                 this.loadInvoices();
                                             }).catch(error => {
                                             if (error.response.data) {
