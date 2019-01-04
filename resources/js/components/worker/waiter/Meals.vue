@@ -345,8 +345,7 @@
                             this.$socket.emit('invoice_generated', this.user);
                         }
                         this.$store.commit('hideProgressBar');
-                        resolve();
-                    })
+                    });
 
                     if (this.hasDeliveredOrders) {
                         this.generateMealInvoice(meal).then(showSuccessMessages());

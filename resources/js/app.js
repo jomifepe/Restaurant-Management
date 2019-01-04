@@ -3,9 +3,10 @@
 "use strict";
 
 require('./bootstrap');
-
 window.Vue = require('vue');
 
+import 'jquery/dist/jquery.min';
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 import Vue from 'vue';
 import Vuex from 'vuex';
@@ -18,6 +19,7 @@ import Vuetify from 'vuetify'
 import Toasted from 'vue-toasted';
 import axios from 'axios';
 import VueSocketio from 'vue-socket.io';
+
 import App from './components/App.vue';
 
 Vue.use(VeeValidate);
@@ -29,7 +31,7 @@ Vue.use(Vuetify, {iconfont: 'fa'});
 Vue.use(Toasted);
 Vue.use(new VueSocketio({
     debug: true,
-    connection: 'http://178.62.85.56:8080'
+    connection: 'http://127.0.0.1:8080'
 }));
 
 axios.defaults.baseURL = 'http://project.dad/api';

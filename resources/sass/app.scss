@@ -1,8 +1,3 @@
-
-// Fonts
-@import url('https://fonts.googleapis.com/css?family=Nunito');
-@import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons');
-
 // Variables
 @import 'variables';
 
@@ -12,6 +7,7 @@
 @import '~@fortawesome/fontawesome-free/scss/solid.scss';
 @import '~@fortawesome/fontawesome-free/scss/brands.scss';
 @import '~@fortawesome/fontawesome-free/scss/regular.scss';
+@import '~material-design-icons-iconfont/src/material-design-icons.scss';
 @import '~vuetify/dist/vuetify.min.css';
 
 .dt-actions .v-btn {
