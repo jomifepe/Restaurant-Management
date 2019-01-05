@@ -204,6 +204,10 @@
             order_delivered_notify(waiter){
                 this.showTopRightToast('Order delivered by ('+ waiter.name+')');
                 this.reload();
+            },
+            meal_paid_notify(meal){
+                this.showTopRightInfoToast("Invoice paid table(" + meal.table_number +")")
+                this.reload();
             }
         },  
         methods: {
