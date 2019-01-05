@@ -270,7 +270,7 @@
                         });
                     }
                 }).catch(error => {
-                    this.hasErrors(error.response.data.errors);~
+                    this.hasErrors(error.response.data.errors);
                     this.$store.commit('hideProgressBar');
                 });
             },
@@ -288,10 +288,10 @@
                         alert('Correct the errors!');
                     }else{
                         this.save();
+                        this.close();
                         return;
                     }
                 });
-                this.close();
             },
         },
         computed: {
