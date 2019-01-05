@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\DB;
 
-define('YOUR_SERVER_URL', 'http://project.dad');
+//'http://dad-restaurant.ml'
+
+define('YOUR_SERVER_URL', 'http://dad-restaurant.ml');
 /* Check "oauth_clients" table for next 2 values: */
 define('CLIENT_ID', '2');
 define('CLIENT_SECRET','r6DM32mBT1QSblxKJhK4Zp1W7FUHdxH6L0dpeTw7');

@@ -107,8 +107,6 @@
                     </v-data-iterator>
                 </v-card-text>
             </v-card>
-
-
         </v-container>
     </v-flex>
 </template>
