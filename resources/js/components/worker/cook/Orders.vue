@@ -76,6 +76,10 @@
             order_received_list() {
                 this.loadOrders();
             },
+            refresh_orders(){
+                console.log("reiniciar");
+                this.loadOrders();
+            },
         },
         methods: {
             getWaiter(order) {
@@ -93,7 +97,8 @@
                         })
                 });
             },
-            markAsDone(order){ //AQUI!
+            markAsDone(order){
+                order.responsible_cook_id = this.$store.state.user.id;
                 order.state= "prepared";
                 this.saveOrder(order);
                 this.getWaiter(order).then(userDest => {
