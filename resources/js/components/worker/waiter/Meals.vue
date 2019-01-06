@@ -57,7 +57,7 @@
                             </v-card>
                         </v-dialog>
                     </v-card-title>
-                    <v-data-table :headers="myMealsHeaders" :items="filteredMeals" class="elevation-1"
+                    <v-data-table :headers="myMealsHeaders" :items="filteredMeals" class="elevation-1" 
                             :search="search" :pagination.sync="pagination" :loading="myMealsProgressBar">
                         <v-progress-linear slot="progress" color="blue-grey" indeterminate></v-progress-linear>
                         <template slot="items" slot-scope="props">
@@ -84,7 +84,8 @@
                                         <span>Terminate meal</span>
                                     </v-tooltip>
                                     <v-tooltip top v-if="props.item.state === 'terminated'">
-                                        <v-btn icon slot="activator" v-if="isUserManager" @click.stop="declareMealAsNotPaid(props.item)">
+                                        <v-btn icon slot="activator" v-if="isUserManager" 
+                                            @click.stop="askToConfirmMealNotPaid(props.item)">
                                             <v-icon>
                                                money_off
                                             </v-icon>
@@ -131,6 +132,21 @@
 					</v-card-actions>
 				</v-card>
 			</v-dialog>
+            <v-dialog v-model="mealNotPaidDialog" max-width="450">
+				<v-card>
+					<v-card-text class="subheading">
+						Are you sure you want to declare this meal as <span class="red--text text--accent-3">Not Paid</span>, as well as change it's orders as <span class="red--text text--accent-3">Not Delivered</span>?
+					</v-card-text>
+					<v-card-actions>
+						<v-spacer></v-spacer>
+						<v-btn flat @click="mealNotPaidDialog = false">Cancel</v-btn>
+						<v-btn color="red accent-3" flat="flat" 
+                            @click="mealNotPaidDialog = false; declareMealAsNotPaid()">
+							Confirm
+						</v-btn>
+					</v-card-actions>
+				</v-card>
+			</v-dialog>
         </v-layout>
     </v-container>
 </template>
@@ -154,9 +170,9 @@
             search: '',
             pagination: { sortBy: 'state' },
             myMealsProgressBar: true,
-            mealToTerminate: null,
             terminateMealDialog: false,
             cancelOrdersDialog: false,
+            mealNotPaidDialog: false,
             filterDialog: false,
             mealStateFilterList: ['active', 'terminated', 'paid', 'not paid'],
             mealStateFilter: ['active', 'terminated'],
@@ -167,7 +183,9 @@
             mountedTime: null,
 
             /* auxiliary attributes */
-            hasDeliveredOrders: false
+            hasDeliveredOrders: false,
+            mealToTerminate: null,
+            mealToDeclareAsNotPaid: null
         }), 
         computed: {
             myMealsHeaders() {
@@ -271,11 +289,19 @@
             updateInvoice(invoice){
                 return axios.patch(`/invoices/${invoice.id}`, invoice);
             },
-            declareMealAsNotPaid(meal){
+            askToConfirmMealNotPaid(meal) {
+                if (this.isUserInShift()) {
+                    this.mealToDeclareAsNotPaid = meal;
+                    this.mealNotPaidDialog = true;
+                }
+            },
+            declareMealAsNotPaid() {
                 if (!this.isUserInShift()) return;
-                
+
+                let meal = this.mealToDeclareAsNotPaid;
                 meal.state = 'not paid';
-                var invoice =null;
+                let invoice = null;
+
                 axios.patch(`/meals/${meal.id}`, meal)
                     .then(response => {
                         if (response.status === 200) {
