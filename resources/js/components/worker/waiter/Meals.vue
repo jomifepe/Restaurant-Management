@@ -193,6 +193,9 @@
                 this.showTopRightToast('New table('+ table +') for meal');
                 this.reload();
             },
+            meal_not_paid_reload_waiter_table(meal){
+                this.reload();
+            },
             order_prepared_notify_manager(cook){
                 this.showTopRightToast('Order prepared by ('+cook.name+')');
                 this.reload();
@@ -255,6 +258,7 @@
                 axios.patch(`/meals/${meal.id}`, meal)
                     .then(response => {
                         if (response.status === 200) {
+                            this.$socket.emit('meal_not_paid', meal);
                             this.showSuccessToast('Meal edited');
                             this.getInvoice(meal)
                                 .then(responseInvoice => {
