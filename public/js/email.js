@@ -97758,7 +97758,7 @@ new vue__WEBPACK_IMPORTED_MODULE_1___default.a({
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /home/jmfp/Laravel/Restaurant-Management/resources/js/email.js */"./resources/js/email.js");
+module.exports = __webpack_require__(/*! /home/henrique/DAD/projeto/Restaurant-Management/resources/js/email.js */"./resources/js/email.js");
 
 
 /***/ })
