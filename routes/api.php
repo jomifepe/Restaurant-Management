@@ -72,8 +72,8 @@ Route::group(['prefix' =>'meals', 'middleware' => 'managerAndWaiter'],
 Route::match(['put', 'patch'], 'meals/{mealId}' ,'MealControllerAPI@update')->name('meals.update')
     ->middleware('managerWaiterAndCashier');
 
-Route::get('meals/{mealId}/invoice', 'MealControllerAPI@getInvoice')->name('meals.invoice')
-    ->middleware('manager');
+Route::get('meals/{mealId}/invoice', 'MealControllerAPI@getInvoice')->name('meals.invoice');
+    // ->middleware('manager');
 
 Route::get('meals/{mealId}/waiter', 'MealControllerAPI@getWaiter')->name('meal.waiterresponsible')
     ->middleware('managerWaiterAndCook');

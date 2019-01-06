@@ -142,7 +142,7 @@ class MealControllerAPI extends Controller
         // ->where('meals.id', $mealId)
         // ->first();
 
-        return new InvoiceResource(Invoice::where('meal_id', $meal->id)->first());
+        return new InvoiceResource(Invoice::where('meal_id', $meal->id)->firstOrFail());
     }
 
     /**
