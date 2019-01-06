@@ -270,7 +270,7 @@
                 let email = this.editedItem.email;
                 axios.post('users', form).then(response => {
                     if (response.status === 201) {
-                        DefaultAxios.post('http://project.dad/password/email', 
+                        DefaultAxios.post('http://dad-restaurant.ml/password/email', 
                         { 'email': email },
                         { headers: 
                             {'Authorization': `Bearer ${token}` }

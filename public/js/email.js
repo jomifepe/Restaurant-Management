@@ -97741,7 +97741,7 @@ vue__WEBPACK_IMPORTED_MODULE_1___default.a.use(vuetify__WEBPACK_IMPORTED_MODULE_
   iconfont: 'fa'
 });
 vue__WEBPACK_IMPORTED_MODULE_1___default.a.use(vue_toasted__WEBPACK_IMPORTED_MODULE_4___default.a);
-axios__WEBPACK_IMPORTED_MODULE_5___default.a.defaults.baseURL = 'http://project.dad';
+axios__WEBPACK_IMPORTED_MODULE_5___default.a.defaults.baseURL = 'http://dad-restaurant.ml/';
 new vue__WEBPACK_IMPORTED_MODULE_1___default.a({
   el: "#app",
   components: {
