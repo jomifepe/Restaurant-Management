@@ -41,25 +41,28 @@
                                 :rowsPerPage="rows" class="elevation-1">
                     <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                     <template slot="items" slot-scope="props">
-                        <td class="text-xs-center">{{ props.item.table_number }}</td>
-                        <td class="text-xs-left">{{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
-                        <td class="text-xs-left">{{ props.item.updated_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
-                        <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
-                        <td v-else>N/A</td>
-                        <td class="justify-center layout px-0">
-                            <v-tooltip top v-if="props.item.deleted_at != null">
-                                <v-btn icon slot="activator" @click.prevent="restoreTable(props.item)">
-                                    <v-icon color="red" dark>undo</v-icon>
-                                </v-btn>
-                                <span>Undo table deletion</span>
-                            </v-tooltip>
-                            <v-tooltip top v-else>
-                                <v-btn icon slot="activator" @click.prevent="deleteTable(props.item)">
-                                    <v-icon color="red" dark>delete</v-icon>
-                                </v-btn>
-                                <span>Delete table</span>
-                            </v-tooltip>
-                        </td>
+                        <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date), 
+                            'clickable': true}">
+                            <td class="text-xs-center">{{ props.item.table_number }}</td>
+                            <td class="text-xs-left">{{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
+                            <td class="text-xs-left">{{ props.item.updated_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
+                            <td v-if="props.item.deleted_at != null" class="text-xs-left">{{ props.item.deleted_at.date }}</td>
+                            <td v-else>N/A</td>
+                            <td class="justify-center layout px-0">
+                                <v-tooltip top v-if="props.item.deleted_at != null">
+                                    <v-btn icon slot="activator" @click.prevent="restoreTable(props.item)">
+                                        <v-icon color="red" dark>undo</v-icon>
+                                    </v-btn>
+                                    <span>Undo table deletion</span>
+                                </v-tooltip>
+                                <v-tooltip top v-else>
+                                    <v-btn icon slot="activator" @click.prevent="deleteTable(props.item)">
+                                        <v-icon color="red" dark>delete</v-icon>
+                                    </v-btn>
+                                    <span>Delete table</span>
+                                </v-tooltip>
+                            </td>
+                        </tr>
                     </template>
                     <template slot="no-data">
                         <v-alert :value="noData" color="error" icon="warning">
@@ -79,6 +82,7 @@
     import AdminItemMenu from '../ItemMenu.vue';
     import Errors from '../Errors.vue';
     import {toasts, helper} from '../../../mixin';
+    import moment from 'moment';
 
     export default {
         name: "Tables",
@@ -110,7 +114,8 @@
             },
             defaultItem: {
                 table_number: 0,
-            }
+            },
+            mountedTime: null
         }),
         methods: {
             getTables () {
@@ -131,20 +136,12 @@
                 if(confirm('Are you sure you want to delete table ' + item.table_number +' ?')){
                     axios.delete('tables/'+item.table_number).then(response => {
                         if(response.status === 204) {
-                            this.$toasted.show('Deleted table successfully', {
-                                icon: "check",
-                                position: "bottom-center",
-                                duration : 3000
-                            });
+                            this.showSuccessToast('Table successfully deleted');
                             this.getTables();
                         }
                     }).catch(error => {
                         this.hasErrors(error.response.data.errors);
-                        this.$toasted.show('Problem deleting table', {
-                            icon: "check",
-                            position: "bottom-center",
-                            duration : 3000
-                        });
+                        this.showErrorLog('Problem deleting table', error);
                     });
                 }
             },
@@ -154,20 +151,12 @@
                 if(confirm('Are you sure you want to recover table ' + item.table_number +' ?')){
                     axios.put('table/restore/'+item.table_number).then(response => {
                         if(response.status === 200) {
-                            this.$toasted.show('Table recovered successfully', {
-                                icon: "check",
-                                position: "bottom-center",
-                                duration : 3000
-                            });
+                            this.showSuccessToast('Table successfully recovered');
                             this.getTables();
                         }
                     }).catch(error => {
                         this.hasErrors(error.response.data.errors);
-                        this.$toasted.show('Problem recovering table', {
-                            icon: "check",
-                            position: "bottom-center",
-                            duration : 3000
-                        });
+                        this.showErrorLog('Problem recovering table', error);
                     });
                 }
             },
@@ -185,20 +174,12 @@
                 } else {
                     axios.post('tables',{"table_number": this.editedItem.table_number,})
                         .then(response => {
-                            this.$toasted.show('Created table successfully', {
-                                icon: "check",
-                                position: "bottom-center",
-                                duration : 3000
-                            });
+                            this.showSuccessToast('Table successfully created');
                             this.close();
                             this.getTables();
                         }).catch(error =>{
                         this.hasErrors(error.response.data.errors);
-                        this.$toasted.show('Problem creating table', {
-                            icon: "check",
-                            position: "bottom-center",
-                            duration : 3000
-                        });
+                        this.showErrorLog('Problem creating table', error);
                     });
                 }
             },
@@ -220,9 +201,6 @@
                 });
             },
         },
-        created () {
-            this.getTables()
-        },
         computed: {
             formTitle () {
                 return this.editedIndex === -1 ? 'New Table' : 'Edit Table'
@@ -232,6 +210,10 @@
             dialog (val) {
                 val || this.close()
             }
+        },
+        mounted() {
+            this.getTables();
+            this.mountedTime = moment().format();
         },
     }
 </script>

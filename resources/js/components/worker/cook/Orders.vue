@@ -17,7 +17,8 @@
                               class="elevation-1">
 
                     <template slot="items" slot-scope="props">
-                        <tr class="clickable" @click="props.expanded = !props.expanded">
+                        <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date), 
+                            'clickable': true}" @click="props.expanded = !props.expanded">
                             <td class="text-xs-left">
                                 <v-avatar class="ma-1"  slot="activator" size="50px" >
                                     <img :src="props.item.item_photo_src" alt="Avatar">
@@ -26,7 +27,9 @@
                             <td>{{ props.item.id }}</td>
                             <td>{{ props.item.item_name }}</td>
                             <td>{{ props.item.item_type }}</td>
-                            <td>{{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}</td>
+                            <td>
+                                {{ props.item.created_at.date | moment("YYYY-MM-DD HH:mm:ss") }}
+                            </td>
                             <td>{{ userFirstAndLastName(props.item.responsible_waiter_name) }}</td>
                             <td :class="getOrderStateTextColor(props.item.state)">
                                 <strong>{{ props.item.state }}</strong>
@@ -53,6 +56,7 @@
 <script>
     import axios from 'axios';
     import {toasts, helper} from '../../../mixin';
+    import moment from 'moment';
 
     export default {
         name: "Orders",
@@ -70,7 +74,8 @@
             ],
             totalOrders: 0,
             loading: true,
-            pagination: { rowsPerPage: 10 }
+            pagination: { rowsPerPage: 10 },
+            mountedTime: null
         }),
         sockets:{
             order_received_list() {
@@ -150,6 +155,7 @@
         },
         mounted() {
             this.loadOrders();
+            this.mountedTime = moment().format();
         }
     }
 </script>

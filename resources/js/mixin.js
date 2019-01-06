@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export const itemMixin = {
     data() {
         return {
@@ -108,6 +110,9 @@ export const toasts = {
                 return false;
             } 
             return true;
+        },
+        isSecondDateAfter(firstDate, secondDate) {
+            return moment(secondDate).isAfter(firstDate);
         }
 	}
 };
@@ -214,7 +219,10 @@ export const helper = {
             return `${this.getInvoiceStateColor(state)}--text`;
         },
         getOrderStateTextColor(state) {
+            if (state === 'prepared') {
+                return 'lime--text text--darken-2';
+            }
             return `${this.getOrderStateColor(state)}--text`;
-        }
+        },
     }
 };

@@ -61,7 +61,8 @@
                             :search="search" :pagination.sync="pagination" :loading="myMealsProgressBar">
                         <v-progress-linear slot="progress" color="blue-grey" indeterminate></v-progress-linear>
                         <template slot="items" slot-scope="props">
-                            <tr class="clickable" @click="showMealItems(props.item)">
+                            <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.start), 
+                                'clickable': true}" @click="showMealItems(props.item)">
                                 <td>{{ props.item.id }}</td>
                                 <td>{{ props.item.table_number }}</td>
                                 <td v-if="isUserManager">{{ getReponsibleWaiterHR(props.item) }}</td>
@@ -71,6 +72,10 @@
                                     <strong>{{ props.item.state }}</strong>
                                 </td>
                                 <td class="justify-center text-md-center dt-actions">
+                                    <span class="grey--text" v-if="props.item.state !== 'active' && 
+                                        (props.item.state !== 'terminated' || !isUserManager)">
+                                        No actions
+                                    </span>
                                     <v-tooltip top v-if="props.item.state === 'active'">
                                         <v-btn slot="activator" icon
                                             @click="askToConfirmMealTermination(props.item)">
@@ -159,6 +164,7 @@
             waiterFilter: [],
             filterDate: '',
             filterDatePickerMenu : false,
+            mountedTime: null,
 
             /* auxiliary attributes */
             hasDeliveredOrders: false
@@ -466,6 +472,7 @@
             if (this.isUserManager) {
                 this.loadWaiters();
             }
+            this.mountedTime = moment().format();
         }
     }
 </script>

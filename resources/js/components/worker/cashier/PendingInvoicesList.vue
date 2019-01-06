@@ -53,9 +53,10 @@
         <v-data-table :headers="myInvoicesHeaders" :items="isUserManager ? filteredInvoices : invoices"
             :pagination.sync="pagination" :loading="loading" :search="search" class="elevation-1">
             <template slot="items" slot-scope="props">
-                <tr class="clickable" @click="props.expanded = !props.expanded">
+                <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date), 
+                        'clickable': true}" @click="props.expanded = !props.expanded">
                     <td>{{ props.item.id }}</td>
-                    <td>{{props.item.table_number}}</td>
+                    <td>{{ props.item.table_number}}</td>
                     <td>{{ props.item.responsible_waiter_name}}</td>
                     <td>{{ props.item.date }}</td>
                     <td>{{ props.item.total_price }}€</td>
@@ -152,7 +153,8 @@
             waiterFilterList: [],
             waiterFilter: [],
             filterDate: '',
-            filterDatePickerMenu : false
+            filterDatePickerMenu : false,
+            mountedTime: null
         }),
         computed: {
             user() {
@@ -342,6 +344,7 @@
             if (this.isUserManager) {
                 this.loadWaiters();
             }
+            this.mountedTime = moment().format();
         }
     }
 </script>

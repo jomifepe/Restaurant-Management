@@ -153,9 +153,9 @@
                     return !(this.preparedOrders.length && this.notPreparedOrders.length &&
                         this.inPreparationOrders.length && this.deliveredOrders.length &&
                         this.notDeliveredOrders.length);
-                } else {
-                    return !(this.notPreparedOrders && this.preparedOrders);
                 }
+                
+                return !this.notPreparedOrders.length && !this.preparedOrders.length;
             }
         },
         watch: {

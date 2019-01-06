@@ -79,8 +79,14 @@
   z-index: 9999;
 }
 
+.newTableRecord {
+  background-color: #EEEEEE;
+}
 .clickable {
   cursor: pointer;
+}
+.clickable:hover {
+  background-color: #BDBDBD;
 }
 
 .navbar-laravel {

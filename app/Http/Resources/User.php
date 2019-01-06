@@ -20,6 +20,7 @@ class User extends Resource
             'name' => $this->name,
             'username' => $this->username,
             'email' => $this->email,
+            'email_verified_at' => $this->email_verified_at,
             'type' => $this->type,
             'photo_url' => $this->photo_url,
             'photo_src' => Storage::url("profiles/$this->photo_url"),
@@ -29,6 +30,8 @@ class User extends Resource
             'blocked' => $this->blocked,
             'deleted_at' => $this->deleted_at,
             'blockedStr' => $this->blocked ? 'Yes' : 'No',
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at
         ];
     }
 

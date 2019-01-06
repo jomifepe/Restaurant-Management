@@ -13,7 +13,8 @@
             :loading="loading" :search="search" class="elevation-1">
 
         <template slot="items" slot-scope="props">
-            <tr class="clickable" @click="props.expanded = !props.expanded">
+            <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.updated_at.date), 
+                'clickable': true}" @click="props.expanded = !props.expanded">
                 <td>{{ props.item.id }}</td>
                 <td>{{props.item.table_number}}</td>
                 <td>{{ props.item.responsible_waiter_name}}</td>
@@ -44,6 +45,7 @@
     import {toasts, helper} from '../../../mixin';
     import jsPDF from 'jspdf';
     import autoTable from 'jspdf-autotable';
+    import moment from 'moment';
 
     export default {
             name: "NotPendingInvoices",
@@ -77,6 +79,7 @@
                     v => !!v || 'NIF is required',
                     v => /^\d{9}$/.test(v) || 'NIF must have 9 numbers'
                 ],
+                mountedTime: null
             }
         },
         sockets: {
@@ -88,9 +91,6 @@
             user(){
                 return this.$store.state.user;
             }
-        },
-        mounted() {
-           this.loadInvoices(); 
         },
         methods: {
             closeInvoices(){
@@ -108,13 +108,13 @@
                 axios.get(`/invoices/notpending`)
                     .then(response => {
                        if(response.status=== 200){
-                        this.loading= false;
-                        this.invoices = response.data;
+                            this.invoices = response.data;
                        }
-                        
-                    }).catch(error => {
-                        this.loadingTableEffect=false;
-                });
+                    })
+                    .catch(error => {
+                        this.loadingTableEffect = false;
+                    })
+                    .finally(() => this.loading = false );
             },
             exportToPdf(invoice){
                 let doc = new jsPDF('p','pt');
@@ -142,7 +142,10 @@
                 doc.autoTable(columns,teste);
                 doc.save(`invoice${invoice.id}.pdf`);
             },
-
+        },
+        mounted() {
+            this.loadInvoices();
+            this.mountedTime = moment().format();
         }
     }
 </script>

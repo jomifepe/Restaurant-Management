@@ -26,7 +26,7 @@ class UserControllerAPI extends Controller
 
     public function indexManager()
     {
-        return UserResource::collection(User::withTrashed()->get());
+        return UserResource::collection(User::withTrashed()->orderBy('type')->get());
     }
 
     public function toggleBlockUser($id)

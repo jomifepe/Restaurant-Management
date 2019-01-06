@@ -72,52 +72,56 @@
                     class="elevation-1" :search="filter" :pagination.sync="pagination">
                     <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                     <template slot="items" slot-scope="props">
-                        <td class="text-xs-left">
-                            <v-avatar class="ma-1"  slot="activator" size="50px" >
-                                <img :src="props.item.photo_src" alt="Avatar">
-                            </v-avatar>
-                        </td>
-                        <td class="text-xs-left">{{ props.item.name }}</td>
-                        <td class="text-xs-left">{{ props.item.username }}</td>
-                        <td class="text-xs-left">
-                            <v-chip small :color="getUserAppearence(props.item).color" text-color="white">
-                                {{ props.item.type }}
-                            </v-chip>
-                        </td>
-                        <td class="text-xs-left">{{ props.item.email }}</td>
-                        <td class="text-xs-left">{{ props.item.blockedStr }}</td>
-                        <td class="justify-center px-0 text-md-center dt-actions" v-if="user.id !== props.item.id">
-                            <v-tooltip top v-if="!props.item.blocked">
-                                <v-btn icon slot="activator" @click.prevent="blockUser(props.item)">
-                                    <v-icon color="red" dark>lock</v-icon>
-                                </v-btn>
-                                <span>Block user</span>
-                            </v-tooltip>
-                            <v-tooltip top v-else>
-                                <v-btn icon slot="activator" @click.prevent="blockUser(props.item)">
-                                    <v-icon color="green" dark>lock_open</v-icon>
-                                </v-btn>
-                                <span>Unblock user</span>
-                            </v-tooltip>
-                            <v-tooltip top>
-                                <v-btn icon slot="activator" @click.prevent="editItem(props.item)">
-                                    <v-icon color="blue">edit</v-icon>
-                                </v-btn>
-                                <span>Edit user</span>
-                            </v-tooltip>
-                            <v-tooltip top v-if="props.item.deleted_at != null">
-                                <v-btn icon slot="activator" @click.prevent="restoreUser(props.item)">
-                                    <v-icon color="green" dark>undo</v-icon>
-                                </v-btn>
-                                <span>Restore user</span>
-                            </v-tooltip>
-                            <v-tooltip top v-else>
-                                <v-btn icon slot="activator" @click.prevent="deleteItem(props.item)">
-                                    <v-icon color="red">delete</v-icon>
-                                </v-btn>
-                                <span>Delete user</span>
-                            </v-tooltip>
-                        </td>
+                        <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date), 
+                            'clickable': true}">
+                            <td class="text-xs-left">
+                                <v-avatar class="ma-1"  slot="activator" size="50px" >
+                                    <img :src="props.item.photo_src" alt="Avatar">
+                                </v-avatar>
+                            </td>
+                            <td class="text-xs-left">{{ props.item.name }}</td>
+                            <td class="text-xs-left">{{ props.item.username }}</td>
+                            <td class="text-xs-left">{{ props.item.email }}</td>
+                            <td class="text-xs-left">{{ props.item.email_verified_at || 'No' }}</td>
+                            <td class="text-xs-left">{{ props.item.blockedStr }}</td>
+                            <td class="text-xs-left">
+                                <v-chip small :color="getUserAppearence(props.item).color" text-color="white">
+                                    {{ props.item.type }}
+                                </v-chip>
+                            </td>
+                            <td class="justify-center px-0 text-md-center dt-actions" v-if="user.id !== props.item.id">
+                                <v-tooltip top v-if="!props.item.blocked">
+                                    <v-btn icon slot="activator" @click.prevent="blockUser(props.item)">
+                                        <v-icon color="red" dark>lock</v-icon>
+                                    </v-btn>
+                                    <span>Block user</span>
+                                </v-tooltip>
+                                <v-tooltip top v-else>
+                                    <v-btn icon slot="activator" @click.prevent="blockUser(props.item)">
+                                        <v-icon color="green" dark>lock_open</v-icon>
+                                    </v-btn>
+                                    <span>Unblock user</span>
+                                </v-tooltip>
+                                <v-tooltip top>
+                                    <v-btn icon slot="activator" @click.prevent="editItem(props.item)">
+                                        <v-icon color="blue">edit</v-icon>
+                                    </v-btn>
+                                    <span>Edit user</span>
+                                </v-tooltip>
+                                <v-tooltip top v-if="props.item.deleted_at != null">
+                                    <v-btn icon slot="activator" @click.prevent="restoreUser(props.item)">
+                                        <v-icon color="green" dark>undo</v-icon>
+                                    </v-btn>
+                                    <span>Restore user</span>
+                                </v-tooltip>
+                                <v-tooltip top v-else>
+                                    <v-btn icon slot="activator" @click.prevent="deleteItem(props.item)">
+                                        <v-icon color="red">delete</v-icon>
+                                    </v-btn>
+                                    <span>Delete user</span>
+                                </v-tooltip>
+                            </td>
+                        </tr>
                     </template>
                     <template slot="no-data">
                         <v-btn color="primary" @click="getUsers">Reset</v-btn>
@@ -147,6 +151,7 @@
     import UserEdit from '../UserEdit';
     import Errors from '../Errors';
     import DefaultAxios from 'axios';
+    import moment from 'moment';
 
     export default {
         name: "UserList",
@@ -155,42 +160,42 @@
             Errors
         },
         mixins: [toasts, helper],
-        data: function() {
-            return {
-                loadingTableEffect: true,
-                dialog: false,
-                showEdit: false,
-                filter: '',
-                hasValidationErrors: false,
-                validationErrors: [],
-                pagination: { rowsPerPage: 10 },
-                userToEdit: null,
-                headers: [
-                    {text: 'Photo', value: 'photo_src '},
-                    {text: 'Full Name', align: 'left', value: 'name'},
-                    {text: 'Username', value: 'username'},
-                    {text: 'Type', value: 'type'},
-                    {text: 'Email', value: 'email'},
-                    {text: 'Blocked', value: 'blocked'},
-                    {text: 'Action', value: ''}
-                ],
-                users: [],
-                editedIndex: -1,
-                editedItem: {
-                    name: '',
-                    username: '',
-                    email: '',
-                    type: '',
-                    photo_url: null,
+        data: () => ({
+            loadingTableEffect: true,
+            dialog: false,
+            showEdit: false,
+            filter: '',
+            hasValidationErrors: false,
+            validationErrors: [],
+            pagination: { rowsPerPage: 10 },
+            userToEdit: null,
+            headers: [
+                {text: 'Photo', value: 'photo_src '},
+                {text: 'Full Name', align: 'left', value: 'name'},
+                {text: 'Username', value: 'username'},
+                {text: 'Email', value: 'email'},
+                {text: 'Verified', value: 'email_verified_at'},
+                {text: 'Blocked', value: 'blocked'},
+                {text: 'Type', value: 'type'},
+                {text: 'Action', value: ''}
+            ],
+            users: [],
+            editedIndex: -1,
+            editedItem: {
+                name: '',
+                username: '',
+                email: '',
+                type: '',
+                photo_url: null,
 
-                },
-                defaultItem: {
-                    name: '',
-                    username: '',
-                    email: '',
-                }
-            }
-        },
+            },
+            defaultItem: {
+                name: '',
+                username: '',
+                email: '',
+            },
+            mountedTime: null
+        }),
         methods: {
             getUsers () {
                 this.loadingTableEffect = true;
@@ -325,10 +330,10 @@
                 val || this.close()
             }
         },
-
-        created () {
+        mounted() {
             this.getUsers();
-        },
+            this.mountedTime = moment().format();
+        }
     }
 </script>
 
