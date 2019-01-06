@@ -250,20 +250,27 @@
                 if (this.editedItem.photo_url != null) {
                     form.append('photo_url', this.editedItem.photo_url);  /** HAS IMAGE ? -> ADD TO FORM**/
                 }
+                let token = this.$store.state.token;
+                if (token == null) {
+                    this.showErrorToast('User token not available');
+                    return;
+                }
 
                 let email = this.editedItem.email;
                 axios.post('users', form).then(response => {
                     if (response.status === 201) {
-                        DefaultAxios.post('http://project.dad/password/email', {
-                            'email': email
+                        DefaultAxios.post('http://project.dad/password/email', 
+                        { 'email': email },
+                        { headers: 
+                            {'Authorization': `Bearer ${token}` }
                         }).then(response => {
+                            console.log(response);
                             this.showSuccessToast('User successfully registered');
                             this.showSuccessToast('Confirmation email successfully sent');
-                        })
-                        .catch(error => {
+                        }).catch(error => {
                             this.showErrorLog('Failed to send confirmation email', error);
-                        })
-                        .finally(() => {
+                            console.log(error.response);
+                        }).finally(() => {
                             this.getUsers();
                             this.close();
                             this.$store.commit('hideProgressBar');
@@ -311,8 +318,6 @@
 
         created () {
             this.getUsers();
-            DefaultAxios.defaults.headers.common.Authorization = "Bearer " + 
-                this.$store.state.token;
         },
     }
 </script>
@@ -320,9 +325,3 @@
 <style scoped>
 
 </style>
-
-
-switch(1)
-
-case 1:
-case 0:

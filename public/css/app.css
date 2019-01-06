@@ -15194,6 +15194,10 @@ readers do not read off random characters that represent icons */
   margin-left: 0;
 }
 
+.item-card .v-list__tile {
+  padding: 0 8px;
+}
+
 .v-input--checkbox label {
   margin-bottom: 0;
 }

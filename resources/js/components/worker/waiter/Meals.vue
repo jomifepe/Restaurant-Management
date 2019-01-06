@@ -12,27 +12,60 @@
                 </v-toolbar>
                 <v-card>
                     <v-card-title>
-                        <v-checkbox v-model="filterActive" :color="getMealStateColor('active')" 
-                            label="Active"></v-checkbox>
-                        <v-checkbox v-model="filterTerminated" :color="getMealStateColor('terminated')"
-                            label="Terminated"></v-checkbox>
-                        <v-checkbox v-model="filterPaid" :color="getMealStateColor('paid')"
-                            label="Paid"></v-checkbox>
-                        <v-checkbox v-model="filterNotPaid" :color="getMealStateColor('not paid')"
-                            label="Not Paid"></v-checkbox>
                         <v-spacer></v-spacer>
-                        <v-text-field v-model="search" append-icon="search"
+                        <v-text-field v-model="search" class="mr-2" append-icon="search"
                             label="Search" single-line hide-details></v-text-field>
+                        <v-dialog v-model="filterDialog" max-width="450">
+                            <v-btn slot="activator" color="primary" fab dark>
+                                <v-icon>filter_list</v-icon>
+                            </v-btn>
+                            <v-card>
+                                <v-card-title>
+                                    <span class="headline">Filters</span>
+                                </v-card-title>
+                                <v-card-text class="pr-5 pb-3 pl-5 pt-3">
+                                    <v-select :items="mealStateFilterList" v-model="mealStateFilter" chips
+                                        label="Meal state" multiple>
+                                    </v-select>
+                                    <v-select v-if="this.isUserManager" :items="waiterFilterList" v-model="waiterFilter"
+                                        label="Responsible waiter" multiple item-text="name" item-value="id">
+                                        <template slot="selection" slot-scope="{ item, index }">
+                                            <v-chip v-if="index === 0">
+                                                <span>{{ item.name }}</span>
+                                            </v-chip>
+                                            <span v-if="index === 1" class="grey--text caption">
+                                                (+{{ waiterFilter.length - 1 }} others)
+                                            </span>
+                                        </template>
+                                    </v-select>
+                                    <v-menu v-if="this.isUserManager" :close-on-content-click="false"
+                                        v-model="filterDatePickerMenu" :nudge-right="40" lazy
+                                        transition="scale-transition" offset-y full-width min-width="290px">
+                                        <v-text-field slot="activator" v-model="filterDate" clearable
+                                            label="Start date" prepend-icon="event" readonly>
+                                        </v-text-field>
+                                        <v-date-picker v-model="filterDate" @input="filterDatePickerMenu = false">
+                                        </v-date-picker>
+                                    </v-menu>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn flat @click="filterDialog = false">
+                                        Close
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
                     </v-card-title>
                     <v-data-table :headers="myMealsHeaders" :items="filteredMeals" class="elevation-1"
                             :search="search" :pagination.sync="pagination" :loading="myMealsProgressBar">
                         <v-progress-linear slot="progress" color="blue-grey" indeterminate></v-progress-linear>
                         <template slot="items" slot-scope="props">
                             <tr class="clickable" @click="showMealItems(props.item)">
+                                <td>{{ props.item.id }}</td>
                                 <td>{{ props.item.table_number }}</td>
                                 <td v-if="isUserManager">{{ getReponsibleWaiterHR(props.item) }}</td>
                                 <td>{{ formatDate(props.item.start) }}</td>
-                                <td>{{ formatDate(props.item.created_at.date) }}</td>
                                 <td>{{ props.item.total_price_preview }}€</td>
                                 <td :class="getMealStateTextColor(props.item.state)">
                                     <strong>{{ props.item.state }}</strong>
@@ -46,7 +79,7 @@
                                         <span>Terminate meal</span>
                                     </v-tooltip>
                                     <v-tooltip top v-if="props.item.state === 'terminated'">
-                                        <v-btn icon slot="activator" v-if="user.type==='manager'" @click="declareMealAsNotPaid(props.item)">
+                                        <v-btn icon slot="activator" v-if="isUserManager" @click="declareMealAsNotPaid(props.item)">
                                             <v-icon>
                                                money_off
                                             </v-icon>
@@ -119,24 +152,28 @@
             mealToTerminate: null,
             terminateMealDialog: false,
             cancelOrdersDialog: false,
-            filterActive: true,
-            filterTerminated: true,
-            filterPaid: false,
-            filterNotPaid: false,
-            mealStateFilter: [],
+            filterDialog: false,
+            mealStateFilterList: ['active', 'terminated', 'paid', 'not paid'],
+            mealStateFilter: ['active', 'terminated'],
+            waiterFilterList: [],
+            waiterFilter: [],
+            filterDate: '',
+            filterDatePickerMenu : false,
 
             /* auxiliary attributes */
             hasDeliveredOrders: false
         }), 
         computed: {
             myMealsHeaders() {
-                let headers = [{ text: 'Table Number', align: 'left', value: 'table_number' }];
+                let headers = [
+                    { text: 'Id', align: 'left', value: 'id' },
+                    { text: 'Table Number', align: 'left', value: 'table_number' }
+                ];
                 if (this.isUserManager) {
                     headers.push({ text: 'Waiter', value: 'responsible_waiter_id' });
                 }
                 headers = headers.concat([
                     { text: 'Started', value: 'start' },
-                    { text: 'Created', value: 'created_at' },
                     { text: 'Price', value: 'total_price_preview' },
                     { text: 'State', value: 'state' },
                     { text: 'Actions', value: '', sortable: false, align: 'center'}
@@ -147,38 +184,16 @@
                 return this.$store.state.user;
             },
             filteredMeals() {
-                return this.meals.filter(meal => this.mealStateFilter.includes(meal.state));
-            }
-        },
-        watch: {
-            filterActive() {
-                if (this.filterActive) {
-                    this.arrayAdd(this.mealStateFilter, 'active');
-                } else {
-                    this.arrayRemove(this.mealStateFilter, 'active');
-                }
+                return this.meals.filter(meal => {
+                    let hasState = this.mealStateFilter.includes(meal.state);
+                    let hasWaiter = this.waiterFilter.length == 0 ||
+                        this.waiterFilter.includes(meal.responsible_waiter_id);
+                    let filterDateFormatted = moment(this.filterDate).format('YYYY-MM-DD');
+                    let mealDateFormatted = moment(meal.start).format('YYYY-MM-DD');
+                    let isOnDate = !this.filterDate || filterDateFormatted === mealDateFormatted;
+                    return hasState && hasWaiter && isOnDate;
+                });
             },
-            filterTerminated() {
-                if (this.filterTerminated) {
-                    this.arrayAdd(this.mealStateFilter, 'terminated');
-                } else {
-                    this.arrayRemove(this.mealStateFilter, 'terminated');
-                }
-            },
-            filterPaid() {
-                if (this.filterPaid) {
-                    this.arrayAdd(this.mealStateFilter, 'paid');
-                } else {
-                    this.arrayRemove(this.mealStateFilter, 'paid');
-                }
-            },
-            filterNotPaid() {
-                if (this.filterNotPaid) {
-                    this.arrayAdd(this.mealStateFilter, 'not paid');
-                } else {
-                    this.arrayRemove(this.mealStateFilter, 'not paid');
-                }
-            }
         },
         sockets: {
             new_order_notify_manager() {
@@ -231,8 +246,8 @@
                         //console.log(promises);
                         axios.all(promises)
                             .then(axios.spread((...responses) => {
-                                responses.forEach(res => console.log('Success'))
-                                console.log('submitted all axios calls');
+                                // responses.forEach(res => console.log('Success'))
+                                // console.log('submitted all axios calls');
                                 this.$socket.emit('update_not_pending');
                             }))
 
@@ -284,16 +299,30 @@
                     })
             },
             loadMeals() {
-                let target = this.isUserManager ? 'meals/manager' :
-                    `/meals/waiter/${this.$store.state.user.id}`;
-
-                axios.get(target)
+                return new Promise(resolve => {
+                    let target = this.isUserManager ? '/meals' : `/meals/waiter/${this.user.id}`;
+                    axios.get(target)
+                        .then(response => {
+                            if (response.status === 200) {
+                                this.meals = response.data.data;
+                                this.myMealsProgressBar = false;
+                                resolve();
+                            }
+                        });
+                })
+            },
+            loadWaiters() {
+                axios.get('/users/all/waiter')
                     .then(response => {
                         if (response.status === 200) {
-                            this.meals = response.data.data;
-                            this.myMealsProgressBar = false;
+                            this.waiterFilterList = response.data.data;
+                        } else {
+                            this.showErrorToast('Failed to get all waiters to populate filters');
                         }
-                    });
+                    })
+                    .catch(error => {
+                        this.showErrorLog('Failed to get all waiters to populate filters', error);
+                    })
             },
             formatDate: date => moment(date).format("YYYY-MM-DD, HH:mm"),
             onMealCreated(tableNumber) {
@@ -383,7 +412,6 @@
                 return new Promise(resolve => {
                     axios.post('/invoices', { meal_id: meal.id })
                         .then(response => {
-                            console.log(response.data);
                             if (response.status === 201) {
                                 let createdInvoice = response.data.data;
                                 this.createInvoiceItems(createdInvoice.id, meal.id).then(() => resolve());
@@ -428,13 +456,16 @@
             reload(){
                 this.loadMeals();
                 setTimeout(function(){ this.showMealItems; }, 2000);
-            },
+            }
         },
         mounted() {
             this.$store.commit('setPanelTitle', 'Meals');
             this.arrayAdd(this.mealStateFilter, 'active');
             this.arrayAdd(this.mealStateFilter, 'terminated');
             this.loadMeals();
+            if (this.isUserManager) {
+                this.loadWaiters();
+            }
         }
     }
 </script>

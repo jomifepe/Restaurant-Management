@@ -6,23 +6,11 @@
                 <span class="body-1">(click to reveal invoice actions)</span>
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-text-field
-                v-model="search"
-                append-icon="search"
-                label="Search"
-                single-line
-                hide-details
-            ></v-text-field>
-            <v-btn flat icon v-if="user.type==='manager'" @click="closeInvoices()">
-                <v-icon>close</v-icon>
-            </v-btn>                     
+            <v-text-field v-model="search" append-icon="search"
+                label="Search" single-line hide-details></v-text-field>                   
         </v-toolbar>
-        <v-data-table :headers="myInvoicesHeaders"
-                        :items="invoices"
-                        :pagination.sync="pagination"
-                        :loading="loading"
-                        :search="search"
-                        class="elevation-1">
+        <v-data-table :headers="myInvoicesHeaders" :items="invoices" :pagination.sync="pagination"
+            :loading="loading" :search="search" class="elevation-1">
 
         <template slot="items" slot-scope="props">
             <tr class="clickable" @click="props.expanded = !props.expanded">

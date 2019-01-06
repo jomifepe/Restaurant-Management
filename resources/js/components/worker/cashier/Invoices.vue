@@ -2,8 +2,7 @@
     <v-container grid-list-md fluid>
         <v-layout row wrap>
             <pending-invoices-list></pending-invoices-list>
-            <v-btn v-if="user.type==='manager' && !otherInvoices" block color="info" @click="showAllInvoices()">Get Other Invoices</v-btn>
-            <not-pending-invoices-list v-if="user.type==='cashier' || otherInvoices" @onClose="closeOtherInvoices"></not-pending-invoices-list>
+            <not-pending-invoices-list v-if="user.type === 'cashier'"></not-pending-invoices-list>
             <v-flex xs12 id="InvoiceDetails" class="mt-5">
                 <router-view></router-view>
             </v-flex>
@@ -28,21 +27,9 @@
             otherInvoices: false,
         }),
         computed: {
-            user(){
+            user() {
                 return this.$store.state.user;
             }
-        },
-        mounted() {
-
-        },
-        methods: {
-            closeOtherInvoices(){
-                this.otherInvoices=false;
-            },
-            showAllInvoices(){
-                this.otherInvoices= true;
-            },
-
         }
     }
 </script>

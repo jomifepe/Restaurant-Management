@@ -11,6 +11,7 @@ use App\User;
 use App\StoreUserRequest;
 use Hash;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class UserControllerAPI extends Controller
 {
@@ -47,6 +48,11 @@ class UserControllerAPI extends Controller
     public function show($id)
     {
         return new UserResource(User::find($id));
+    }
+
+    public function showByType($type)
+    {
+        return UserResource::collection(User::where('type', $type)->get());
     }
 
     public function findUserByEmail($email) {
@@ -109,6 +115,13 @@ class UserControllerAPI extends Controller
             $user->fill($request->all());
         }
 
+        $user->save();
+        return new UserResource($user);
+    }
+
+    public function verifyEmail($email) {
+        $user = User::where('email', $email)->firstOrFail();
+        $user->email_verified_at = Carbon::new();
         $user->save();
         return new UserResource($user);
     }

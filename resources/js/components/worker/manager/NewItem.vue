@@ -1,15 +1,12 @@
 <template>
     <div class="text-xs-center">
-        <div v-if="this.$store.state.user.type === 'manager'" >
+        <div v-if="this.$store.state.user.type === 'manager'">
             <v-btn dark class="mb-2" color="primary" @click.prevent="showForm = true">
                 New Item
             </v-btn>
         </div>
-        <div v-if="this.$store.state.user.type === 'manager'" >
-            <div v-if="showForm">
-                <item-form  @onGetItems="onGetItems()" @onCloseForm="closeForm()"></item-form>
-            </div>
-        </div>
+            <item-form :showDialog="showForm" :show@onGetItems="onGetItems()" 
+                @onCloseForm="closeForm()"></item-form>
     </div>
 </template>
 
