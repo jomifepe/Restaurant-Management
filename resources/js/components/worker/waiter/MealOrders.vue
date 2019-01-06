@@ -150,9 +150,9 @@
         computed: {
             noOrdersToDisplay() {
                 if (this.isUserManager) {
-                    return !(this.preparedOrders.length && this.notPreparedOrders.length &&
-                        this.inPreparationOrders.length && this.deliveredOrders.length &&
-                        this.notDeliveredOrders.length);
+                    return !this.preparedOrders.length && !this.notPreparedOrders.length &&
+                        !this.inPreparationOrders.length && !this.deliveredOrders.length &&
+                        !this.notDeliveredOrders.length;
                 }
                 
                 return !this.notPreparedOrders.length && !this.preparedOrders.length;

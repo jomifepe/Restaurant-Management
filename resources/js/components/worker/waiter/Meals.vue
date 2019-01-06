@@ -290,6 +290,9 @@
                                             this.showSuccessToast('Invoice edited');
                                             this.changeAllNotDeliveredOrdersFromAMealToNotDelivered(meal);
                                             this.loadMeals();
+                                            if (this.$route.params.mealId === meal.id) {
+                                                this.$router.push({ name: 'meals' });
+                                            }
                                         })
                                         .catch(error => {
                                             this.showErrorToast('Failed to edit invoice');
@@ -389,7 +392,10 @@
                             this.showSuccessToast('Meal invoice successfully generated');
                             this.$socket.emit('invoice_generated', this.user);
                         }
-                        this.$store.commit('hideProgressBar');
+                        this.$store.commit('hideProgressBar')
+                        if (this.$route.params.mealId === meal.id) {
+                            this.$router.push({ name: 'meals' });
+                        }
                     });
 
                     if (this.hasDeliveredOrders) {
