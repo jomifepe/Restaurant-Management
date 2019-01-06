@@ -78,13 +78,13 @@
                                     </span>
                                     <v-tooltip top v-if="props.item.state === 'active'">
                                         <v-btn slot="activator" icon
-                                            @click="askToConfirmMealTermination(props.item)">
+                                            @click.stop="askToConfirmMealTermination(props.item)">
                                             <v-icon>fas fa-check-circle</v-icon>
                                         </v-btn>
                                         <span>Terminate meal</span>
                                     </v-tooltip>
                                     <v-tooltip top v-if="props.item.state === 'terminated'">
-                                        <v-btn icon slot="activator" v-if="isUserManager" @click="declareMealAsNotPaid(props.item)">
+                                        <v-btn icon slot="activator" v-if="isUserManager" @click.stop="declareMealAsNotPaid(props.item)">
                                             <v-icon>
                                                money_off
                                             </v-icon>

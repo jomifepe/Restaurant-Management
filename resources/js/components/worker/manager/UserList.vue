@@ -4,7 +4,6 @@
 			<v-flex xs12>
                 <v-toolbar flat color="white">
                     <v-toolbar-title>Users List</v-toolbar-title>
-                    <v-divider class="mx-2" inset vertical> </v-divider>
                     <v-spacer></v-spacer>
 
                     <v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
@@ -72,10 +71,9 @@
                     class="elevation-1" :search="filter" :pagination.sync="pagination">
                     <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
                     <template slot="items" slot-scope="props">
-                        <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date), 
-                            'clickable': true}">
+                        <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date)}">
                             <td class="text-xs-left">
-                                <v-avatar class="ma-1"  slot="activator" size="50px" >
+                                <v-avatar class="ma-1"  slot="activator" size="50px">
                                     <img :src="props.item.photo_src" alt="Avatar">
                                 </v-avatar>
                             </td>

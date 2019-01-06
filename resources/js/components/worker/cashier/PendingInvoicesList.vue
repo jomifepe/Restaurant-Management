@@ -53,7 +53,7 @@
         <v-data-table :headers="myInvoicesHeaders" :items="isUserManager ? filteredInvoices : invoices"
             :pagination.sync="pagination" :loading="loading" :search="search" class="elevation-1">
             <template slot="items" slot-scope="props">
-                <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date), 
+                <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date || props.item.created_at), 
                         'clickable': true}" @click="props.expanded = !props.expanded">
                     <td>{{ props.item.id }}</td>
                     <td>{{ props.item.table_number}}</td>
@@ -295,7 +295,7 @@
                     this.changeInvoice(invoice, 'paid');
                 }
                 this.dialog = false
-             },
+            },
             showInvoiceDetails(id){
                 this.$router.push({ name: 'invoices.details', params: { invoiceId: id }});
             },
