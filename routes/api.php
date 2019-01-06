@@ -40,6 +40,8 @@ Route::group(['prefix' => 'invoices', 'middleware' => 'managerAndCashier'],
     }
 );
 
+
+
 Route::post('invoices', 'InvoiceControllerAPI@store')->name('invoices.store')
 ->middleware('managerAndWaiter');
 
@@ -156,7 +158,7 @@ Route::get('orders/{id}/toprepare', 'OrderControllerAPI@toPrepare')->name('order
     ->middleware('managerAndCook');
 
 Route::delete('orders/{order}', 'OrderControllerAPI@destroy')->name('orders.destroy')
-    ->middleware('manager');
+    ->middleware('managerAndWaiter');
 
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-ORDERS<-<-<-<-<-<-<-<-<-<-<-<-<-<-
 

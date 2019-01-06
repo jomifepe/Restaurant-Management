@@ -228,7 +228,7 @@
                             promises.push(this.saveOrder(order));
                             
                         })
-                        console.log(promises);
+                        //console.log(promises);
                         axios.all(promises)
                             .then(axios.spread((...responses) => {
                                 responses.forEach(res => console.log('Success'))

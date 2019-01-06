@@ -134,7 +134,7 @@
                 axios.get(`/orders/${this.$store.state.user.id}/toprepare`)
                     .then(response => {
                         if (response.status === 200) {
-                            console.log(response.data.data);
+                            //console.log(response.data.data);
                             this.orders = response.data.data;
                             this.loading = false;
                         }
