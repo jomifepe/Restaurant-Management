@@ -275,7 +275,7 @@
                                         })
                                 })
                                 .catch(error => {
-                                    if(error.response.status !== 404){
+                                    if(error.response.status != 404){
                                         this.showErrorLog('Failed to get meal invoice', error);
                                     }
                                 })                              
