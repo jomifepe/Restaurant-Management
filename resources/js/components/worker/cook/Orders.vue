@@ -8,14 +8,11 @@
                         <span class="body-1">(click to reveal order actions)</span>
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
+                    <v-text-field v-model="search" class="mr-2" append-icon="search"
+                            label="Search" single-line hide-details></v-text-field>
                 </v-toolbar>
-                <v-data-table :headers="myOrderHeaders"
-                              :items="orders"
-                              :pagination.sync="pagination"
-                              :loading="loading"
-                              disable-initial-sort
-                              class="elevation-1">
-
+                <v-data-table :headers="myOrderHeaders" :items="orders" :pagination.sync="pagination"
+                        :loading="loading" disable-initial-sort :search="search" class="elevation-1">
                     <template slot="items" slot-scope="props">
                         <tr :class="{'newTableRecord': isSecondDateAfter(mountedTime, props.item.created_at.date), 
                             'clickable': true}" @click="props.expanded = !props.expanded">
@@ -75,14 +72,14 @@
             totalOrders: 0,
             loading: true,
             pagination: { rowsPerPage: 10 },
-            mountedTime: null
+            mountedTime: null,
+            search: ''
         }),
         sockets:{
             order_received_list() {
                 this.loadOrders();
             },
             refresh_orders(){
-                console.log("reiniciar");
                 this.loadOrders();
             },
         },
