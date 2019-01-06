@@ -98,6 +98,8 @@
                 });
             },
             markAsDone(order){
+                if (!this.isUserInShift()) return;
+                
                 order.responsible_cook_id = this.$store.state.user.id;
                 order.state= "prepared";
                 this.saveOrder(order);
@@ -120,6 +122,8 @@
                     })
             },
             assignOrderToMe(order) {
+                if (!this.isUserInShift()) return;
+
                 order.state = 'in preparation';
                 order.responsible_cook_id = this.$store.state.user.id;
                 this.saveOrder(order);

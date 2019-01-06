@@ -222,6 +222,8 @@
                 this.changeInvoice(invoice,'not paid');
             },
             changeInvoice(invoice, state) {
+                if (!this.isUserInShift()) return;
+                
                 invoice.state = state;
                 var meal = null;
                 axios.patch(`/invoices/${invoice.id}`, invoice)

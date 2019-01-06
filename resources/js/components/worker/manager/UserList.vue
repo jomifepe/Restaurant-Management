@@ -203,6 +203,8 @@
                 });
             },
             blockUser(user){
+                if (!this.isUserInShift()) return;
+
                 axios.put('user/' + user.id).then(response => {
                     this.showSuccessToast(`User ${response.data} successfuly`);
                     this.getUsers();
@@ -211,11 +213,15 @@
                 });
             },
             editItem (item) {
+                if (!this.isUserInShift()) return;
+
                 this.userToEdit = item;
                 this.showEdit = true;
 
             },
             deleteItem (item) {
+                if (!this.isUserInShift()) return;
+
                 axios.delete('users/' + item.id).then(response => {
                     this.showSuccessToast('User deleted successfuly');
                     this.getUsers();
@@ -224,6 +230,8 @@
                 });
             },
             restoreUser(item){
+                if (!this.isUserInShift()) return;
+
                 axios.put('user/restore/' + item.id).then(response => {
                     this.showSuccessToast('User restored successfuly');
                     this.getUsers();
@@ -290,6 +298,8 @@
                 setTimeout(() => (this.hasValidationErrors = false), 6000)
             },
             validateBeforeSubmit() {
+                if (!this.isUserInShift()) return;
+                
                 this.$validator.validateAll().then((result) => {
                     if (!result) {
                         alert('Correct the errors!');
