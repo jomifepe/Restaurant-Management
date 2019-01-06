@@ -44,13 +44,13 @@
 		<v-card-actions>
 			<v-spacer></v-spacer>
 			<v-tooltip top>
-				<v-btn slot="activator" icon flat color="red" @click.prevent="deleteItem(item)">
+				<v-btn v-if="isUserManager" slot="activator" icon flat color="red" @click.prevent="deleteItem(item)">
 					<v-icon>delete</v-icon>
 				</v-btn>
 				<span>Delete item</span>
 			</v-tooltip>
 			<v-tooltip top>
-				<v-btn slot="activator" icon flat color="blue darken-1" @click.prevent="showForm = true">
+				<v-btn v-if="isUserManager" slot="activator" icon flat color="blue darken-1" @click.prevent="showForm = true">
 					<v-icon>edit</v-icon>
 				</v-btn>
 				<span>Edit item</span>

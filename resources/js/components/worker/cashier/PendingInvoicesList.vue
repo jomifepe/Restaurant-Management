@@ -218,10 +218,10 @@
                         this.showErrorLog('Failed to change orders', error);
                     })
             },
-            declareAsNotPaid(invoice){
+            declareAsNotPaid(invoice) {
                 this.changeInvoice(invoice,'not paid');
             },
-            changeInvoice(invoice, state){
+            changeInvoice(invoice, state) {
                 invoice.state = state;
                 var meal = null;
                 axios.patch(`/invoices/${invoice.id}`, invoice)
