@@ -56,6 +56,7 @@
 
     export default {
         name: "ItemForm",
+        mixins: [toasts, helper],
         components: {Errors},
         props:['showDialog', 'itemSelectedToEdit'],
         data() {
@@ -75,7 +76,7 @@
         },
         methods: {
             save() {
-                if (this.isUserInShift()) return;
+                if (!this.isUserInShift()) return;
                 
                 /** FORM **/
                 let form = new FormData;
@@ -141,6 +142,8 @@
                 this.item.photo_url = event.target.files[0];
             },
             validateBeforeSubmit() {
+                if (!this.isUserInShift()) return;
+
                 this.$validator.validateAll().then((result) => {
                     if (!result) {
                         alert('Correct them errors!');

@@ -4,7 +4,6 @@
             <v-flex xs12>
                 <v-toolbar flat color="white">
                     <v-toolbar-title>Restaurant Tables</v-toolbar-title>
-                    <v-divider class="mx-2" inset vertical></v-divider>
                     <v-spacer></v-spacer>
                     <v-dialog v-model="dialog" max-width="500px">
                         <v-btn slot="activator" color="primary" dark class="mb-2">New Table</v-btn>
@@ -79,8 +78,11 @@
 <script>
     import AdminItemMenu from '../ItemMenu.vue';
     import Errors from '../Errors.vue';
+    import {toasts, helper} from '../../../mixin';
+
     export default {
         name: "Tables",
+        mixins: [toasts, helper],
         components: {
             'items-menu': AdminItemMenu,
             Errors
@@ -124,6 +126,8 @@
                 });
             },
             deleteTable (item) {
+                if (!this.isUserInShift()) return;
+
                 if(confirm('Are you sure you want to delete table ' + item.table_number +' ?')){
                     axios.delete('tables/'+item.table_number).then(response => {
                         if(response.status === 204) {
@@ -145,6 +149,8 @@
                 }
             },
             restoreTable(item){
+                if (!this.isUserInShift()) return;
+
                 if(confirm('Are you sure you want to recover table ' + item.table_number +' ?')){
                     axios.put('table/restore/'+item.table_number).then(response => {
                         if(response.status === 200) {
@@ -173,6 +179,8 @@
                 }, 300)
             },
             save () {
+                if (!this.isUserInShift()) return;
+                
                 if (this.editedIndex > -1) {
                 } else {
                     axios.post('tables',{"table_number": this.editedItem.table_number,})
@@ -200,6 +208,8 @@
                 setTimeout(() => (this.hasValidationErrors = false), 6000)
             },
             validateBeforeSubmit() {
+                if (!this.isUserInShift()) return;
+
                 this.$validator.validateAll().then((result) => {
                     if (!result) {
                         alert('Correct them errors!');

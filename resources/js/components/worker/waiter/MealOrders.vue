@@ -20,7 +20,7 @@
         </v-toolbar>
         <v-container fluid class="white elevation-1">
 
-            <h4 class="text-md-center" v-if="!isUserManager && !notPreparedOrders.length && !preparedOrders.length">
+            <h4 class="text-md-center" v-if="noOrdersToDisplay">
                 No orders to display
             </h4>
 
@@ -139,15 +139,25 @@
             deliveredOrdersRows: [4, 8, 12],
             notDeliveredOrdersRows: [4, 8, 12],
 
-
             preparedOrdersPagination: { rowsPerPage: 4 },
             notPreparedOrdersPagination: { rowsPerPage: 4 },
             inPreparationOrdersPagination: {rowsPerPage: 4},
-            deliveredOrdersPagination: {rowsPerPage: 4},
-            notDeliveredOrdersPagination: {rowsPerPage: 4},
+            deliveredOrdersPagination: { rowsPerPage: 4 },
+            notDeliveredOrdersPagination: { rowsPerPage: 4 },
 
             progressBar: true
         }),
+        computed: {
+            noOrdersToDisplay() {
+                if (this.isUserManager) {
+                    return !(this.preparedOrders.length && this.notPreparedOrders.length &&
+                        this.inPreparationOrders.length && this.deliveredOrders.length &&
+                        this.notDeliveredOrders.length);
+                } else {
+                    return !(this.notPreparedOrders && this.preparedOrders);
+                }
+            }
+        },
         watch: {
             $route(to, from) {
                 this.loadMealOrdersFromRouteId();

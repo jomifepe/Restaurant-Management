@@ -357,9 +357,7 @@
                 }
             },
             toggleNotificationDrawer() {
-                if (!!this.user.shift_active) {
-                    this.rightDrawer = !this.rightDrawer;
-                }
+                this.rightDrawer = !this.rightDrawer;
             },
             redirectToItemLocation(notificationRoute) {
                 if (notificationRoute) {

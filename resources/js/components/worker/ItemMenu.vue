@@ -104,11 +104,11 @@
 	import moment from 'moment';
     import NewItem from "./manager/NewItem";
 	// const moment = require('moment');
-	import {toasts} from '../../mixin';
+	import {toasts, helper} from '../../mixin';
 
     export default {
 		name: "OrderItemMenu",
-		mixins: [toasts],
+		mixins: [toasts, helper],
 		components: {
             NewItem,
 			MenuCard
@@ -236,6 +236,8 @@
 				return false;
 			},
 			askForOrderConfirmation() {
+				if (!this.isUserInShift()) return;
+
 				if (this.selectedItems.length > 0) {
 					this.orderSummaryMenu = false; 
 					this.orderSubmitDialog = true
@@ -366,7 +368,6 @@
 						this.showSuccessToast('All placed orders were successfully confirmed');
                         this.sendNotificationToKitchen();
 						resolve('success');
-
 					});
 				});
 			},

@@ -13,11 +13,11 @@
 <script>
     import Invoices from "./cashier/Invoices";
     import Meals from "./waiter/Meals"
-    import {helper} from "../../mixin"
+    import {toasts, helper} from "../../mixin"
 
     export default {
         name: "Dashboard",
-        mixins: [helper],
+        mixins: [toasts, helper],
         components: {Invoices, Meals},
         computed: {
             user() {

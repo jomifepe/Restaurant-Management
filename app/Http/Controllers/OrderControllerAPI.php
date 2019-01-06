@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\Order as OrderResource;
 use App\Http\Resources\OrderMeal as OrderMealResource;
+use App\Http\Resources\OrderWorker as OrderWorkerResource;
 use App\Http\Resources\Item as ItemResource;
 use App\Http\Resources\ItemOrder as ItemOrderResource;
 use App\Order;

@@ -110,7 +110,7 @@
 				}
 			},
             deleteItem(item) {
-				if (this.isUserInShift()) return;
+				if (!this.isUserInShift()) return;
 				
                 if(confirm('Are you sure you want to delete ' + item.name + ' ?')) {
                     axios.delete('items/' + item.id).then(response => {
