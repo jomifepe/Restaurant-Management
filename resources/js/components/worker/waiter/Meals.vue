@@ -46,7 +46,7 @@
                                         <span>Terminate meal</span>
                                     </v-tooltip>
                                     <v-tooltip top v-if="props.item.state === 'terminated'">
-                                        <v-btn icon slot="activator" @click="declareMealAsNotPaid(props.item)">
+                                        <v-btn icon slot="activator" v-if="user.type==='manager'" @click="declareMealAsNotPaid(props.item)">
                                             <v-icon>
                                                money_off
                                             </v-icon>
@@ -258,7 +258,7 @@
                             this.showSuccessToast('Meal edited');
                             this.getInvoice(meal)
                                 .then(responseInvoice => {
-                                    invoice = response.data.data;
+                                    invoice = responseInvoice.data.data;
                                     invoice.state = 'not paid';
                                     this.updateInvoice(invoice)
                                         .then(responseInvoiceUpdate => {
@@ -267,6 +267,7 @@
                                             this.loadMeals();
                                         })
                                         .catch(error => {
+                                            console.log(error.response.data);
                                             this.showErrorToast('Failed to edit invoice');
                                         })
                                 })  

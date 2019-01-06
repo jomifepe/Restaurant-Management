@@ -143,8 +143,8 @@ class InvoiceControllerAPI extends Controller
         
         $validatedData= $request->validate([
             'state' => 'in:pending,paid,not paid',
-            'nif' => 'integer|digits:9',
-            'name' => 'regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/'
+            'nif' => 'nullable|integer|digits:9',
+            'name' => 'nullable|regex:/^[A-Za-záàâãéèêíóôõúçÁÀÂÃÉÈÍÓÔÕÚÇ ]+$/'
         ]);
         
         $invoice->fill($validatedData);
