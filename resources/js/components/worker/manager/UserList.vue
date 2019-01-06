@@ -30,7 +30,7 @@
                                                 <span style="color:red">{{ errors.first('name') }}</span>
                                             </v-flex>
                                             <v-flex xs12 sm6 md4>
-                                                <v-text-field v-model="editedItem.username" v-validate="'required|alpha_spaces'" name="username" type="text" label="Username"></v-text-field>
+                                                <v-text-field v-model="editedItem.username" v-validate="'required|alpha_num'" name="username" type="text" label="Username"></v-text-field>
                                                 <span style="color:red">{{ errors.first('username') }}</span>
                                             </v-flex>
                                             <v-flex xs12 sm6 md4>
@@ -278,12 +278,13 @@
                             console.log(response);
                             this.showSuccessToast('User successfully registered');
                             this.showSuccessToast('Confirmation email successfully sent');
+                            this.close();
                         }).catch(error => {
+                            this.hasErrors(errors)
                             this.showErrorLog('Failed to send confirmation email', error);
                             console.log(error.response);
                         }).finally(() => {
                             this.getUsers();
-                            this.close();
                             this.$store.commit('hideProgressBar');
                         });
                     }
@@ -308,7 +309,6 @@
                         alert('Correct the errors!');
                     }else{
                         this.save();
-                        this.close();
                         return;
                     }
                 });
