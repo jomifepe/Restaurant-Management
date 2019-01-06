@@ -271,12 +271,11 @@
                                             this.loadMeals();
                                         })
                                         .catch(error => {
-                                            console.log(error.response.data);
                                             this.showErrorToast('Failed to edit invoice');
                                         })
-                                })  
+                                })
                                 .catch(error => {
-                                    if(error.response.status !== 404){
+                                    if(error.response.status != 404){
                                         this.showErrorLog('Failed to get meal invoice', error);
                                     }
                                 })                              
