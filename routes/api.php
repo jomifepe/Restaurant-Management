@@ -40,6 +40,8 @@ Route::group(['prefix' => 'invoices', 'middleware' => 'managerAndCashier'],
     }
 );
 
+
+
 Route::post('invoices', 'InvoiceControllerAPI@store')->name('invoices.store')
 ->middleware('managerAndWaiter');
 
@@ -70,8 +72,8 @@ Route::group(['prefix' =>'meals', 'middleware' => 'managerAndWaiter'],
 Route::match(['put', 'patch'], 'meals/{mealId}' ,'MealControllerAPI@update')->name('meals.update')
     ->middleware('managerWaiterAndCashier');
 
-Route::get('meals/{mealId}/invoice', 'MealControllerAPI@getInvoice')->name('meals.invoice')
-    ->middleware('manager');
+Route::get('meals/{mealId}/invoice', 'MealControllerAPI@getInvoice')->name('meals.invoice');
+    // ->middleware('manager');
 
 Route::get('meals/{mealId}/waiter', 'MealControllerAPI@getWaiter')->name('meal.waiterresponsible')
     ->middleware('managerWaiterAndCook');
@@ -156,7 +158,7 @@ Route::get('orders/{id}/toprepare', 'OrderControllerAPI@toPrepare')->name('order
     ->middleware('managerAndCook');
 
 Route::delete('orders/{order}', 'OrderControllerAPI@destroy')->name('orders.destroy')
-    ->middleware('manager');
+    ->middleware('managerAndWaiter');
 
 //<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-ORDERS<-<-<-<-<-<-<-<-<-<-<-<-<-<-
 

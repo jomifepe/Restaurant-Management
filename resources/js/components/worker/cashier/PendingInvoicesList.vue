@@ -152,7 +152,6 @@
                                     // console.log('submitted all axios calls');
                                     this.$socket.emit('update_not_pending');
                                 }))
-
                         })
                         .catch(error => {
                             this.showErrorLog('Failed to change orders', error);
@@ -180,8 +179,6 @@
                                                 }
                                                 // console.log("loading");
                                                 this.$socket.emit('meal_paid', meal);
-
-
 
                                                 this.loadInvoices();
                                             }).catch(error => {

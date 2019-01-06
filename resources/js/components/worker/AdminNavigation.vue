@@ -274,6 +274,11 @@
                     ` ${order.item_name} from table ${order.meal_table_number} is ready for pick up`,
                     `/admin/meals/${order.meal_id}/orders`);
             },
+            order_in_preparation_waiter(order) {
+                 this.addNotification(`Order ${order.id} is in preparation`,
+                    ` ${order.item_name} from table ${order.meal_table_number} is being prepared`,
+                    `/admin/meals/${order.meal_id}/orders`);
+            },
             /* cooks */
             order_prepared_cook(data) {
                 // this.addNotification("Order send confirmation", data, false);
