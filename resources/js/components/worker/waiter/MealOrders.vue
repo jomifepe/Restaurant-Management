@@ -188,6 +188,10 @@
                 this.progressBar = true;
                 this.loadMealOrders();
             },
+            meal_terminated_notify(user) {
+                this.progressBar = true;
+                this.loadMealOrders();
+            },
             order_in_preparation_notify(){
                 this.progressBar = true;
                 this.loadMealOrders();
