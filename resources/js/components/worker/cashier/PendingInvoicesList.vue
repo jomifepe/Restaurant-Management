@@ -189,7 +189,13 @@
             meal_paid_notify(meal){
                 this.showTopRightInfoToast("Invoice paid table(" + meal.table_number +")")
                 this.loadInvoices();
-            }
+            },
+            meal_not_paid_reload_invoices(){
+                this.loadInvoices();
+            },
+            update_orders(){
+                this.loadInvoices();
+            },
         },
         methods: {
             saveOrder(order){
