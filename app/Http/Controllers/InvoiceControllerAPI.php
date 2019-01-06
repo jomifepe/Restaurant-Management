@@ -20,7 +20,7 @@ class InvoiceControllerAPI extends Controller
      */
     public function index()
     {
-        return InvoiceResource::collection(Invoice::all());
+        return InvoiceDetailedResource::collection(Invoice::all());
     }
 
     public function invoiceMeal($invoiceId)

@@ -88,6 +88,7 @@ Route::delete('meals/{meal}', 'MealControllerAPI@destroy')->name('meal.destroy')
 Route::group(['prefix' => 'users', 'middleware' => 'manager'],
     function () {
         Route::get('all', 'UserControllerAPI@indexManager');
+        Route::get('all/{type}', 'UserControllerAPI@showByType')->name('users.all.type');
         /* Resource */
         Route::get('', 'UserControllerAPI@index')->name('users.index');
         Route::post('', 'UserControllerAPI@store')->name('users.store');

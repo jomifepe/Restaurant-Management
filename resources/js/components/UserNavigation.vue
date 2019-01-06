@@ -2,14 +2,14 @@
   <v-app class="grey lighten-4">
     <v-content>
       <v-layout align-center justify-center>
-        <v-flex xs12 md8 class="white elevation-3">
+        <v-flex xs12 class="white elevation-3">
           <v-toolbar align-center justify-center dark color="grey darken-3">
             <v-toolbar-title>DAD Restaurant</v-toolbar-title>
             <v-progress-circular v-if="$store.state.progressBarShown" color="white"
                 class="ml-3" :value="$store.state.progressBarValue" 
                 :indeterminate="$store.state.progressBarIndeterminate"></v-progress-circular>
             <v-spacer></v-spacer>
-            <v-toolbar-items class="hidden-sm-and-down">
+            <v-toolbar-items>
               <v-btn flat to="/">Home</v-btn>
               <v-btn flat to="menu">Menu</v-btn>
               <v-btn flat to="login">Login</v-btn>

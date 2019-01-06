@@ -47,6 +47,8 @@
 </template>
 
 <script>
+	import moment from 'moment';
+
 	export default {
 		name: "PasswordReset",
 		data: () => ({
@@ -60,73 +62,66 @@
 		}),
 		methods: {
 			submit() {
-				if (this.$refs.form.validate() && this.token.length) {
-					this.confirmEmail().then(() => this.resetPassword())
+				if (!this.$refs.form.validate() || !this.token.length) {
+					return
 				}
-			},
-			confirmEmail() {
-				return new Promise(resolve => {
-					axios.get(`/api/users/email/${this.email}`)
-					.then(response => {
-						if (response.status === 200) {
-							resolve();
-						} else if (response.status === 404) {
-							console.log(response);
-							this.$toasted.error('Couldn\'t find a user with the provided email', { 
-								icon: 'error', 
-								position: 'bottom-center', 
-								duration : 3000
-							});
+
+				this.resetPassword().then((message) => {
+					this.$toasted.success(message, { 
+						icon: 'check_circle', 
+						position: 'bottom-center', 
+						duration : 5000,
+						onComplete: () => window.location.href = '/#/login',
+						action: {
+							text: 'Go to login',
+							onClick : (e, toastObject) => {
+								window.location.href = '/#/login';
+							}
 						}
-					})
-					.catch(error => {
-						this.$toasted.error('Couldn\'t find a user with the provided email', { 
-							icon: 'error', 
-							position: 'bottom-center', 
-							duration : 3000
-						});
-					})
-				})
+					});
+				});
 			},
 			resetPassword() {
-				let form = new FormData();
-				form.append('token', this.token);
-				form.append('email', this.email);
-				form.append('password', this.newPassword);
-				form.append('password_confirmation', this.passwordRepeat);
+				return new Promise(resolve => {
+					let form = new FormData();
+					form.append('token', this.token);
+					form.append('email', this.email);
+					form.append('password', this.newPassword);
+					form.append('password_confirmation', this.passwordRepeat);
 
-				axios.post('/password/reset', form)
-					.then(response => {
-						console.log(response);
-						if (response.status === 200) {
-							this.$toasted.success('Password successfully changed', { 
-								icon: 'check_circle', 
-								position: 'bottom-center', 
-								duration : 2000,
-								onComplete: () => window.location.href = '/#/login',
-								action: {
-									text: 'Ok',
-									onClick : (e, toastObject) => {
-										window.location.href = '/#/login';
-									}
-								}
-							});
-						} else {
-							this.$toasted.error('Failed to change password, your email may be incorrect', { 
-								icon: 'error', 
-								position: 'bottom-center', 
-								duration : 3000
-							});
-						}
-					})
-					.catch(error => {
-						this.$toasted.error('Failed to change password, your email may be incorrect', { 
+					if (!this.token) {
+						this.$toasted.error('User token is incorrect', { 
 							icon: 'error', 
 							position: 'bottom-center', 
 							duration : 3000
 						});
-						console.log(error);
-					})
+						return;
+					}
+
+					axios.post('/password/reset/verify/email', form)
+						.then(response => {
+							if (response.status === 200) {
+								resolve(response.data);
+							}
+						}).catch(error => {
+							if (error.response.status === 422) {
+								for (let key in error.response.data) {
+									this.$toasted.error(error.response.data[key], { 
+										icon: 'error', 
+										position: 'bottom-center', 
+										duration : 3000
+									});
+								}
+							} else {
+								this.$toasted.error('Failed to update password', { 
+									icon: 'error', 
+									position: 'bottom-center', 
+									duration : 3000
+								});
+								console.log(error.response);
+							}
+						})
+				})
 			},
 			clear() {
 				this.$refs.form.reset();

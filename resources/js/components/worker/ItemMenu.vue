@@ -1,7 +1,7 @@
 <template>
     <v-container grid-list-md fluid>
 		<v-layout row>
-			<v-flex xs12 class="elevation-1">
+			<v-flex xs12 class="elevation-1" style="padding: 0">
 				<v-toolbar class="pb-3 grey lighten-3 elevation-0" light tabs>
 					<v-text-field v-model="filter" class="mx-3 rounded-text-field" flat small
 								label="Search" prepend-inner-icon="search" solo-inverted>

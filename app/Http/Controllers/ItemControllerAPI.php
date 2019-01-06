@@ -20,7 +20,7 @@ class ItemControllerAPI extends Controller
      */
     public function index(Request $request)
     {
-        return ItemResource::collection(Item::paginate(12));
+        return ItemResource::collection(Item::all());
     }
 
     /**
@@ -72,7 +72,8 @@ class ItemControllerAPI extends Controller
      */
     public function showType($showType)
     {
-        return ItemResource::collection(Item::where('type', $showType)->get());
+        return ItemResource::collection(
+            Item::where('type', $showType)->orderBy('name')->get());
     }
 
     /**

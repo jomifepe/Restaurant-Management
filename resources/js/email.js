@@ -19,7 +19,7 @@ Vue.use(Vuetify, {iconfont: 'fa'});
 Vue.use(Toasted);
 
 
-axios.defaults.baseURL = 'http://project.dad/';
+axios.defaults.baseURL = 'http://project.dad';
 
 new Vue({
     el: "#app",

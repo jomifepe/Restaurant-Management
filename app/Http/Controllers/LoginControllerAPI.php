@@ -6,12 +6,10 @@ use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\DB;
 
-//'http://dad-restaurant.ml'
-
 define('YOUR_SERVER_URL', 'http://project.dad');
 /* Check "oauth_clients" table for next 2 values: */
 define('CLIENT_ID', '2');
-define('CLIENT_SECRET','39UFxAjdJ7HZu759XCT1uKKqcUbi8tcSSQ1CI48C');
+define('CLIENT_SECRET','k5eM3DIORGskp5iDaZ2MTGRTkyZOqsirbbigwY0W');
 
 class LoginControllerAPI extends Controller
 {

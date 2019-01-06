@@ -54,13 +54,15 @@
                         <v-card-text>
                             <v-flex xs12>
                                 <v-form ref="form" v-model="msgFormValid">
-                                    <v-text-field v-model="titleNotManager" single-line name="msgTitle"
-                                        ref="msgTitle" label="Description/Subject" maxlength="20" counter="20"
-                                        :rules="[v => !!v || 'This field is required', v => v.length <= 25 || 'Max 20 characters']">
+                                    <v-text-field v-model="titleNotManager" single-line name="messageSubject"
+                                        ref="messageSubject" label="Description/Subject" maxlength="20" counter="20"
+                                        :rules="(!errors.first('messageSubject')) ? [true] : [errors.first('messageSubject')]"
+                                        v-validate="'required|max:20'">
                                     </v-text-field>
                                     <v-textarea class="mt-3" v-model="textNotManager" box auto-grow
-                                        name="msgContent" ref="msgContent" label="Message" maxlength="200"
-                                        counter="200" :rules="[v => !!v || 'This field is required', v => v.length <= 200 || 'Max 200 characters']">
+                                        name="messageText" ref="messageText" label="Message" maxlength="200"
+                                        :rules="(!errors.first('messageText')) ? [true] : [errors.first('messageText')]"
+                                        v-validate="'required|max:200'" counter="200">
                                     </v-textarea>
                                 </v-form>
                             </v-flex>
@@ -249,7 +251,7 @@
                 if (this.managerMessageDialog) {
                     this.$refs.form.reset();
                     this.$nextTick(function(){
-                        this.$refs.msgTitle.focus();
+                        this.$refs.messageSubject.focus();
                     });
                 }
             }
@@ -271,7 +273,7 @@
             /* waiters */
             order_prepared_waiter(order) {
                 this.addNotification(`Order ${order.id} is prepared`,
-                    ` ${order.item_name} from table ${order.meal_table_number} is ready for pick up`,
+                    `${order.item_name} from table ${order.meal_table_number} is ready for pick up`,
                     `/admin/meals/${order.meal_id}/orders`);
             },
             order_in_preparation_waiter(order) {

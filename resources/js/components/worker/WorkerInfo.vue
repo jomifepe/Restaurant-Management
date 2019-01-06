@@ -38,13 +38,13 @@
             }
         },
         methods: {
-            clearNotifications(){
+            clearNotifications() {
                 this.$emit('onClearNotifications');
             },
-            joinSockets(user){
+            joinSockets(user) {
                 this.$socket.emit('user_enter', user);
             },
-            leaveSockets(user){
+            leaveSockets(user) {
                 this.$socket.emit('user_exit', user);
             },
             toggleShift() {
@@ -102,12 +102,21 @@
             },
             getStartedShiftTimeDescription() {
                 let startedTime = this.$store.state.user.last_shift_start;
+                if (!startedTime) {
+                    return 'Couldn\'t display shift start time'
+                }
+
                 return `Your shift started at ${moment(startedTime).format("HH:mm")}
                     (${moment(startedTime).fromNow()})`;
             },
             showLastShiftTime() {
                 this.clearShiftTimer();
-                let endTime = moment(this.$store.state.user.last_shift_end)
+                let endTime = this.$store.state.user.last_shift_end;
+                if (!endTime) {
+                    this.shiftElapsedTime = 'No previous shift time';
+                    return;
+                }
+
                 this.shiftElapsedTime = `Your last shift ended at ${moment(endTime).format("HH:mm")}
                     (${moment(endTime).fromNow()})`
             },

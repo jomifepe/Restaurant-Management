@@ -1,66 +1,65 @@
 <template>
-    <v-layout row justify-center>
-        <v-dialog v-model="dialog" persistent max-width="600px">
-            <v-card>
-                <v-card-title>
-                    <span class="headline">Item</span>
-                </v-card-title>
-                <form id="form" @submit.prevent="validateBeforeSubmit">
-                    <v-card-text>
-                        <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors">
-                            <errors :msg="value"></errors>
-                        </div>
-                        <v-container grid-list-md>
-                            <v-layout wrap>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="item.name"  v-validate="'required|alpha_spaces'" name="name" type="text" label="Item name*" required></v-text-field>
-                                    <span style="color:red">{{ errors.first('name') }}</span>
-                                </v-flex>
-                                <v-flex xs12 sm6 md4>
-                                    <v-text-field v-model="item.price" v-validate="'required|decimal:2'" name="price" type="text" label="Price*" hint="example: 10,30"></v-text-field>
-                                    <span style="color:red">{{ errors.first('price') }}</span>
-                                </v-flex>
-                                <v-flex xs12 sm6 md4>
-                                    <input type="file" name="photo_url" @change="onFileSelected">
-                                </v-flex>
-                                <v-flex xs12>
-                                    <v-text-field v-model="item.description" v-validate="{ required: true, regex: /^[\-_!?':,\wãçá.\s]+$/ }" name="description" type="text" label="Description*" required></v-text-field>
-                                    <span style="color:red">{{ errors.first('description') }}</span>
-                                </v-flex>
-                                <v-flex xs12 sm6>
-                                    <v-select v-model="item.type" v-validate="'required'" name="type" type="text"
-                                              :items="['dish', 'drink']"
-                                              label="Type"
-                                              required
-                                    ></v-select>
-                                    <span style="color:red">{{ errors.first('type') }}</span>
-                                </v-flex>
-                                <v-flex xs12 sm6>
-                                </v-flex>
-                            </v-layout>
-                        </v-container>
-                        <small>*indicates required field</small>
-                    </v-card-text>
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn color="blue darken-1" flat @click.prevent="onCloseForm()" >Close</v-btn>
-                        <v-btn color="blue darken-1" flat type="submit" >Save</v-btn>
-                    </v-card-actions>
-                </form>
-            </v-card>
-        </v-dialog>
-    </v-layout>
+    <v-dialog v-model="showDialog" persistent max-width="600px">
+        <v-card>
+            <v-card-title>
+                <span class="headline">Item</span>
+            </v-card-title>
+            <form id="form" @submit.prevent="validateBeforeSubmit">
+                <v-card-text>
+                    <div v-if="hasValidationErrors" v-for="(value, key, index) in validationErrors" :key="index">
+                        <errors :msg="value"></errors>
+                    </div>
+                    <v-container grid-list-md>
+                        <v-layout wrap>
+                            <v-flex xs12>
+                                <input type="file" name="photo_url" class="mb-3" @change="onFileSelected">
+                            </v-flex>
+                            <v-flex xs12 sm6 md4>
+                                <v-text-field v-model="item.name"  v-validate="'required|alpha_spaces'" name="name" type="text" label="Item name*" required></v-text-field>
+                                <span style="color:red">{{ errors.first('name') }}</span>
+                            </v-flex>
+                            <v-flex xs12 sm6 md4>
+                                <v-text-field v-model="item.price" v-validate="'required|decimal:2'" name="price" type="text" label="Price*" hint="example: 10,30"></v-text-field>
+                                <span style="color:red">{{ errors.first('price') }}</span>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field v-model="item.description" v-validate="{ required: true, regex: /^[\-_!?':,\wãçá.\s]+$/ }" name="description" type="text" label="Description*" required></v-text-field>
+                                <span style="color:red">{{ errors.first('description') }}</span>
+                            </v-flex>
+                            <v-flex xs12 sm6>
+                                <v-select v-model="item.type" v-validate="'required'" name="type" type="text"
+                                            :items="['dish', 'drink']"
+                                            label="Type"
+                                            required
+                                ></v-select>
+                                <span style="color:red">{{ errors.first('type') }}</span>
+                            </v-flex>
+                            <v-flex xs12 sm6>
+                            </v-flex>
+                        </v-layout>
+                    </v-container>
+                    <small>*indicates required field</small>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" flat @click.prevent="onCloseForm()" >Close</v-btn>
+                    <v-btn color="blue darken-1" flat type="submit">Save</v-btn>
+                </v-card-actions>
+            </form>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
     import Errors from "../Errors";
+    import {toasts, helper} from '../../../mixin';
+
     export default {
         name: "ItemForm",
         components: {Errors},
-        props:['itemSelectedToEdit'],
+        props:['showDialog', 'itemSelectedToEdit'],
         data() {
             return {
-                dialog: true,
                 isNewItem: false,
                 selectedFile: null,
                 hasValidationErrors: false,
@@ -74,8 +73,10 @@
                 }
             }
         },
-        methods:{
+        methods: {
             save() {
+                if (this.isUserInShift()) return;
+                
                 /** FORM **/
                 let form = new FormData;
                 form.append('name', this.item.name);

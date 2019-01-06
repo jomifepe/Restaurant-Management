@@ -11,8 +11,7 @@
 |
 */
 
-//Route::get('/{any}', 'VueController@index')->where('any', '.*');
 Route::get('/', 'VueController@index');
 
-
 Auth::routes();
+Route::post('password/reset/verify/email', 'PasswordResetController@reset')->name('password.reset.verify.email');
