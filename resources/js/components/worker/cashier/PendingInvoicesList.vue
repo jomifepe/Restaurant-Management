@@ -252,6 +252,9 @@
                                             this.sendNotificationToManager(meal, state);
                                             if(state === 'not paid'){
                                                 this.changeAllNotDeliveredOrdersFormAMealToNotDelivered(meal);
+                                                this.$socket.emit('meal_not_paid');
+                                            }else{
+                                                this.$socket.emit('meal_paid', meal);
                                             }
                                             // console.log("loading");
                                             this.$socket.emit('meal_paid', meal);

@@ -235,6 +235,9 @@
             meal_not_paid_reload_waiter_table(meal){
                 this.reload();
             },
+            reload_meals(){
+                this.reload();
+            },
             order_prepared_notify_manager(cook){
                 this.showTopRightToast('Order prepared by ('+cook.name+')');
                 this.reload();
