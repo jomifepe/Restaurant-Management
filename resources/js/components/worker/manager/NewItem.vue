@@ -5,7 +5,7 @@
                 New Item
             </v-btn>
         </div>
-            <item-form :showDialog="showForm" :show@onGetItems="onGetItems()" 
+            <item-form :showDialog="showForm" :show@onGetItems="onGetItems()"
                 @onCloseForm="closeForm()"></item-form>
     </div>
 </template>

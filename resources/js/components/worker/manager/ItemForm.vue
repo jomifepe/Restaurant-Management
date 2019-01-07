@@ -188,6 +188,11 @@
                 return target;
             }
         },
+        watch:{
+            item: function (val) {
+                console.log(val);
+            }
+        }
     }
 </script>
 

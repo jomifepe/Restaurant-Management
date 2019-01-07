@@ -20,7 +20,7 @@
 					<span class="text-description font-weight-regular">
 						{{ item.description }}
 					</span>
-					&hellip; <a @click="fullDescriptionDialog = true" 
+					&hellip; <a @click="fullDescriptionDialog = true"
 						class="blue--text text--darken-2">Show more</a>
 					<v-dialog v-model="fullDescriptionDialog" max-width="350">
 						<v-card>
@@ -55,7 +55,9 @@
 				</v-btn>
 				<span>Edit item</span>
 			</v-tooltip>
-			<item-form :showDialog="showForm" :itemSelectedToEdit="item" @onGetItems="onGetItems()" @onCloseForm="onCloseForm()"></item-form>
+			<div v-if="showForm">
+			<item-form :showDialog="true" :itemSelectedToEdit="item" @onGetItems="onGetItems()" @onCloseForm="onCloseForm()"></item-form>
+			</div>
 		</v-card-actions>
 	</v-card>
 </template>
@@ -111,7 +113,7 @@
 			},
             deleteItem(item) {
 				if (!this.isUserInShift()) return;
-				
+
                 if(confirm('Are you sure you want to delete ' + item.name + ' ?')) {
                     axios.delete('items/' + item.id).then(response => {
                         if (response.status === 204) {
