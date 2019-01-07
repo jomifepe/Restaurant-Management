@@ -106,6 +106,9 @@
                 <v-btn flat small @click="showInvoiceDetails(props.item.id)">
                     Details
                 </v-btn>
+                <v-btn  v-if="user.type==='manager'" @click="exportToPdf(props.item)" icon>
+                    <v-icon>print</v-icon>
+                </v-btn>
             </template>
         </v-data-table> 
     </v-flex>
@@ -115,6 +118,8 @@
     import InvoiceDetails from './InvoiceDetails';
     import {toasts, helper} from '../../../mixin';
     import moment from 'moment';
+    import jsPDF from 'jspdf';
+    import autoTable from 'jspdf-autotable';
 
     export default {
         name: "PendingInvoices",
@@ -343,6 +348,29 @@
                     .catch(error => {
                         this.showErrorLog('Failed to get all waiters to populate filters', error);
                     })
+            },
+            exportToPdf(invoice){
+                let doc = new jsPDF('p','pt');
+                let columns = [
+                    {title: 'Id', dataKey: 'Id'},
+                    {title: 'Price', dataKey: 'Price'},
+                    {title: 'Waiter', dataKey: 'Waiter'},
+                    {title: 'NIF', dataKey: 'NIF'},
+                    {title: 'Name', dataKey: 'Name'},
+                    {title: 'Date', dataKey: 'Date'},
+                ];
+                let teste = [
+                    {
+                        'Id': invoice.id,
+                        'Price': invoice.total_price,
+                        'Waiter': invoice.responsible_waiter_name,
+                        'NIF': invoice.nif,
+                        'Name': invoice.name,
+                        'Date' : invoice.date
+                    }
+                ];
+                doc.autoTable(columns,teste);
+                doc.save(`invoice${invoice.id}.pdf`);
             },
         },
         mounted() {

@@ -34,7 +34,7 @@ Vue.use(new VueSocketio({
     connection: 'http://178.62.85.56:8080'
 }));
 
-axios.defaults.baseURL = 'http://dad-restaurant.ml/api';
+axios.defaults.baseURL = 'http://project.dad/api';
 
 const router = new VueRouter({
     routes: Routes
