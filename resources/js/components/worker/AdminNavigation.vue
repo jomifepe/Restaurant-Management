@@ -285,6 +285,14 @@
             order_prepared_cook(data) {
                 // this.addNotification("Order send confirmation", data, false);
             },
+            meal_terminated_notify(user) {
+                this.addNotification(`Meal terminated by ${user.name}`,
+                  ``,`/admin/meals`);},
+            meal_paid_notify(meal){
+            this.addNotification(`Meal ${meal.id} is now paid`,
+            `Meal from table ${meal.table_number} is now paid`,
+            `/admin/invoices`);
+            },
             order_received() {
                 this.addNotification("New Order", "New order arrived!", "/admin/orders");
             },
