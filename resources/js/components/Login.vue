@@ -73,7 +73,11 @@
                         .catch(error => {
                             this.$store.commit('clearUserAndToken');
                             this.$store.commit('hideProgressBar');
-                            this.showErrorLog('Failed to sign in', error.response.data);
+                            if (error.response.status === 401) {
+                                this.showErrorToast(error.response.data);
+                            } else {
+                                this.showErrorLog('Failed to sign in, check your credentials', error);
+                            }
                         }) 
                 });
             }

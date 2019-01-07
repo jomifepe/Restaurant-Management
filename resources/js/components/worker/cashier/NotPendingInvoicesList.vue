@@ -18,11 +18,11 @@
                 <td>{{ props.item.id }}</td>
                 <td>{{props.item.table_number}}</td>
                 <td>{{ props.item.responsible_waiter_name}}</td>
+                <td>{{ props.item.date }}</td>
+                <td>{{ props.item.total_price }}€</td>
                 <td :class="getInvoiceStateTextColor(props.item.state)">
                     <strong>{{ props.item.state }}</strong>
                 </td>
-                <td>{{ props.item.date }}</td>
-                <td>{{ props.item.total_price }}€</td>
             </tr>
         </template>
         <v-alert slot="no-results" :value="true" color="error" icon="warning">
@@ -60,9 +60,9 @@
                     { text: 'Id', value: 'id' },
                     { text: 'Table number', value: 'table_number' },
                     { text: 'Waiter', value: 'responsible_waiter_name' },
-                    { text: 'State', value: 'state' },
                     { text: 'Date', value: 'date'},
-                    { text: 'Total Price', value: 'total_price' }
+                    { text: 'Total Price', value: 'total_price' },
+                    { text: 'State', value: 'state' }
                 ],
                 search: '',            
                 dialog: false,

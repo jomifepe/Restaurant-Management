@@ -133,9 +133,9 @@
                 { text: 'Id', value: 'id' },
                 { text: 'Table number', value: 'table_number' },
                 { text: 'Waiter', value: 'responsible_waiter_name' },
-                { text: 'State', value: 'state' },
                 { text: 'Date', value: 'date'},
-                { text: 'Total Price', value: 'total_price' }
+                { text: 'Total Price', value: 'total_price' },
+                { text: 'State', value: 'state' }
             ],
             search: '',
             dialog: false,
