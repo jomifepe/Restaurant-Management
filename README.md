@@ -1,5 +1,7 @@
 # Restaurant-Management
 
+This was a school project which consisted of developing an SPA to manage a restaurant using Vue for the front-end and Laravel for the back-end API.
+
 ## Installation
 
 ```
