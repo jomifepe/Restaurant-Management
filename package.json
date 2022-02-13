@@ -10,7 +10,7 @@
     "watch-poll": "npm run watch -- --watch-poll"
   },
   "dependencies": {
-    "ajv": "^6.6.1",
+    "ajv": "^6.12.3",
     "babel-helpers": "^6.24.1",
     "currency-formatter": "^1.5.3",
     "currency.js": "^1.2.1",
