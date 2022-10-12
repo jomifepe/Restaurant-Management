@@ -15,7 +15,7 @@
     "currency-formatter": "^1.5.3",
     "currency.js": "^1.2.1",
     "imagemin": "^6.0.0",
-    "jspdf": "^1.4.1",
+    "jspdf": "^2.5.1",
     "jspdf-autotable": "^2.3.5",
     "moment": "^2.22.2",
     "util": "^0.11.1",
